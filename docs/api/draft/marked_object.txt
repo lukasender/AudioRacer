@@ -1,0 +1,9 @@
+MarkedObject
+------------
+/*
+Represents a (movable) marked object which can be recoginzed by the camera/software.
+*/
+int id
+String name
+Vector position
+Vector direction

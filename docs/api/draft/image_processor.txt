@@ -1,0 +1,8 @@
+ImageProcessor // different name?
+----------
+/*
+Detects the marked objects (using the library) in an image provided by the camera's image stream.
+It also keeps track of which object is which by managing the
+MarkedObject.id/name.
+*/
+List<MarkedObject> detectObjects(ImageStream stream)
