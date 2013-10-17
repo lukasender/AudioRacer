@@ -1,6 +1,0 @@
-Game // i don't know how to name it yet.
-----
-
-void translateMarkedObjects(List<MarkedObjects> objects)
-
-void translateMarkedObject(MarkedObject object)

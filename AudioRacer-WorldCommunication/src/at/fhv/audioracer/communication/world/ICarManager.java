@@ -1,4 +1,4 @@
-package at.fhv.audioracer.simulator.world;
+package at.fhv.audioracer.communication.world;
 
 public interface ICarManager {
 	public void connect(int zigbeeId);
