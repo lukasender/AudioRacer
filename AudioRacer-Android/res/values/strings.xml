@@ -2,7 +2,9 @@
 <resources>
 
     <string name="app_name">Audio racer</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="search_games_button">Join a game</string>
+    <string name="player_name">Choose a player name</string>
+    <string name="title_activity_start">StartActivity</string>
+    <string name="action_settings">Settings</string>
 
 </resources>
