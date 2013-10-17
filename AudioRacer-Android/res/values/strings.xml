@@ -2,9 +2,13 @@
 <resources>
 
     <string name="app_name">Audio racer</string>
+    
+    <string name="title_activity_start">StartActivity</string>
     <string name="search_games_button">Join a game</string>
     <string name="player_name">Choose a player name</string>
-    <string name="title_activity_start">StartActivity</string>
+    
+    <string name="title_activity_join_game">JoinGameActivity</string>
+    <string name="refresh_games_button">Refresh</string>
+    
     <string name="action_settings">Settings</string>
-
 </resources>

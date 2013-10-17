@@ -1,6 +1,7 @@
 package at.fhv.audioracer.client.android.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,6 +39,7 @@ public class StartActivity extends Activity {
 //		clearSharedPreferences();
 		
 		_playerNameText = (EditText) findViewById(R.id.player_name);
+		final Intent gamesIntent = new Intent(this, JoinGameActivity.class);
 
 		// load and set player name
 		restorePlayerName();
@@ -48,6 +50,7 @@ public class StartActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				choosePlayerName();
+				startActivity(gamesIntent);
 			}
 		});
 	}
