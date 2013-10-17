@@ -1,4 +1,4 @@
-package at.fhv.audioracer.client.android;
+package at.fhv.audioracer.client.android.activity;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.util.Defaults;
 import at.fhv.audioracer.client.android.util.Preferences;
 
@@ -77,7 +78,7 @@ public class StartActivity extends Activity {
 		// if _playerName is null, the 'hint' message will be shown.
 		_playerNameText.setText(_playerName);
 		
-		Log.d(Preferences.PLAYER_NAME, (_playerName == null) ? "null" : _playerName.toString());
+		Log.d(Preferences.PLAYER_NAME, "Restored playername: " + ((_playerName == null) ? "null" : _playerName.toString()));
 	}
 	
 	private void savePlayerName() {
