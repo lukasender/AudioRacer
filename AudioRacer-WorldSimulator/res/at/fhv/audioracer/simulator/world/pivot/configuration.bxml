@@ -1,0 +1,27 @@
+<sim:ConfigurationBorder title="Configure" styles="{padding:3}"
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:sim="at.fhv.audioracer.simulator.world.pivot">
+	<Form>
+		<Form.Section heading="Map">
+			<FlowPane Form.label="Size">
+				<TextInput bxml:id="_sizeXTextInput" preferredWidth="40" styles="{horizontalAlignment:'right'}">
+					<validator>
+						<IntValidator xmlns="org.apache.pivot.wtk.validation" />
+					</validator>
+				</TextInput>
+				<Label text="x" />
+				<TextInput bxml:id="_sizeYTextInput" preferredWidth="40" styles="{horizontalAlignment:'right'}">
+					<validator>
+						<IntValidator xmlns="org.apache.pivot.wtk.validation" />
+					</validator>
+				</TextInput>
+			</FlowPane>
+			<PushButton bxml:id="_mapConfiguredButton" buttonData="Map configured" />
+		</Form.Section>
+		<Form.Section heading="Cars">
+			<PushButton bxml:id="_addCarButton" buttonData="Add car" />
+			<PushButton bxml:id="_removeCarButton" buttonData="Remove car" />
+			<PushButton bxml:id="_allCarsDetectedButton" buttonData="All cars detected" />
+		</Form.Section>
+	</Form>
+</sim:ConfigurationBorder>

@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="res"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-WorldCommunication"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Apache-Pivot-2.0.3"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Ui"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
