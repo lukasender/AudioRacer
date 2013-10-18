@@ -18,19 +18,16 @@ public class MapComponentSkin extends ComponentSkin {
 	
 	@Override
 	public void layout() {
-		// TODO Auto-generated method stub
-		
+		// no-op.
 	}
 	
 	@Override
 	public int getPreferredWidth(int height) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 	
 	@Override
 	public int getPreferredHeight(int width) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 	
@@ -62,10 +59,10 @@ public class MapComponentSkin extends ComponentSkin {
 		
 		for (Car car : _component.getMap().getCars()) {
 			AffineTransform xform = new AffineTransform();
-			xform.translate(mapX + (car.getPosX() * scale), mapY + (car.getPosY() * scale));
+			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY + (car.getPosition().getPosY() * scale));
 			xform.scale(0.1, 0.1);
 			xform.translate(-car.getImage().getWidth() / 2, -car.getImage().getHeight() / 2);
-			xform.rotate(Math.toRadians(car.getDirection()), car.getImage().getWidth() / 2, car.getImage().getHeight() / 2);
+			xform.rotate(Math.toRadians(car.getDirection().getDirection()), car.getImage().getWidth() / 2, car.getImage().getHeight() / 2);
 			graphics.drawImage(car.getImage(), xform, null);
 		}
 	}

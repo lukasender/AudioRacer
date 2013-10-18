@@ -1,4 +1,4 @@
-package at.fhv.audioracer.server.wrappers;
+package at.fhv.audioracer.core.model;
 
 public class Position {
 	private float _posX;

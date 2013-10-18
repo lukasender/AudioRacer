@@ -14,20 +14,18 @@ public class Car {
 		}
 	}
 	
-	private final int _cameraId;
+	private final int _carId;
 	
-	private float _posX;
-	private float _posY;
-	private float _direction;
+	private Position _position;
+	private Direction _direction;
 	
 	private final BufferedImage _image;
 	
 	private CarListenerList _listenerList;
 	
-	public Car(int cameraId, float posX, float posY, float direction, BufferedImage image) {
-		_cameraId = cameraId;
-		_posX = posX;
-		_posY = posY;
+	public Car(int carId, Position position, Direction direction, BufferedImage image) {
+		_carId = carId;
+		_position = position;
 		_direction = direction;
 		
 		_image = image;
@@ -35,25 +33,20 @@ public class Car {
 		_listenerList = new CarListenerList();
 	}
 	
-	public int getCameraId() {
-		return _cameraId;
+	public int getCarId() {
+		return _carId;
 	}
 	
-	public float getPosX() {
-		return _posX;
+	public Position getPosition() {
+		return _position;
 	}
 	
-	public float getPosY() {
-		return _posY;
-	}
-	
-	public float getDirection() {
+	public Direction getDirection() {
 		return _direction;
 	}
 	
-	public void updatePosition(float posX, float posY, float direction) {
-		_posX = posX;
-		_posY = posY;
+	public void updatePosition(Position position, Direction direction) {
+		_position = position;
 		_direction = direction;
 		_listenerList.onCarPositionChanged(this);
 	}

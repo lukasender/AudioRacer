@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-PlayerClient"/>
+	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.18-all.jar" sourcepath="/AudioRacer/libs/kryonet-src-2.18.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

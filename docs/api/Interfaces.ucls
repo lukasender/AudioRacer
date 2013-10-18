@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.1.4" icons="true" automaticImage="PNG" always-add-relationships="false" generalizations="true" 
   realizations="true" associations="true" dependencies="false" nesting-relationships="true">  
-  <interface id="1" language="java" name="at.fhv.audioracer.communication.world.ICarManager" 
-    project="AudioRacer-WorldCommunication" 
-    file="/AudioRacer-WorldCommunication/src/at/fhv/audioracer/communication/world/ICarManager.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="115" width="170" x="11" y="50"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
-      visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </interface>  
-  <interface id="2" language="java" name="at.fhv.audioracer.communication.world.ICarClient" 
+  <interface id="1" language="java" name="at.fhv.audioracer.communication.world.ICarClient" 
     project="AudioRacer-WorldCommunication" 
     file="/AudioRacer-WorldCommunication/src/at/fhv/audioracer/communication/world/ICarClient.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -23,7 +12,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
-  <interface id="3" language="java" name="at.fhv.audioracer.communication.world.ICamera" 
+  <interface id="2" language="java" name="at.fhv.audioracer.communication.world.ICamera" 
     project="AudioRacer-WorldCommunication" 
     file="/AudioRacer-WorldCommunication/src/at/fhv/audioracer/communication/world/ICamera.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -34,43 +23,89 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
-  <interface id="4" language="java" name="at.fhv.audioracer.communication.player.IClient" 
+  <interface id="3" language="java" name="at.fhv.audioracer.communication.player.IClient" 
     project="AudioRacer-PlayerCommunication" 
     file="/AudioRacer-PlayerCommunication/src/at/fhv/audioracer/communication/player/IClient.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="171" y="329"/>    
+    <position height="-1" width="-1" x="453" y="349"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
-  <interface id="5" language="java" name="at.fhv.audioracer.communication.player.IPlayerClientManager" 
+  <interface id="4" language="java" name="at.fhv.audioracer.communication.player.IPlayerClientManager" 
     project="AudioRacer-PlayerCommunication" 
     file="/AudioRacer-PlayerCommunication/src/at/fhv/audioracer/communication/player/IPlayerClientManager.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="393" y="356"/>    
+    <position height="-1" width="-1" x="675" y="376"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
-  <interface id="6" language="java" name="at.fhv.audioracer.communication.player.IPlayerClient" 
+  <interface id="5" language="java" name="at.fhv.audioracer.communication.player.IPlayerClient" 
     project="AudioRacer-PlayerCommunication" 
     file="/AudioRacer-PlayerCommunication/src/at/fhv/audioracer/communication/player/IPlayerClient.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="172" y="546"/>    
+    <position height="-1" width="-1" x="454" y="566"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
-  <generalization id="7">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="4"/>  
+  <interface id="6" language="java" name="at.fhv.audioracer.communication.world.ICarClientManager" 
+    project="AudioRacer-WorldCommunication" 
+    file="/AudioRacer-WorldCommunication/src/at/fhv/audioracer/communication/world/ICarClientManager.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="112" y="107"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </interface>  
+  <class id="7" language="java" name="at.fhv.audioracer.server.PlayerClientManager" project="AudioRacer-Server" 
+    file="/AudioRacer-Server/src/at/fhv/audioracer/server/PlayerClientManager.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="929" y="482"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="8" language="java" name="at.fhv.audioracer.client.player.PlayerClient" project="AudioRacer-PlayerClient" 
+    file="/AudioRacer-PlayerClient/src/at/fhv/audioracer/client/player/PlayerClient.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="163" y="602"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <generalization id="9">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="3"/>  
   </generalization>  
+  <association id="10">    
+    <end type="SOURCE" refId="7" navigable="false">      
+      <attribute id="11" name="_playerClient"/>      
+      <multiplicity id="12" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <realization id="13">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="5"/>  
+  </realization>  
+  <realization id="14">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="4"/>  
+  </realization>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

@@ -2,7 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-PlayerCommunication"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Core"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/AudioRacer-PlayerCommunication"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/AudioRacer-Core"/>
+	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.18-all.jar" sourcepath="/AudioRacer/libs/kryonet-src-2.18.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

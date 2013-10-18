@@ -75,11 +75,11 @@ public class Map {
 			throw new IllegalArgumentException("Car must not be null.");
 		}
 		
-		if (_cars.containsKey(car.getCameraId())) {
-			removeCar(car.getCameraId());
+		if (_cars.containsKey(car.getCarId())) {
+			removeCar(car.getCarId());
 		}
 		
-		_cars.put(car.getCameraId(), car);
+		_cars.put(car.getCarId(), car);
 		_listenerList.onCarAdded(car);
 	}
 	

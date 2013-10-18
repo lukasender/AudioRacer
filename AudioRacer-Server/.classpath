@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="/AudioRacer/libs/slf4j-api-1.7.5.jar" sourcepath="/AudioRacer/libs/slf4j-api-1.7.5-sources.jar"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/slf4j-log4j12-1.7.5.jar" sourcepath="/AudioRacer/libs/slf4j-log4j12-1.7.5-sources.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Core"/>
+	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.18-all.jar" sourcepath="/AudioRacer/libs/kryonet-src-2.18.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

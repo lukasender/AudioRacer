@@ -1,24 +1,26 @@
 package at.fhv.audioracer.server.wrappers;
 
-import at.fhv.audioracer.server.dao.Car;
+import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.server.dao.Player;
 
 public class GameUnit {
-	private Player player = null;
-	private Car car = null;
+	private Player _player = null;
+	private Car _car = null;
 	
 	public Player getPlayer() {
-		return player;
-	}
-	public void setPlayer(Player player) {
-		this.player = player;
-	}
-	public Car getCar() {
-		return car;
-	}
-	public void setCar(Car car) {
-		this.car = car;
+		return _player;
 	}
 	
+	public void setPlayer(Player player) {
+		this._player = player;
+	}
+	
+	public Car getCar() {
+		return _car;
+	}
+	
+	public void setCar(Car car) {
+		_car = car;
+	}
 	
 }
