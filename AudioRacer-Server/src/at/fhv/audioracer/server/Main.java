@@ -4,8 +4,14 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.fhv.audioracer.communication.player.IPlayerClient;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
+import at.fhv.audioracer.communication.world.WorldNetwork;
+import at.fhv.audioracer.server.proxy.CameraCommunicationProxy;
+import at.fhv.audioracer.server.proxy.PlayerCommunicationProxy;
 
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
@@ -14,31 +20,38 @@ import com.esotericsoftware.kryonet.rmi.RemoteObject;
 
 public class Main {
 	
+	public static final Executor executor = Executors.newSingleThreadExecutor();
+	private static Server _playerProxyServer = null;
+	private static Server _cameraServer = null;
+	private static Logger _logger = LoggerFactory.getLogger(Main.class);
+	
 	public static void main(String[] args) {
 		try {
 			startServer();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			_logger.error("Exception caught during application startup.", e);
+			
+			if (_playerProxyServer != null) {
+				_playerProxyServer.close();
+			}
+			if (_cameraServer != null) {
+				_cameraServer.close();
+			}
+			// TODO: Are this all connections, we need to close?
 		}
 	}
 	
 	private static void startServer() throws IOException {
 		// Test purpose only
 		
-		// All method calls from kryonet will be made through this executor.
-		// We are using a single threaded executor to ensure that everything is done on the same
-		// thread we won't run in any cross threading problems.
-		final Executor executor = Executors.newSingleThreadExecutor();
-		
-		// Create a new server
-		Server server = new Server() {
+		// Create new server for player communication
+		_playerProxyServer = new Server() {
 			@Override
 			protected Connection newConnection() {
-				// called when a new incoming connection is pending
+				// called when a new incoming device connection is pending
 				
 				// create a PlayerClientManager which gets calls from the client on the server side
-				PlayerClientManager playerClientManager = new PlayerClientManager();
+				PlayerCommunicationProxy playerClientManager = new PlayerCommunicationProxy();
 				ObjectSpace objectSpace = new ObjectSpace(playerClientManager);
 				objectSpace.setExecutor(executor); // use the single threaded executor for method invocation
 				objectSpace.register(PlayerNetwork.PLAYER_MANAGER, playerClientManager); // register the PlayerClientManager to kryonet
@@ -56,10 +69,28 @@ public class Main {
 		};
 		
 		// Register the classes that will be sent over the network.
-		PlayerNetwork.register(server);
+		PlayerNetwork.register(_playerProxyServer);
 		
-		server.bind(4711);
-		server.start();
+		_playerProxyServer.bind(PlayerNetwork.PLAYER_SERVICE_PORT);
+		_playerProxyServer.start();
+		
+		// Create new Server for camera communication
+		_cameraServer = new Server() {
+			@Override
+			protected Connection newConnection() {
+				CameraCommunicationProxy cameraCommunicationProxy = new CameraCommunicationProxy();
+				
+				ObjectSpace objectSpace = new ObjectSpace(cameraCommunicationProxy);
+				objectSpace.setExecutor(executor);
+				objectSpace.register(WorldNetwork.CAMERA_SERVICE, cameraCommunicationProxy);
+				
+				return cameraCommunicationProxy;
+			}
+		};
+		
+		WorldNetwork.register(_cameraServer);
+		
+		_cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT);
+		_cameraServer.start();
 	}
-	
 }

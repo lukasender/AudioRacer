@@ -19,9 +19,13 @@ public class Car {
 	private Position _position;
 	private Direction _direction;
 	
-	private final BufferedImage _image;
+	private BufferedImage _image;
 	
 	private CarListenerList _listenerList;
+	
+	public Car(int cardId) {
+		_carId = cardId;
+	}
 	
 	public Car(int carId, Position position, Direction direction, BufferedImage image) {
 		_carId = carId;

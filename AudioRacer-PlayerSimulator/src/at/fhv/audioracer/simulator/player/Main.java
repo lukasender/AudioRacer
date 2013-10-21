@@ -51,10 +51,11 @@ public class Main {
 		objectSpace.setExecutor(executor);
 		objectSpace.register(PlayerNetwork.PLAYER_CLIENT, playerClient);
 		
-		client.connect(1000, InetAddress.getLoopbackAddress(), 4711);
+		client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT);
 		
 		int foo = playerClientManager.connect("hi!");
 		System.out.println("foo is: " + foo);
+		client.close();
 	}
 	
 }

@@ -9,6 +9,8 @@ public class PlayerNetwork {
 	public static final int PLAYER_MANAGER = 0;
 	public static final int PLAYER_CLIENT = 1;
 	
+	public static final int PLAYER_SERVICE_PORT = 4714;
+	
 	public static void register(EndPoint endpoint) {
 		Kryo kryo = endpoint.getKryo();
 		// This must be called in order to use ObjectSpaces.
