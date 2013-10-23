@@ -35,6 +35,9 @@ public class Car {
 	}
 	
 	public Car(int carId, Position position, Direction direction, BufferedImage image) {
+		if (image == null) {
+			throw new IllegalArgumentException("An image ('BufferedImage') is required");
+		}
 		_carId = carId;
 		_position = position;
 		_direction = direction;
