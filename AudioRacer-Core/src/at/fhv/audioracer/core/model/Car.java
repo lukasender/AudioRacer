@@ -19,12 +19,19 @@ public class Car {
 	private Position _position;
 	private Direction _direction;
 	
-	private BufferedImage _image;
+	private final BufferedImage _image;
 	
 	private CarListenerList _listenerList;
 	
+	/**
+	 * @deprecated - there is a reason for why <code>BufferedImage</code> is final! Don't use this constructor anymore. Remove this constructor if you've
+	 *             changed your code (who ever is using it. I don't know).
+	 * @param cardId
+	 */
+	@Deprecated
 	public Car(int cardId) {
 		_carId = cardId;
+		_image = new BufferedImage(0, 0, 0); // this is not useful at all.
 	}
 	
 	public Car(int carId, Position position, Direction direction, BufferedImage image) {
