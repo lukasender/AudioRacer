@@ -2,7 +2,9 @@ package at.fhv.audioracer.core.model;
 
 import java.awt.image.BufferedImage;
 
+import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.ListenerList;
+import at.fhv.audioracer.core.util.Position;
 
 public class Car {
 	private static class CarListenerList extends ListenerList<ICarListener> implements ICarListener {
@@ -31,7 +33,7 @@ public class Car {
 	@Deprecated
 	public Car(int cardId) {
 		_carId = cardId;
-		_image = new BufferedImage(0, 0, 0); // this is not useful at all.
+		_image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB); // this is not useful at all.
 	}
 	
 	public Car(int carId, Position position, Direction direction, BufferedImage image) {
