@@ -8,6 +8,8 @@ import at.fhv.audioracer.server.proxy.CarCommunicationProxy;
 
 public class Car extends at.fhv.audioracer.core.model.Car {
 	
+	// TODO Edi bitte Überleg dir einen besseren Namen wegen besserer Unterscheidbarkeit zu model.car
+	
 	/**
 	 * Player associated with this car
 	 */

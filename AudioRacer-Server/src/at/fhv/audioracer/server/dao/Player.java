@@ -1,50 +1,15 @@
 package at.fhv.audioracer.server.dao;
 
-import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.server.proxy.PlayerCommunicationProxy;
 
-public class Player {
+public class Player extends at.fhv.audioracer.core.model.Player {
 	
-	private String _loginName;
-	
-	/**
-	 * indicates player ready for next game nor not
-	 */
-	private boolean _isReady;
+	// TODO Edi bitte Überleg dir einen besseren Namen wegen besserer Unterscheidbarkeit zu model.car
 	
 	/**
 	 * server - player communication
 	 */
 	private PlayerCommunicationProxy _proxy;
-	
-	/**
-	 * car associated with player
-	 */
-	private Car _car;
-	
-	public String getLoginName() {
-		return _loginName;
-	}
-	
-	public void setLoginName(String loginName) {
-		this._loginName = loginName;
-	}
-	
-	public boolean isReady() {
-		return _isReady;
-	}
-	
-	public void setReady(boolean isReady) {
-		this._isReady = isReady;
-	}
-	
-	public Car getCar() {
-		return _car;
-	}
-	
-	public void setCar(Car car) {
-		this._car = car;
-	}
 	
 	public PlayerCommunicationProxy getProxy() {
 		return _proxy;
