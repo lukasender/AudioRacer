@@ -15,10 +15,10 @@ import com.esotericsoftware.kryonet.rmi.RemoteObject;
 public class Simulator {
 	
 	// simulated direction between -1 (left) 1(right)
-	private float direction;
+	private float _direction;
 	
-	// simulated direction between -1(brake) 1(brake)
-	private float acceleration;
+	// simulated acceleration between -1(backward) 1(forward)
+	private float _acceleration;
 	
 	// simulated PlayerClient
 	private static SimulatedPlayerClient _playerClient;

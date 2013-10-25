@@ -3,46 +3,52 @@ package at.fhv.audioracer.server;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.fhv.audioracer.server.dao.Player;
+import at.fhv.audioracer.server.dao.PlayerProxy;
 
 public class PlayerManager {
 	
 	private static Logger _logger = LoggerFactory.getLogger(PlayerManager.class);
-	private static final Map<UUID, Player> _playerList = Collections.synchronizedMap(new HashMap<UUID, Player>());
+	private static final Map<Integer, PlayerProxy> _playerList = Collections.synchronizedMap(new HashMap<Integer, PlayerProxy>());
+	private static int _plrId = 0;
 	
 	/**
 	 * @param loginName
-	 *            - Name of player
-	 * @return playerId - Id of the player or -1 if player can not be added
+	 *            name of player
+	 * @return id of the player or -1 if player can not be added
 	 */
-	public static int addPlayer(UUID uuid, String loginName) {
-		Player plr = new Player();
+	public static int addPlayer(String loginName) {
+		PlayerProxy plr = new PlayerProxy();
 		plr.setLoginName(loginName);
-		
+		int id = -1;
 		synchronized (_playerList) {
-			_playerList.put(uuid, plr);
-			_logger.debug("added player {} width playerId {}", loginName, uuid);
+			id = ++_plrId;
+			_playerList.put(_plrId, plr);
+			_logger.debug("added player {} with playerId {}", loginName, id);
 		}
-		return -1;
+		return id;
 	}
 	
 	/**
 	 * @param playerId
-	 *            - Id of player to be removed
+	 *            Id of player to be removed
 	 */
-	public static void removePlayer(UUID uuid) {
-		Player plr = _playerList.remove(uuid);
+	public static void removePlayer(int playerId) {
+		PlayerProxy plr = _playerList.remove(playerId);
 		if (null != plr) {
-			_logger.debug("removed player {} width playerId {}", plr.getLoginName(), uuid);
+			_logger.debug("removed player {} width playerId {}", plr.getLoginName(), playerId);
 		}
 	}
 	
-	public static Player getPlayer(UUID uuid) {
-		return _playerList.get(uuid);
+	/**
+	 * @param playerId
+	 *            ID of player requested
+	 * @return PlayerProxy associated with this id
+	 */
+	public static PlayerProxy getPlayer(int playerId) {
+		return _playerList.get(playerId);
 	}
 }
