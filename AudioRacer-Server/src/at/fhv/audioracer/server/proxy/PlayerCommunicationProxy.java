@@ -1,7 +1,5 @@
 package at.fhv.audioracer.server.proxy;
 
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,30 +16,25 @@ import com.esotericsoftware.kryonet.Connection;
  */
 public class PlayerCommunicationProxy extends Connection implements IPlayerClientManager, IPlayerClient {
 	
-	UUID _plrId;
-	
 	private static final Logger _logger = LoggerFactory.getLogger(PlayerCommunicationProxy.class);
 	
 	// Remote PushObject for player communication
 	private IPlayerClient _playerClient;
+	private int _playerId;
 	
 	public void setPlayerClient(IPlayerClient playerClient) {
 		_playerClient = playerClient;
 	}
 	
-	public PlayerCommunicationProxy() {
-		// TODO: not work with uuid, use Integer
-		_plrId = UUID.randomUUID();
-	}
-	
 	@Override
 	public int connect(String playerName) {
-		return PlayerManager.addPlayer(_plrId, playerName);
+		_playerId = PlayerManager.addPlayer(playerName);
+		return _playerId;
 	}
 	
 	@Override
 	public void disconnect() {
-		PlayerManager.removePlayer(_plrId);
+		PlayerManager.removePlayer(_playerId);
 	}
 	
 	@Override
@@ -64,9 +57,9 @@ public class PlayerCommunicationProxy extends Connection implements IPlayerClien
 	@Override
 	public void setPlayerReady() {
 		try {
-			PlayerManager.getPlayer(_plrId).setReady(true);
+			PlayerManager.getPlayer(_playerId).setReady(true);
 		} catch (NullPointerException e) {
-			_logger.error("Player with id: {} does not exist!", _plrId);
+			_logger.error("Player with id: {} does not exist!", _playerId);
 			_playerClient.invalidCommand();
 		}
 	}

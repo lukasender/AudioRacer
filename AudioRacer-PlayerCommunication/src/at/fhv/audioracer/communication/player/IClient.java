@@ -2,12 +2,10 @@ package at.fhv.audioracer.communication.player;
 
 public interface IClient {
 	/**
-	 * 
-	 * @param playerId
-	 * @param coinsLeft
-	 * @param time in milliseconds
+	 * @param 	playerId 	id of player game state belongs to
+	 * @param 	coinsLeft 	coins left count of this player
+	 * @param 	time 		server time (milliseconds) game stated was recorded at
 	 */
-	// TODO: time als int?
 	public void updateGameState(int playerId, int coinsLeft, int time);
 	
 	public void playerConnected(int playerId, String playerName);
