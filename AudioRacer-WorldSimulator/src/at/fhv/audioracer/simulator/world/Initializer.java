@@ -1,8 +1,14 @@
 package at.fhv.audioracer.simulator.world;
 
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
 
+import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Map;
+import at.fhv.audioracer.core.util.Direction;
+import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 
 // TODO: This class name may change.
@@ -14,11 +20,14 @@ import at.fhv.audioracer.ui.pivot.MapComponent;
  */
 public class Initializer {
 	
-	private MapComponent _map;
-	
 	private static Initializer _instance;
 	
+	private MapComponent _map;
+	
+	private int _carId;
+	
 	private Initializer() {
+		_carId = 0;
 	}
 	
 	public static Initializer getInstance() {
@@ -31,7 +40,7 @@ public class Initializer {
 	
 	public void setUp(MapComponent mapComponent, Map map) throws OperationNotSupportedException {
 		setMap(mapComponent);
-		getMap().setMap(map);
+		getMapComponent().setMap(map);
 	}
 	
 	public void setMap(MapComponent map) {
@@ -41,8 +50,29 @@ public class Initializer {
 		_map = map;
 	}
 	
-	public MapComponent getMap() {
+	public MapComponent getMapComponent() {
 		return _map;
+	}
+	
+	public void addCar() {
+		try {
+			Car car = new Car(_carId++, new Position(0, 0), new Direction(0), ImageIO.read(MapComponent.class.getResource("car-red.png")));
+			getMap().addCar(car);
+			System.out.println("added car with id: " + (_carId - 1));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void removeCar() {
+		if (_carId > 0) {
+			getMap().removeCar(--_carId);
+			System.out.println("removed car with id: " + (_carId));
+		}
+	}
+	
+	private Map getMap() {
+		return getMapComponent().getMap();
 	}
 	
 	public void update() {
