@@ -3,8 +3,8 @@ package at.fhv.audioracer.server.dao;
 import java.awt.image.BufferedImage;
 
 import at.fhv.audioracer.core.model.Car;
-import at.fhv.audioracer.core.model.Direction;
-import at.fhv.audioracer.core.model.Position;
+import at.fhv.audioracer.core.util.Direction;
+import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.proxy.CarCommunicationProxy;
 
 /**
