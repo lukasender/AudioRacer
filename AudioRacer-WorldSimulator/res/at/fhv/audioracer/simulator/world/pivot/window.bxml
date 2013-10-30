@@ -1,13 +1,14 @@
-<Window title="AudioRacer - World simualtor" maximized="true"
+<ws:WorldSimulatorWindow title="AudioRacer - World simualtor" maximized="true"
 	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
-	xmlns:ar="at.fhv.audioracer.ui.pivot">
+	xmlns:ar="at.fhv.audioracer.ui.pivot"
+	xmlns:ws="at.fhv.audioracer.simulator.world.pivot">
 
 	<CardPane styles="{padding:3}">
 		<SplitPane bxml:id="splitPane" orientation="horizontal"
 			splitRatio="0.75">
 			<left>
 				<Border title="World">
-					<ar:MapComponent />
+					<ar:MapComponent bxml:id="_map" />
 				</Border>
 			</left>
 			<right>
@@ -15,4 +16,4 @@
 			</right>
 		</SplitPane>
 	</CardPane>
-</Window>
+</ws:WorldSimulatorWindow>

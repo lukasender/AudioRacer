@@ -2,12 +2,17 @@ package at.fhv.audioracer.simulator.world.pivot;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.naming.OperationNotSupportedException;
+
+import org.apache.pivot.beans.BXML;
 import org.apache.pivot.beans.BXMLSerializer;
-import org.apache.pivot.collections.Map;
+import org.apache.pivot.beans.Bindable;
+import org.apache.pivot.util.Resources;
 import org.apache.pivot.wtk.Application;
 import org.apache.pivot.wtk.Component;
 import org.apache.pivot.wtk.DesktopApplicationContext;
@@ -19,7 +24,10 @@ import org.slf4j.LoggerFactory;
 import at.fhv.audioracer.communication.world.ICamera;
 import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.WorldNetwork;
+import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.simulator.proxy.CarCommunicationProxy;
+import at.fhv.audioracer.simulator.world.Initializer;
+import at.fhv.audioracer.ui.pivot.MapComponent;
 import at.fhv.audioracer.ui.util.awt.RepeatingReleasedEventsFixer;
 
 import com.esotericsoftware.kryonet.Client;
@@ -28,7 +36,10 @@ import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryonet.rmi.ObjectSpace;
 import com.esotericsoftware.kryonet.rmi.RemoteObject;
 
-public class WorldSimulatorWindow implements Application {
+public class WorldSimulatorWindow extends Window implements Application, Bindable {
+	
+	@BXML
+	private MapComponent _map;
 	
 	private Window _window;
 	private static final Logger _logger = LoggerFactory.getLogger(WorldSimulatorWindow.class);
@@ -41,11 +52,46 @@ public class WorldSimulatorWindow implements Application {
 	private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
 	
 	@Override
-	public void startup(Display display, Map<String, String> properties) throws Exception {
+	public void initialize(org.apache.pivot.collections.Map<String, Object> namespace, URL location, Resources resources) {
+		System.out.println("initialize()");
+		try {
+			Initializer.getInstance().setUp(_map, new Map(20, 30));
+		} catch (OperationNotSupportedException e1) {
+			e1.printStackTrace();
+		}
+		
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(1000);
+					while (true) {
+						// car.updatePosition(new Position(15, 15), new Direction(90));
+						// Thread.sleep(1000);
+						// car.updatePosition(new Position(10, 20), new Direction(180));
+						// Thread.sleep(1000);
+						// car.updatePosition(new Position(5, 15), new Direction(270));
+						// Thread.sleep(1000);
+						// car.updatePosition(new Position(10, 10), new Direction(0));
+						// Thread.sleep(1000);
+						Initializer.getInstance().update();
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		
+	}
+	
+	@Override
+	public void startup(Display display, org.apache.pivot.collections.Map<String, String> properties) throws Exception {
+		System.out.println("startup()");
 		BXMLSerializer bxml = new BXMLSerializer();
 		_window = (Window) bxml.readObject(WorldSimulatorWindow.class, "window.bxml");
 		_window.open(display);
-		
 	}
 	
 	@Override
