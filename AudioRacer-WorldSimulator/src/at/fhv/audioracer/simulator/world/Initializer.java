@@ -26,8 +26,12 @@ public class Initializer {
 	
 	private int _carId;
 	
+	private Position _lastCarPos;
+	private static float TRANSLATE_BY = 2;
+	
 	private Initializer() {
 		_carId = 0;
+		_lastCarPos = new Position(0, 0);
 	}
 	
 	public static Initializer getInstance() {
@@ -56,7 +60,8 @@ public class Initializer {
 	
 	public void addCar() {
 		try {
-			Car car = new Car(_carId++, new Position(0, 0), new Direction(0), ImageIO.read(MapComponent.class.getResource("car-red.png")));
+			Car car = new Car(_carId++, _lastCarPos, new Direction(90), ImageIO.read(MapComponent.class.getResource("car-red.png")));
+			translateLasCarPosX(TRANSLATE_BY);
 			getMap().addCar(car);
 			System.out.println("added car with id: " + (_carId - 1));
 		} catch (IOException e) {
@@ -66,6 +71,7 @@ public class Initializer {
 	
 	public void removeCar() {
 		if (_carId > 0) {
+			translateLasCarPosX(-TRANSLATE_BY);
 			getMap().removeCar(--_carId);
 			System.out.println("removed car with id: " + (_carId));
 		}
@@ -80,6 +86,12 @@ public class Initializer {
 		// int y = getMap().getMap().getSizeY();
 		// System.out.println("MapSize: " + x + ", " + y);
 		
+	}
+	
+	// helper methods
+	
+	public void translateLasCarPosX(float x) {
+		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
 	}
 	
 }
