@@ -28,13 +28,13 @@ public class CarCommunicationProxy extends Connection implements ICarClientManag
 	}
 	
 	@Override
-	public void connect() {
+	public void connect(ICarClient car) {
 		_connected = true;
 		_logger.debug("Connect: {}", _carId);
 	}
 	
 	@Override
-	public void disconnect() {
+	public void disconnect(ICarClient car) {
 		_connected = false;
 	}
 	

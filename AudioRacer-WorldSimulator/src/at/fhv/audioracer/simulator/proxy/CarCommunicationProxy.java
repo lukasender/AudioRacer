@@ -35,13 +35,13 @@ public class CarCommunicationProxy extends Connection implements ICarClientManag
 	}
 	
 	@Override
-	public void connect() {
-		_carClientManager.connect();
+	public void connect(ICarClient car) {
+		_carClientManager.connect(car);
 	}
 	
 	@Override
-	public void disconnect() {
-		_carClientManager.disconnect();
+	public void disconnect(ICarClient car) {
+		_carClientManager.disconnect(car);
 	}
 	
 	@Override

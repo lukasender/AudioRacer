@@ -37,20 +37,20 @@ import com.esotericsoftware.kryonet.rmi.ObjectSpace;
 import com.esotericsoftware.kryonet.rmi.RemoteObject;
 
 public class WorldSimulatorWindow extends Window implements Application, Bindable {
-	
+
 	@BXML
 	private MapComponent _map;
-	
+
 	private Window _window;
 	private static final Logger _logger = LoggerFactory.getLogger(WorldSimulatorWindow.class);
 	public static final Executor executor = Executors.newSingleThreadExecutor();
-	
+
 	private static Server _carServer;
 	private static Client _cameraClient;
 	private static ICamera _camera;
-	
-	private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
-	
+
+	// private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
+
 	@Override
 	public void initialize(org.apache.pivot.collections.Map<String, Object> namespace, URL location, Resources resources) {
 		System.out.println("initialize()");
@@ -59,9 +59,9 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 		} catch (OperationNotSupportedException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				try {
@@ -83,9 +83,9 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 				}
 			}
 		}).start();
-		
+
 	}
-	
+
 	@Override
 	public void startup(Display display, org.apache.pivot.collections.Map<String, String> properties) throws Exception {
 		System.out.println("startup()");
@@ -93,51 +93,51 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 		_window = (Window) bxml.readObject(WorldSimulatorWindow.class, "window.bxml");
 		_window.open(display);
 	}
-	
+
 	@Override
 	public void suspend() throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
 	public void resume() throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
 	public boolean shutdown(boolean optional) throws Exception {
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 	public void setView(Component view) {
 		_window.setContent(view);
 	}
-	
+
 	public static void main(String[] args) {
 		new RepeatingReleasedEventsFixer().install();
 		DesktopApplicationContext.main(WorldSimulatorWindow.class, args);
-		
+
 		try {
-			
+
 			// Test purpose only
 			startCarService();
 			startCameraClient();
-			
+
 			// Test "run" AudioRacer-Server has to be started
 			// for next lines of code
 			_camera.carDetected(1, null);
 			_camera.carDetected(2, null);
-			
-			for (CarCommunicationProxy proxy : _carList) {
-				proxy.connect();
-			}
-			
+
+			// for (CarCommunicationProxy proxy : _carList) {
+			// proxy.connect();
+			// }
+
 		} catch (Exception e) {
 			_logger.error("Exception caught during startup!", e);
-			
+
 			if (_carServer != null) {
 				_carServer.close();
 			}
@@ -147,50 +147,50 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 			// TODO: Are this all connections we need to close?
 		}
 	}
-	
+
 	private static void startCarService() throws IOException {
-		
+
 		_carServer = new Server() {
-			
+
 			/**
 			 * New connection is established each time ICamera.carDetected is called on Server Side.
 			 */
 			@Override
 			protected Connection newConnection() {
-				
+
 				CarCommunicationProxy proxy = new CarCommunicationProxy();
 				ObjectSpace objectSapce = new ObjectSpace(proxy);
 				objectSapce.setExecutor(executor);
 				objectSapce.register(WorldNetwork.CAR_SERVICE, proxy);
-				
+
 				ICarClientManager carClientManager = ObjectSpace.getRemoteObject(proxy, WorldNetwork.CAR_SERVICE, ICarClientManager.class);
 				RemoteObject obj = (RemoteObject) carClientManager;
 				obj.setTransmitExceptions(false);
-				
+
 				proxy.setCarClientManager(carClientManager);
-				
-				_carList.add(proxy);
-				
+
+				// _carList.add(proxy);
+
 				return proxy;
 			}
 		};
-		
+
 		WorldNetwork.register(_carServer);
 		_carServer.bind(WorldNetwork.CAR_SERVICE_PORT);
 		_carServer.start();
 	}
-	
+
 	private static void startCameraClient() throws IOException {
 		_cameraClient = new Client();
 		_cameraClient.start();
-		
+
 		WorldNetwork.register(_cameraClient);
-		
+
 		_camera = ObjectSpace.getRemoteObject(_cameraClient, WorldNetwork.CAMERA_SERVICE, ICamera.class);
 		RemoteObject obj = (RemoteObject) _camera;
 		obj.setTransmitExceptions(false);
-		
+
 		_cameraClient.connect(1000, InetAddress.getLoopbackAddress(), WorldNetwork.CAMERA_SERVICE_PORT);
 	}
-	
+
 }
