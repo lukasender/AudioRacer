@@ -2,7 +2,6 @@ package at.fhv.audioracer.simulator.world.pivot;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -38,7 +37,7 @@ public class WorldSimulatorWindow implements Application {
 	private static Client _cameraClient;
 	private static ICamera _camera;
 	
-	private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
+	// private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
 	
 	@Override
 	public void startup(Display display, Map<String, String> properties) throws Exception {
@@ -85,9 +84,9 @@ public class WorldSimulatorWindow implements Application {
 			_camera.carDetected(1, null);
 			_camera.carDetected(2, null);
 			
-			for (CarCommunicationProxy proxy : _carList) {
-				proxy.connect();
-			}
+			// for (CarCommunicationProxy proxy : _carList) {
+			// proxy.connect();
+			// }
 			
 		} catch (Exception e) {
 			_logger.error("Exception caught during startup!", e);
@@ -123,7 +122,7 @@ public class WorldSimulatorWindow implements Application {
 				
 				proxy.setCarClientManager(carClientManager);
 				
-				_carList.add(proxy);
+				// _carList.add(proxy);
 				
 				return proxy;
 			}
