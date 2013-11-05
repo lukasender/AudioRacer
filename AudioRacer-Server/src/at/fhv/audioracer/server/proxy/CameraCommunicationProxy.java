@@ -9,8 +9,9 @@ import org.slf4j.LoggerFactory;
 import at.fhv.audioracer.communication.world.ICamera;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.WorldNetwork;
+import at.fhv.audioracer.server.CarManager;
 import at.fhv.audioracer.server.Main;
-import at.fhv.audioracer.server.dao.Car;
+import at.fhv.audioracer.server.dao.CarProxy;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
@@ -36,7 +37,7 @@ public class CameraCommunicationProxy extends Connection implements ICamera {
 		_logger.debug("carDetected with id: {} called.", carId);
 		
 		try {
-			Car car = new Car(carId);
+			CarProxy car = new CarProxy(carId);
 			
 			Client client = new Client();
 			client.start();
