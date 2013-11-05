@@ -5,14 +5,16 @@ import java.net.InetAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import at.fhv.audioracer.communication.player.IPlayerClient;
 import at.fhv.audioracer.communication.player.IPlayerClientManager;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
+import at.fhv.audioracer.simulator.gui.StartUpView;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.rmi.ObjectSpace;
 import com.esotericsoftware.kryonet.rmi.RemoteObject;
 
-public class Simulator {
+public class Simulator extends SimulatedPlayerClient {
 	
 	// simulated direction between -1 (left) 1(right)
 	private float direction;
@@ -21,7 +23,8 @@ public class Simulator {
 	private float acceleration;
 	
 	// simulated PlayerClient
-	private static SimulatedPlayerClient _playerClient;
+	private static IPlayerClient _playerClient;
+	private static SimulatedPlayerClient _simulatedPlayerClient;
 	
 	// ClientManager
 	private static IPlayerClientManager _playerClientManager;
@@ -31,18 +34,21 @@ public class Simulator {
 		int playerId = -1;
 		boolean open = true;
 		
+		StartUpView view = new StartUpView();
+		view.setVisible(true);
+		
 		try {
 			playerId = startClient(playerName);
-			while (open) {
-				
-			}
+			_simulatedPlayerClient._player.setPlayerId(playerId);
+			_simulatedPlayerClient._player.setLoginName(playerName);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 	}
 	
-	private static int startClient(String playerName) throws IOException {
+	public static int startClient(String playerName) throws IOException {
 		// All method calls from kryonet will be made through this executor.
 		// We are using a single threaded executor to ensure that everything is done on the same
 		// thread we won't run in any cross threading problems.
@@ -60,7 +66,8 @@ public class Simulator {
 		obj.setTransmitExceptions(false); // disable exception transmitting
 		
 		// create real PlayerClient
-		_playerClient = new SimulatedPlayerClient();
+		_simulatedPlayerClient = new SimulatedPlayerClient();
+		_playerClient = _simulatedPlayerClient;
 		
 		// register the PlayerClient to kryonet
 		ObjectSpace objectSpace = new ObjectSpace(client);
