@@ -17,7 +17,7 @@ public class PlayerNetwork {
 		ObjectSpace.registerClasses(kryo);
 		
 		// The interfaces that will be used as remote objects must be registered.
-		kryo.register(IPlayerClientManager.class);
+		kryo.register(IPlayerServer.class);
 		kryo.register(IPlayerClient.class);
 		// The classes of all method parameters and return values
 		// for remote objects must also be registered.

@@ -6,7 +6,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import at.fhv.audioracer.client.player.PlayerClient;
-import at.fhv.audioracer.communication.player.IPlayerClientManager;
+import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
 
 import com.esotericsoftware.kryonet.Client;
@@ -39,7 +39,7 @@ public class Main {
 		PlayerNetwork.register(client);
 		
 		// get the PlayerClientManager from the server
-		IPlayerClientManager playerClientManager = ObjectSpace.getRemoteObject(client, PlayerNetwork.PLAYER_MANAGER, IPlayerClientManager.class);
+		IPlayerServer playerClientManager = ObjectSpace.getRemoteObject(client, PlayerNetwork.PLAYER_MANAGER, IPlayerServer.class);
 		RemoteObject obj = (RemoteObject) playerClientManager;
 		obj.setTransmitExceptions(false); // disable exception transmitting
 		

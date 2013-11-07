@@ -7,7 +7,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import at.fhv.audioracer.communication.player.IPlayerClient;
-import at.fhv.audioracer.communication.player.IPlayerClientManager;
+import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
@@ -148,7 +148,7 @@ public class PlayerClient extends Connection implements IPlayerClient {
 	/*
 	 * PlayerClientManager of this Client
 	 */
-	private IPlayerClientManager _playerClientManager;
+	private IPlayerServer _playerServer;
 	
 	public PlayerClient() {
 		super();
@@ -260,12 +260,12 @@ public class PlayerClient extends Connection implements IPlayerClient {
 		return _nextCheckpoint;
 	}
 	
-	public IPlayerClientManager getPlayerClientManager() {
-		return _playerClientManager;
+	public IPlayerServer getPlayerServer() {
+		return _playerServer;
 	}
 	
-	public void setPlayerClientManager(IPlayerClientManager playerClientManager) {
-		_playerClientManager = playerClientManager;
+	public void setPlayerServer(IPlayerServer playerServer) {
+		_playerServer = playerServer;
 	}
 	
 	public ListenerList<IPlayerClientListener> getListenerList() {
@@ -285,7 +285,7 @@ public class PlayerClient extends Connection implements IPlayerClient {
 		PlayerNetwork.register(_client);
 		
 		// get the PlayerClientManager from the server
-		IPlayerClientManager _playerClientManager = ObjectSpace.getRemoteObject(_client, PlayerNetwork.PLAYER_MANAGER, IPlayerClientManager.class);
+		IPlayerServer _playerClientManager = ObjectSpace.getRemoteObject(_client, PlayerNetwork.PLAYER_MANAGER, IPlayerServer.class);
 		RemoteObject obj = (RemoteObject) _playerClientManager;
 		obj.setTransmitExceptions(false); // disable exception transmitting
 		
@@ -297,7 +297,7 @@ public class PlayerClient extends Connection implements IPlayerClient {
 		_client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT);
 		_connected = true;
 		
-		setPlayerClientManager(_playerClientManager);
+		setPlayerServer(_playerClientManager);
 		getPlayer().setPlayerId(_playerClientManager.connect(playerName));
 	}
 	

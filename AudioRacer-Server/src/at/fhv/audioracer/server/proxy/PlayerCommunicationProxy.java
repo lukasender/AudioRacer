@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.fhv.audioracer.communication.player.IPlayerClient;
-import at.fhv.audioracer.communication.player.IPlayerClientManager;
+import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.server.PlayerManager;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -14,7 +14,7 @@ import com.esotericsoftware.kryonet.Connection;
  * 
  * @author edi
  */
-public class PlayerCommunicationProxy extends Connection implements IPlayerClientManager, IPlayerClient {
+public class PlayerCommunicationProxy extends Connection implements IPlayerServer, IPlayerClient {
 	
 	private static final Logger _logger = LoggerFactory.getLogger(PlayerCommunicationProxy.class);
 	

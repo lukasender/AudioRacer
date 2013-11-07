@@ -73,7 +73,7 @@ public class StartUpView extends JFrame {
 			public void valueChanged(ListSelectionEvent e) {
 				
 				Integer selected = _listFreeCars.getSelectedValue();
-				if (_playerClient.getPlayerClientManager().selectCar(selected)) {
+				if (_playerClient.getPlayerServer().selectCar(selected)) {
 					ControlView cv = new ControlView(_playerClient);
 					cv.setVisible(true);
 				}
@@ -125,7 +125,7 @@ public class StartUpView extends JFrame {
 					@Override
 					public void run() {
 						
-						_playerClient.getPlayerClientManager().updateVelocity(_playerClient.getSpeed(), _playerClient.getDirection());
+						_playerClient.getPlayerServer().updateVelocity(_playerClient.getSpeed(), _playerClient.getDirection());
 						try {
 							Thread.sleep(40);
 						} catch (InterruptedException e) {
@@ -142,7 +142,7 @@ public class StartUpView extends JFrame {
 			
 			@Override
 			public void valueChanged(ListSelectionEvent arg0) {
-				_playerClient.getPlayerClientManager().selectCar(_listFreeCars.getSelectedValue());
+				_playerClient.getPlayerServer().selectCar(_listFreeCars.getSelectedValue());
 				
 			}
 		});
@@ -219,7 +219,7 @@ public class StartUpView extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				
-				_playerClient.getPlayerClientManager().setPlayerReady();
+				_playerClient.getPlayerServer().setPlayerReady();
 				_lblReady.setText("Ready");
 				_btnReady.setText("Unready");
 				

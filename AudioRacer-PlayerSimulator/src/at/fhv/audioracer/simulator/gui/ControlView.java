@@ -101,8 +101,8 @@ public class ControlView extends JFrame {
 				_playerClient.setDirection(calcSliderIntToFloat(_sliderDirection));
 				_playerClient.setSpeed(calcSliderIntToFloat(_sliderAccelaration));
 				
-				if (_playerClient.getPlayerClientManager() != null) {
-					_playerClient.getPlayerClientManager().updateVelocity(_playerClient.getSpeed(), _playerClient.getDirection());
+				if (_playerClient.getPlayerServer() != null) {
+					_playerClient.getPlayerServer().updateVelocity(_playerClient.getSpeed(), _playerClient.getDirection());
 				}
 			}
 		});
