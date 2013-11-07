@@ -8,4 +8,6 @@ public interface IPlayerClient extends IClient {
 	public void gameOver();
 	
 	public void invalidCommand();
+	
+	public void gameStarts();
 }

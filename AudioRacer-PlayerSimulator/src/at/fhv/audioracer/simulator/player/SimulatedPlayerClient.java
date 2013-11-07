@@ -4,14 +4,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import at.fhv.audioracer.client.player.IPlayerClientListener;
 import at.fhv.audioracer.communication.player.IPlayerClient;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.simulator.utils.Checkpoint;
-import at.fhv.audioracer.simulator.utils.PlayerClientListener;
 
 import com.esotericsoftware.kryonet.Connection;
 
+@Deprecated
 public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 	
 	/**
@@ -27,7 +28,7 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 	/**
 	 * List of PlayerClientListener
 	 */
-	List<PlayerClientListener> _listener;
+	List<IPlayerClientListener> _listener;
 	
 	/**
 	 * holds free cars
@@ -84,8 +85,6 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 		p.setCoinsLeft(coinsLeft);
 		p.setTime(time);
 		
-		notifyListener();
-		
 	}
 	
 	@Override
@@ -96,7 +95,6 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 			p.setLoginName(playerName);
 		}
 		
-		notifyListener();
 	}
 	
 	@Override
@@ -105,7 +103,6 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 			_players.remove(playerId);
 		}
 		
-		notifyListener();
 	}
 	
 	@Override
@@ -114,7 +111,6 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 		_nextCheckpoint.setXDistance(directionX);
 		_nextCheckpoint.setYDistance(directionY);
 		
-		notifyListener();
 	}
 	
 	@Override
@@ -129,14 +125,10 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 			}
 		}
 		
-		notifyListener();
-		
 	}
 	
 	@Override
 	public void gameOver() {
-		
-		notifyListener();
 		
 	}
 	
@@ -144,16 +136,6 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 	public void invalidCommand() {
 		// TODO Auto-generated method stub
 		
-	}
-	
-	public void addPlayerClientListener(PlayerClientListener listener) {
-		_listener.add(listener);
-	}
-	
-	private void notifyListener() {
-		for (PlayerClientListener pL : _listener) {
-			pL.stateChanged();
-		}
 	}
 	
 	/**
@@ -188,6 +170,12 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 	 */
 	public void setAccelaration(float accelaration) {
 		_accelaration = accelaration;
+	}
+	
+	@Override
+	public void gameStarts() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }
