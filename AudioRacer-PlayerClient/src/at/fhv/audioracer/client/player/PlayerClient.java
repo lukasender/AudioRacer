@@ -11,8 +11,8 @@ import at.fhv.audioracer.communication.player.IPlayerClientManager;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
-import at.fhv.audioracer.core.model.Position;
 import at.fhv.audioracer.core.util.ListenerList;
+import at.fhv.audioracer.core.util.Position;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
