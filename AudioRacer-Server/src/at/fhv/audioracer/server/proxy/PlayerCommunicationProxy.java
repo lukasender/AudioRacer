@@ -98,4 +98,10 @@ public class PlayerCommunicationProxy extends Connection implements IPlayerClien
 	public void invalidCommand() {
 		_playerClient.invalidCommand();
 	}
+	
+	@Override
+	public void gameStarts() {
+		// TODO Auto-generated method stub
+		
+	}
 }
