@@ -76,6 +76,7 @@ public class SimulationController {
 	public void setUp(MapComponent mapComponent, Map map) throws OperationNotSupportedException {
 		setMap(mapComponent);
 		getMapComponent().setMap(map);
+		_camera.configureMap(map.getSizeX(), map.getSizeY());
 	}
 	
 	public void setMap(MapComponent map) {
