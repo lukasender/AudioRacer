@@ -1,11 +1,9 @@
 package at.fhv.audioracer.simulator.world;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
@@ -52,7 +50,7 @@ public class SimulationController {
 	
 	private int _carId;
 	
-	private List<Client> _clients;
+	private List<ICarClient> _carClients;
 	
 	private Position _lastCarPos;
 	private static float TRANSLATE_BY = 2;
@@ -60,7 +58,7 @@ public class SimulationController {
 	private SimulationController() {
 		_carId = 0;
 		_lastCarPos = new Position(0, 0);
-		_clients = new LinkedList<Client>();
+		_carClients = new LinkedList<ICarClient>();
 		
 		// establish the connections
 		_carClientManager = CarClientManager.getInstance();
@@ -134,39 +132,16 @@ public class SimulationController {
 	
 	private void startCarClient() throws IOException {
 		// add car to map
-		Car car = new Car(_carId++, _lastCarPos, new Direction(90), ImageIO.read(MapComponent.class.getResource("car-red.png")));
+		BufferedImage image = ImageIO.read(MapComponent.class.getResource("car-red.png"));
+		Car car = new Car(_carId++, _lastCarPos, new Direction(90), image);
 		translateLasCarPosX(TRANSLATE_BY);
 		getMap().addCar(car);
 		
-		// All method calls from kryonet will be made through this executor.
-		// We are using a single threaded executor to ensure that everything is done on the same
-		// thread we won't run in any cross threading problems.
-		final Executor executor = Executors.newSingleThreadExecutor();
-		
-		Client client = new Client();
-		client.start();
-		
-		// Register the classes that will be sent over the network.
-		WorldNetwork.register(client);
-		
-		// get the ICarClientManager from the server
-		ICarClientManager carClientManager = ObjectSpace.getRemoteObject(client, WorldNetwork.CAR_SERVICE, ICarClientManager.class);
-		RemoteObject obj = (RemoteObject) carClientManager;
-		obj.setTransmitExceptions(false); // disable exception transmitting
-		
-		// create real CarClient
 		ICarClient carClient = new CarClient();
 		((CarClient) carClient).setCar(car); // this only needs to be done in the simulation
 		
-		// register the CarClient to kryonet
-		ObjectSpace objectSpace = new ObjectSpace(client);
-		objectSpace.setExecutor(executor);
-		objectSpace.register(WorldNetwork.CAR_SERVICE, carClient);
-		
-		client.connect(TIMEOUT, InetAddress.getLoopbackAddress(), HOST);
-		
-		carClientManager.connect(carClient);
-		_clients.add(client);
+		_carClientManager.connect(carClient);
+		_carClients.add(carClient);
 		
 		logger.info("added car with id: " + (_carId - 1));
 	}
