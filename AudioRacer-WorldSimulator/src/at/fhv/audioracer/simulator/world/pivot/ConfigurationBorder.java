@@ -1,5 +1,6 @@
 package at.fhv.audioracer.simulator.world.pivot;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.apache.pivot.beans.BXML;
@@ -50,7 +51,11 @@ public class ConfigurationBorder extends Border implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
-				SimulationController.getInstance().addCar();
+				try {
+					SimulationController.getInstance().addCar();
+				} catch (IOException e) {
+					Alert.alert(MessageType.ERROR, "Couldn't create CarClient properly.", ConfigurationBorder.this.getWindow());
+				}
 			}
 		});
 		

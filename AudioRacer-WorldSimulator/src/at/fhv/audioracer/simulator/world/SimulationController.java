@@ -91,16 +91,33 @@ public class SimulationController {
 		return _map;
 	}
 	
-	public void addCar() {
-		try {
-			createCarClient();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void addCar() throws IOException {
+		// add car to map
+		BufferedImage image = ImageIO.read(MapComponent.class.getResource("car-red.png"));
+		Car car = new Car(_carId, _lastCarPos, new Direction(90), image);
+		translateLastCarPosX(TRANSLATE_BY);
+		getMap().addCar(car);
+		
+		ICarClient carClient = new CarClient();
+		((CarClient) carClient).setCar(car); // this only needs to be done in the simulation
+		
+		_carClientManager.connect(carClient);
+		_carClients.add(carClient);
+		
+		byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
+		_camera.carDetected(_carId, byteImage);
+		_carId++;
+		
+		logger.info("added car with id: " + (_carId - 1));
 	}
 	
 	public void removeCar() {
-		stopCarClient();
+		if (_carId > 0) {
+			translateLastCarPosX(-TRANSLATE_BY);
+			getMap().removeCar(--_carId);
+			logger.info("removed car with id: " + (_carId));
+		}
+		logger.info("There are no cars to be removed.");
 	}
 	
 	private Map getMap() {
@@ -130,34 +147,6 @@ public class SimulationController {
 	
 	private void translateLastCarPosX(float x) {
 		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
-	}
-	
-	private void createCarClient() throws IOException {
-		// add car to map
-		BufferedImage image = ImageIO.read(MapComponent.class.getResource("car-red.png"));
-		Car car = new Car(_carId, _lastCarPos, new Direction(90), image);
-		translateLastCarPosX(TRANSLATE_BY);
-		getMap().addCar(car);
-		
-		ICarClient carClient = new CarClient();
-		((CarClient) carClient).setCar(car); // this only needs to be done in the simulation
-		
-		_carClientManager.connect(carClient);
-		_carClients.add(carClient);
-		
-		byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
-		_camera.carDetected(_carId, byteImage);
-		_carId++;
-		
-		logger.info("added car with id: " + (_carId - 1));
-	}
-	
-	private void stopCarClient() {
-		if (_carId > 0) {
-			translateLastCarPosX(-TRANSLATE_BY);
-			getMap().removeCar(--_carId);
-			logger.info("removed car with id: " + (_carId));
-		}
 	}
 	
 }
