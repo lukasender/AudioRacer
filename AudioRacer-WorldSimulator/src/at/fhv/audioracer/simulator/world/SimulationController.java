@@ -126,7 +126,7 @@ public class SimulationController {
 		return camera;
 	}
 	
-	private void translateLasCarPosX(float x) {
+	private void translateLastCarPosX(float x) {
 		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
 	}
 	
@@ -134,7 +134,7 @@ public class SimulationController {
 		// add car to map
 		BufferedImage image = ImageIO.read(MapComponent.class.getResource("car-red.png"));
 		Car car = new Car(_carId++, _lastCarPos, new Direction(90), image);
-		translateLasCarPosX(TRANSLATE_BY);
+		translateLastCarPosX(TRANSLATE_BY);
 		getMap().addCar(car);
 		
 		ICarClient carClient = new CarClient();
@@ -148,7 +148,7 @@ public class SimulationController {
 	
 	private void stopCarClient() {
 		if (_carId > 0) {
-			translateLasCarPosX(-TRANSLATE_BY);
+			translateLastCarPosX(-TRANSLATE_BY);
 			getMap().removeCar(--_carId);
 			logger.info("removed car with id: " + (_carId));
 		}
