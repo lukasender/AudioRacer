@@ -26,7 +26,7 @@ import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.WorldNetwork;
 import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.simulator.proxy.CarCommunicationProxy;
-import at.fhv.audioracer.simulator.world.Initializer;
+import at.fhv.audioracer.simulator.world.SimulationController;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 import at.fhv.audioracer.ui.util.awt.RepeatingReleasedEventsFixer;
 
@@ -55,7 +55,7 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	public void initialize(org.apache.pivot.collections.Map<String, Object> namespace, URL location, Resources resources) {
 		System.out.println("initialize()");
 		try {
-			Initializer.getInstance().setUp(_map, new Map(20, 30));
+			SimulationController.getInstance().setUp(_map, new Map(20, 30));
 		} catch (OperationNotSupportedException e1) {
 			e1.printStackTrace();
 		}
@@ -75,7 +75,7 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 						// Thread.sleep(1000);
 						// car.updatePosition(new Position(10, 10), new Direction(0));
 						// Thread.sleep(1000);
-						Initializer.getInstance().update();
+						SimulationController.getInstance().update();
 					}
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block

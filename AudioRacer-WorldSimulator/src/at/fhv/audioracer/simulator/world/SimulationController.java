@@ -33,15 +33,15 @@ import com.esotericsoftware.kryonet.rmi.RemoteObject;
  * @author lumannnn
  * 
  */
-public class Initializer {
+public class SimulationController {
 	
 	private static final int TIMEOUT = 1000;
 	
 	private static final int HOST = 4711;
 	
-	private static final Logger logger = Logger.getLogger(Initializer.class);
+	private static final Logger logger = Logger.getLogger(SimulationController.class);
 	
-	private static Initializer _instance;
+	private static SimulationController _instance;
 	
 	private MapComponent _map;
 	
@@ -52,15 +52,15 @@ public class Initializer {
 	private Position _lastCarPos;
 	private static float TRANSLATE_BY = 2;
 	
-	private Initializer() {
+	private SimulationController() {
 		_carId = 0;
 		_lastCarPos = new Position(0, 0);
 		_clients = new LinkedList<Client>();
 	}
 	
-	public static Initializer getInstance() {
+	public static SimulationController getInstance() {
 		if (_instance == null) {
-			_instance = new Initializer();
+			_instance = new SimulationController();
 		}
 		
 		return _instance;

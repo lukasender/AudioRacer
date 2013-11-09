@@ -14,7 +14,7 @@ import org.apache.pivot.wtk.MessageType;
 import org.apache.pivot.wtk.PushButton;
 import org.apache.pivot.wtk.TextInput;
 
-import at.fhv.audioracer.simulator.world.Initializer;
+import at.fhv.audioracer.simulator.world.SimulationController;
 
 public class ConfigurationBorder extends Border implements Bindable {
 	@BXML
@@ -39,10 +39,10 @@ public class ConfigurationBorder extends Border implements Bindable {
 			public void buttonPressed(Button button) {
 				Integer x = convertTextInput(_sizeXTextInput, "'x' must be an integer.");
 				Integer y = convertTextInput(_sizeYTextInput, "'y' must be an integer.");
-				at.fhv.audioracer.core.model.Map map = Initializer.getInstance().getMapComponent().getMap();
+				at.fhv.audioracer.core.model.Map map = SimulationController.getInstance().getMapComponent().getMap();
 				map.setSizeX((x != null) ? x : map.getSizeX());
 				map.setSizeY((y != null) ? y : map.getSizeY());
-				Initializer.getInstance().getMapComponent().repaint();
+				SimulationController.getInstance().getMapComponent().repaint();
 			}
 		});
 		
@@ -50,7 +50,7 @@ public class ConfigurationBorder extends Border implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
-				Initializer.getInstance().addCar();
+				SimulationController.getInstance().addCar();
 			}
 		});
 		
@@ -58,7 +58,7 @@ public class ConfigurationBorder extends Border implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
-				Initializer.getInstance().removeCar();
+				SimulationController.getInstance().removeCar();
 			}
 		});
 		
