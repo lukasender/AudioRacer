@@ -107,7 +107,7 @@ public class SimulationController {
 	
 	// helper methods
 	
-	public void translateLasCarPosX(float x) {
+	private void translateLasCarPosX(float x) {
 		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
 	}
 	
