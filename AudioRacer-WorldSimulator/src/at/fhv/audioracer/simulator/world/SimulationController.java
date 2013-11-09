@@ -36,10 +36,6 @@ import com.esotericsoftware.kryonet.rmi.RemoteObject;
  */
 public class SimulationController {
 	
-	private static final int TIMEOUT = 1000;
-	
-	private static final int HOST = 4711;
-	
 	private static final Logger logger = Logger.getLogger(SimulationController.class);
 	
 	private static SimulationController _instance;
