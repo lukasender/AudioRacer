@@ -16,11 +16,13 @@ import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.WorldNetwork;
 import at.fhv.audioracer.core.model.Car;
+import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.simulator.world.impl.CarClient;
+import at.fhv.audioracer.simulator.world.impl.CarClientListener;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 
 import com.esotericsoftware.kryonet.Client;
@@ -91,6 +93,9 @@ public class SimulationController {
 		translateLastCarPosX(TRANSLATE_BY);
 		getMap().addCar(car);
 		
+		ICarListener carListener = new CarClientListener();
+		car.getCarListenerList().add(carListener);
+		
 		ICarClient carClient = new CarClient();
 		((CarClient) carClient).setCar(car); // this only needs to be done in the simulation
 		
@@ -111,6 +116,10 @@ public class SimulationController {
 			logger.info("removed car with id: " + (_carId));
 		}
 		logger.info("There are no cars to be removed.");
+	}
+	
+	public ICamera getCamera() {
+		return _camera;
 	}
 	
 	private void setMap(MapComponent map) {
