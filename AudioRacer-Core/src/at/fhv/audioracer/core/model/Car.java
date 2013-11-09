@@ -21,6 +21,8 @@ public class Car {
 	private Position _position;
 	private Direction _direction;
 	
+	private Player _player;
+	
 	private final BufferedImage _image;
 	
 	private CarListenerList _listenerList;
@@ -59,6 +61,14 @@ public class Car {
 	
 	public Direction getDirection() {
 		return _direction;
+	}
+	
+	public Player getPlayer() {
+		return _player;
+	}
+	
+	public void setPlayer(Player player) {
+		_player = player;
 	}
 	
 	public void updatePosition(Position position, Direction direction) {
