@@ -12,6 +12,7 @@ import javax.naming.OperationNotSupportedException;
 
 import org.apache.log4j.Logger;
 
+import at.fhv.audioracer.communication.world.ICamera;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.WorldNetwork;
@@ -19,6 +20,7 @@ import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
+import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.simulator.world.impl.CarClient;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 
@@ -43,6 +45,9 @@ public class SimulationController {
 	
 	private static SimulationController _instance;
 	
+	private ICarClientManager _carClientManager;
+	private ICamera _camera;
+	
 	private MapComponent _map;
 	
 	private int _carId;
@@ -56,6 +61,10 @@ public class SimulationController {
 		_carId = 0;
 		_lastCarPos = new Position(0, 0);
 		_clients = new LinkedList<Client>();
+		
+		// establish the connections
+		_carClientManager = CarClientManager.getInstance();
+		_camera = connectCamera();
 	}
 	
 	public static SimulationController getInstance() {
@@ -106,6 +115,18 @@ public class SimulationController {
 	}
 	
 	// helper methods
+	
+	private ICamera connectCamera() {
+		Client client = new Client();
+		client.start();
+		WorldNetwork.register(client);
+		
+		// get the ICamera from the server
+		ICamera camera = ObjectSpace.getRemoteObject(client, WorldNetwork.CAMERA_SERVICE, ICamera.class);
+		((RemoteObject) camera).setTransmitExceptions(false); // disable exception transmitting
+		
+		return camera;
+	}
 	
 	private void translateLasCarPosX(float x) {
 		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
