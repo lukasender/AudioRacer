@@ -1,6 +1,7 @@
 package at.fhv.audioracer.simulator.world;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -92,7 +93,7 @@ public class SimulationController {
 	
 	public void addCar() {
 		try {
-			startCarClient();
+			createCarClient();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -131,10 +132,10 @@ public class SimulationController {
 		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
 	}
 	
-	private void startCarClient() throws IOException {
+	private void createCarClient() throws IOException {
 		// add car to map
 		BufferedImage image = ImageIO.read(MapComponent.class.getResource("car-red.png"));
-		Car car = new Car(_carId++, _lastCarPos, new Direction(90), image);
+		Car car = new Car(_carId, _lastCarPos, new Direction(90), image);
 		translateLastCarPosX(TRANSLATE_BY);
 		getMap().addCar(car);
 		
@@ -143,6 +144,10 @@ public class SimulationController {
 		
 		_carClientManager.connect(carClient);
 		_carClients.add(carClient);
+		
+		byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
+		_camera.carDetected(_carId, byteImage);
+		_carId++;
 		
 		logger.info("added car with id: " + (_carId - 1));
 	}
