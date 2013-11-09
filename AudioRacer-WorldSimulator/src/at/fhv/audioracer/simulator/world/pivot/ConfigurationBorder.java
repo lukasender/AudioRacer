@@ -40,10 +40,7 @@ public class ConfigurationBorder extends Border implements Bindable {
 			public void buttonPressed(Button button) {
 				Integer x = convertTextInput(_sizeXTextInput, "'x' must be an integer.");
 				Integer y = convertTextInput(_sizeYTextInput, "'y' must be an integer.");
-				at.fhv.audioracer.core.model.Map map = SimulationController.getInstance().getMapComponent().getMap();
-				map.setSizeX((x != null) ? x : map.getSizeX());
-				map.setSizeY((y != null) ? y : map.getSizeY());
-				SimulationController.getInstance().getMapComponent().repaint();
+				SimulationController.getInstance().updateMap(x, y);
 			}
 		});
 		

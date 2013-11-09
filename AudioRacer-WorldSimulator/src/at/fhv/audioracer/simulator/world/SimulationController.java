@@ -80,15 +80,12 @@ public class SimulationController {
 		_camera.configureMap(map.getSizeX(), map.getSizeY());
 	}
 	
-	public void setMap(MapComponent map) {
-		if (map == null) {
-			throw new IllegalArgumentException("map must not be null");
-		}
-		_map = map;
-	}
-	
-	public MapComponent getMapComponent() {
-		return _map;
+	public void updateMap(int width, int height) {
+		Map map = getMap();
+		map.setSizeX(width);
+		map.setSizeY(height);
+		_camera.configureMap(width, height);
+		getMapComponent().repaint();
 	}
 	
 	public void addCar() throws IOException {
@@ -118,6 +115,17 @@ public class SimulationController {
 			logger.info("removed car with id: " + (_carId));
 		}
 		logger.info("There are no cars to be removed.");
+	}
+	
+	private void setMap(MapComponent map) {
+		if (map == null) {
+			throw new IllegalArgumentException("map must not be null");
+		}
+		_map = map;
+	}
+	
+	private MapComponent getMapComponent() {
+		return _map;
 	}
 	
 	private Map getMap() {
