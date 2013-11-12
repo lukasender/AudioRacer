@@ -29,12 +29,18 @@ public class Main {
 			playerServerListener = new PlayerServerListener(gameModerator);
 			playerServer.addListener(playerServerListener);
 			
+			PlayerNetwork.register(playerServer);
 			playerServer.bind(PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
 			playerServer.start();
-			PlayerNetwork.register(playerServer);
 			
-			cameraServer = new Server();
+			// cameraServer = new Server();
+			cameraServer = new Server(16384, 81920);
 			cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT);
+			
+			CameraServerListener cameraServerListener = new CameraServerListener(gameModerator);
+			cameraServer.addListener(cameraServerListener);
+			WorldNetwork.register(cameraServer);
+			
 			cameraServer.start();
 			
 		} catch (Exception e) {

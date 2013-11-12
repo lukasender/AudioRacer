@@ -1,8 +1,12 @@
 package at.fhv.audioracer.communication.world;
 
+import at.fhv.audioracer.communication.world.message.CameraMessage;
+import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
+import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
+import at.fhv.audioracer.communication.world.message.UpdateCarMessage;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
-import com.esotericsoftware.kryonet.rmi.ObjectSpace;
 
 public class WorldNetwork {
 	public static final int CAR_SERVICE = 13;
@@ -13,13 +17,12 @@ public class WorldNetwork {
 	
 	public static void register(EndPoint endpoint) {
 		Kryo kryo = endpoint.getKryo();
-		// This must be called in order to use ObjectSpaces.
-		ObjectSpace.registerClasses(kryo);
 		
-		// The interfaces that will be used as remote objects must be registered.
-		kryo.register(ICarClient.class);
-		kryo.register(ICarClientManager.class);
-		kryo.register(ICamera.class);
 		kryo.register(byte[].class);
+		kryo.register(CameraMessage.class);
+		kryo.register(CameraMessage.MessageId.class);
+		kryo.register(CarDetectedMessage.class);
+		kryo.register(ConfigureMapMessage.class);
+		kryo.register(UpdateCarMessage.class);
 	}
 }

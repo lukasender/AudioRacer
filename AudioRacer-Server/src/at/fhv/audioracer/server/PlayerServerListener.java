@@ -20,15 +20,17 @@ public class PlayerServerListener extends Listener {
 	}
 	
 	public void received(Connection connection, Object object) {
-		PlayerMessage message = (PlayerMessage) object;
-		PlayerConnection playerConnection = (PlayerConnection) connection;
-		switch (message.messageId) {
-			case CONNECT_REQUEST:
-				ConnectRequestMessage msg = (ConnectRequestMessage) message;
-				_gameModerator.connect(playerConnection, msg.playerName);
-				break;
-			default:
-				_logger.warn("Message with id: {} not known!", message.messageId);
+		if (object instanceof PlayerMessage) {
+			PlayerMessage message = (PlayerMessage) object;
+			PlayerConnection playerConnection = (PlayerConnection) connection;
+			switch (message.messageId) {
+				case CONNECT_REQUEST:
+					ConnectRequestMessage msg = (ConnectRequestMessage) message;
+					_gameModerator.connect(playerConnection, msg.playerName);
+					break;
+				default:
+					_logger.warn("Message with id: {} not known!", message.messageId);
+			}
 		}
 	}
 	
