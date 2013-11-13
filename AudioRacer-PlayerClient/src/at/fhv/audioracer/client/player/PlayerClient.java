@@ -3,12 +3,12 @@ package at.fhv.audioracer.client.player;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import at.fhv.audioracer.communication.player.IPlayerClient;
 import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
+import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
+import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.ListenerList;
@@ -16,10 +16,9 @@ import at.fhv.audioracer.core.util.Position;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.rmi.ObjectSpace;
-import com.esotericsoftware.kryonet.rmi.RemoteObject;
+import com.esotericsoftware.kryonet.Listener;
 
-public class PlayerClient extends Connection implements IPlayerClient {
+public class PlayerClient extends Listener implements IPlayerClient {
 	
 	private static class PlayerClientListenerList extends ListenerList<IPlayerClientListener> implements IPlayerClientListener {
 		
@@ -273,32 +272,20 @@ public class PlayerClient extends Connection implements IPlayerClient {
 	}
 	
 	public void startClient(String playerName) throws IOException {
-		// All method calls from kryonet will be made through this executor.
-		// We are using a single threaded executor to ensure that everything is done on the same
-		// thread we won't run in any cross threading problems.
-		final Executor executor = Executors.newSingleThreadExecutor();
-		
 		_client = new Client();
 		_client.start();
 		
-		// Register the classes that will be sent over the network.
+		PlayerServerClient serverClient = new PlayerServerClient(_client);
+		
 		PlayerNetwork.register(_client);
 		
-		// get the PlayerClientManager from the server
-		IPlayerServer _playerClientManager = ObjectSpace.getRemoteObject(_client, PlayerNetwork.PLAYER_MANAGER, IPlayerServer.class);
-		RemoteObject obj = (RemoteObject) _playerClientManager;
-		obj.setTransmitExceptions(false); // disable exception transmitting
-		
-		// register the PlayerClient to kryonet
-		ObjectSpace objectSpace = new ObjectSpace(_client);
-		objectSpace.setExecutor(executor);
-		objectSpace.register(PlayerNetwork.PLAYER_CLIENT, this);
-		
-		_client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT);
+		_client.addListener(serverClient);
+		_client.addListener(this);
+		_client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
 		_connected = true;
 		
-		setPlayerServer(_playerClientManager);
-		getPlayer().setPlayerId(_playerClientManager.connect(playerName));
+		setPlayerServer(serverClient);
+		getPlayer().setPlayerId(getPlayerServer().connect(playerName));
 	}
 	
 	public void stopClient() {
@@ -308,6 +295,18 @@ public class PlayerClient extends Connection implements IPlayerClient {
 	
 	public boolean hasConnection() {
 		return _connected;
+	}
+	
+	@Override
+	public void received(Connection connection, Object object) {
+		if (object instanceof PlayerMessage) {
+			PlayerMessage message = (PlayerMessage) object;
+			switch (message.messageId) {
+				case UPDATE_FREE_CARS:
+					updateFreeCars(((FreeCarsMessage) message).freeCars);
+					break;
+			}
+		}
 	}
 	
 }
