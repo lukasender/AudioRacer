@@ -2,16 +2,16 @@ package at.fhv.audioracer.simulator.player;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
-import at.fhv.audioracer.client.player.PlayerClient;
-import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
+import at.fhv.audioracer.communication.player.message.ConnectRequestMessage;
+import at.fhv.audioracer.communication.player.message.ConnectResponseMessage;
+import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
+import at.fhv.audioracer.communication.player.message.PlayerMessage;
 
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.rmi.ObjectSpace;
-import com.esotericsoftware.kryonet.rmi.RemoteObject;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 
 public class Main {
 	
@@ -24,38 +24,53 @@ public class Main {
 		}
 	}
 	
+	private static Client client;
+	
 	private static void startClient() throws IOException {
 		// test purpose
 		
-		// All method calls from kryonet will be made through this executor.
-		// We are using a single threaded executor to ensure that everything is done on the same
-		// thread we won't run in any cross threading problems.
-		final Executor executor = Executors.newSingleThreadExecutor();
-		
-		Client client = new Client();
+		client = new Client();
 		client.start();
 		
-		// Register the classes that will be sent over the network.
 		PlayerNetwork.register(client);
 		
-		// get the PlayerClientManager from the server
-		IPlayerServer playerClientManager = ObjectSpace.getRemoteObject(client, PlayerNetwork.PLAYER_MANAGER, IPlayerServer.class);
-		RemoteObject obj = (RemoteObject) playerClientManager;
-		obj.setTransmitExceptions(false); // disable exception transmitting
+		client.addListener(new Listener() {
+			public void received(Connection connection, Object object) {
+				if (object instanceof PlayerMessage) {
+					PlayerMessage message = (PlayerMessage) object;
+					switch (message.messageId) {
+						case CONNECT_RESPONSE:
+							ConnectResponseMessage connectRespone = (ConnectResponseMessage) message;
+							System.out.println("Connected ... server responsed with id: " + connectRespone.playerId);
+							break;
+						case UPDATE_FREE_CARS:
+							System.out.println("Free cars message incoming.");
+							FreeCarsMessage freeCarsMsg = (FreeCarsMessage) message;
+							if (freeCarsMsg.freeCars != null) {
+								for (int i = 0; i < freeCarsMsg.freeCars.length; i++) {
+									System.out.println("Car with id: " + freeCarsMsg.freeCars[i] + " is free.");
+								}
+							} else {
+								System.out.println("Free cars are empty!");
+							}
+							break;
+						default:
+							System.out.println("Message with id: " + message.messageId + " not known!");
+							break;
+					}
+				}
+			}
+		});
+		client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
 		
-		// create real PlayerClient
-		PlayerClient playerClient = new PlayerClient();
+		ConnectRequestMessage connectMsg = new ConnectRequestMessage();
+		connectMsg.playerName = "Hello";
+		System.out.println("Try to connect.");
+		client.sendTCP(connectMsg);
 		
-		// register the PlayerClient to kryonet
-		ObjectSpace objectSpace = new ObjectSpace(client);
-		objectSpace.setExecutor(executor);
-		objectSpace.register(PlayerNetwork.PLAYER_CLIENT, playerClient);
-		
-		client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT);
-		
-		int foo = playerClientManager.connect("hi!");
-		System.out.println("foo is: " + foo);
-		client.close();
+		// Kryo Clients are running as daemons, prevent main application from exit
+		while (true) {
+		}
 	}
 	
 }

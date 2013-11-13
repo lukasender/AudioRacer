@@ -1,11 +1,14 @@
 package at.fhv.audioracer.simulator.world.pivot;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
 
 import org.apache.pivot.beans.BXML;
@@ -15,27 +18,22 @@ import org.apache.pivot.util.Resources;
 import org.apache.pivot.wtk.Alert;
 import org.apache.pivot.wtk.Application;
 import org.apache.pivot.wtk.Component;
-import org.apache.pivot.wtk.DesktopApplicationContext;
 import org.apache.pivot.wtk.Display;
 import org.apache.pivot.wtk.MessageType;
 import org.apache.pivot.wtk.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.fhv.audioracer.communication.world.ICamera;
-import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.WorldNetwork;
+import at.fhv.audioracer.communication.world.message.CameraMessage;
+import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
+import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
+import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Map;
-import at.fhv.audioracer.simulator.proxy.CarCommunicationProxy;
 import at.fhv.audioracer.simulator.world.SimulationController;
 import at.fhv.audioracer.ui.pivot.MapComponent;
-import at.fhv.audioracer.ui.util.awt.RepeatingReleasedEventsFixer;
 
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Server;
-import com.esotericsoftware.kryonet.rmi.ObjectSpace;
-import com.esotericsoftware.kryonet.rmi.RemoteObject;
 
 public class WorldSimulatorWindow extends Window implements Application, Bindable {
 	
@@ -46,9 +44,9 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	private static final Logger _logger = LoggerFactory.getLogger(WorldSimulatorWindow.class);
 	public static final Executor executor = Executors.newSingleThreadExecutor();
 	
-	private static Server _carServer;
 	private static Client _cameraClient;
-	private static ICamera _camera;
+	
+	// private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
 	
 	@Override
 	public void initialize(org.apache.pivot.collections.Map<String, Object> namespace, URL location, Resources resources) {
@@ -89,12 +87,10 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	
 	@Override
 	public void suspend() throws Exception {
-		
 	}
 	
 	@Override
 	public void resume() throws Exception {
-		
 	}
 	
 	@Override
@@ -107,30 +103,45 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	}
 	
 	public static void main(String[] args) {
-		new RepeatingReleasedEventsFixer().install();
-		DesktopApplicationContext.main(WorldSimulatorWindow.class, args);
+		// new RepeatingReleasedEventsFixer().install();
+		// DesktopApplicationContext.main(WorldSimulatorWindow.class, args);
 		
 		try {
 			
 			// Test purpose only
-			startCarService();
 			startCameraClient();
 			
-			// Test "run" AudioRacer-Server has to be started
-			// for next lines of code
-			_camera.carDetected(1, null);
-			_camera.carDetected(2, null);
+			ConfigureMapMessage configureMap = new ConfigureMapMessage();
+			configureMap.sizeX = 100;
+			configureMap.sizeY = 100;
+			_cameraClient.sendTCP(configureMap);
 			
-			// for (CarCommunicationProxy proxy : _carList) {
-			// proxy.connect();
-			// }
+			CarDetectedMessage carDetected = new CarDetectedMessage();
+			
+			// read the image and store in byte array
+			ClassLoader loader = Thread.currentThread().getContextClassLoader();
+			URL carImgURL = loader.getResource("at/fhv/audioracer/ui/pivot/car-blue.png");
+			BufferedImage img = ImageIO.read(carImgURL);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ImageIO.write(img, "png", out);
+			out.flush();
+			
+			carDetected.carId = 1;
+			carDetected.image = out.toByteArray();
+			out.close();
+			
+			_cameraClient.sendTCP(carDetected);
+			
+			CameraMessage detecionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
+			_cameraClient.sendTCP(detecionFinished);
+			
+			// Kryo Clients are running as daemons, prevent main application from exit
+			while (true) {
+			}
 			
 		} catch (Exception e) {
 			_logger.error("Exception caught during startup!", e);
 			
-			if (_carServer != null) {
-				_carServer.close();
-			}
 			if (_cameraClient != null) {
 				_cameraClient.close();
 			}
@@ -138,45 +149,12 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 		}
 	}
 	
-	private static void startCarService() throws IOException {
-		
-		_carServer = new Server() {
-			
-			/**
-			 * New connection is established each time ICamera.carDetected is called on Server Side.
-			 */
-			@Override
-			protected Connection newConnection() {
-				
-				CarCommunicationProxy proxy = new CarCommunicationProxy();
-				ObjectSpace objectSapce = new ObjectSpace(proxy);
-				objectSapce.setExecutor(executor);
-				objectSapce.register(WorldNetwork.CAR_SERVICE, proxy);
-				
-				ICarClientManager carClientManager = ObjectSpace.getRemoteObject(proxy, WorldNetwork.CAR_SERVICE, ICarClientManager.class);
-				RemoteObject obj = (RemoteObject) carClientManager;
-				obj.setTransmitExceptions(false);
-				
-				proxy.setCarClientManager(carClientManager);
-				
-				return proxy;
-			}
-		};
-		
-		WorldNetwork.register(_carServer);
-		_carServer.bind(WorldNetwork.CAR_SERVICE_PORT);
-		_carServer.start();
-	}
-	
 	private static void startCameraClient() throws IOException {
-		_cameraClient = new Client();
+		// _cameraClient = new Client();
+		_cameraClient = new Client(81920, 2048);
 		_cameraClient.start();
 		
 		WorldNetwork.register(_cameraClient);
-		
-		_camera = ObjectSpace.getRemoteObject(_cameraClient, WorldNetwork.CAMERA_SERVICE, ICamera.class);
-		RemoteObject obj = (RemoteObject) _camera;
-		obj.setTransmitExceptions(false);
 		
 		_cameraClient.connect(1000, InetAddress.getLoopbackAddress(), WorldNetwork.CAMERA_SERVICE_PORT);
 	}
