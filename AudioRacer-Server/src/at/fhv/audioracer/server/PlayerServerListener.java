@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import at.fhv.audioracer.communication.player.message.ConnectRequestMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
+import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
 import at.fhv.audioracer.server.game.GameModerator;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -25,9 +26,12 @@ public class PlayerServerListener extends Listener {
 			PlayerConnection playerConnection = (PlayerConnection) connection;
 			switch (message.messageId) {
 				case CONNECT_REQUEST:
-					ConnectRequestMessage msg = (ConnectRequestMessage) message;
-					_gameModerator.connect(playerConnection, msg.playerName);
+					ConnectRequestMessage conReqMsg = (ConnectRequestMessage) message;
+					_gameModerator.connect(playerConnection, conReqMsg.playerName);
 					break;
+				case SELECT_CAR_REQUEST:
+					SelectCarRequestMessage selectCarReqMsg = (SelectCarRequestMessage) message;
+					_gameModerator.selectCar(playerConnection, selectCarReqMsg.carId);
 				default:
 					_logger.warn("Message with id: {} not known!", message.messageId);
 			}
