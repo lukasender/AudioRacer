@@ -49,14 +49,18 @@ public class GameModerator {
 	 *            name of player
 	 */
 	public void connect(PlayerConnection playerConnection, String loginName) {
-		Player player = playerConnection.getPlayer();
-		player.setLoginName(loginName);
 		int id = -1;
-		synchronized (_playerList) {
-			id = ++_plrId;
-			player.setPlayerId(_plrId);
-			_playerList.put(_plrId, player);
-			_logger.debug("added player {} with playerId {}", loginName, id);
+		if (loginName != null) {
+			Player player = playerConnection.getPlayer();
+			player.setLoginName(loginName);
+			synchronized (_playerList) {
+				id = ++_plrId;
+				player.setPlayerId(_plrId);
+				_playerList.put(_plrId, player);
+				_logger.debug("added player {} with playerId {}", loginName, id);
+			}
+		} else {
+			_logger.warn("login in name received is null! This is not allowed!");
 		}
 		ConnectResponseMessage resp = new ConnectResponseMessage();
 		resp.playerId = id;
