@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="/AudioRacer/libs/slf4j-api-1.7.5.jar" sourcepath="/AudioRacer/libs/slf4j-api-1.7.5-sources.jar"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/slf4j-log4j12-1.7.5.jar" sourcepath="/AudioRacer/libs/slf4j-log4j12-1.7.5-sources.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Server"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -15,9 +15,11 @@ import org.apache.pivot.beans.BXML;
 import org.apache.pivot.beans.BXMLSerializer;
 import org.apache.pivot.beans.Bindable;
 import org.apache.pivot.util.Resources;
+import org.apache.pivot.wtk.Alert;
 import org.apache.pivot.wtk.Application;
 import org.apache.pivot.wtk.Component;
 import org.apache.pivot.wtk.Display;
+import org.apache.pivot.wtk.MessageType;
 import org.apache.pivot.wtk.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,7 @@ import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
 import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
 import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Map;
-import at.fhv.audioracer.simulator.world.Initializer;
+import at.fhv.audioracer.simulator.world.SimulationController;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 
 import com.esotericsoftware.kryonet.Client;
@@ -50,9 +52,12 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	public void initialize(org.apache.pivot.collections.Map<String, Object> namespace, URL location, Resources resources) {
 		System.out.println("initialize()");
 		try {
-			Initializer.getInstance().setUp(_map, new Map(20, 30));
+			SimulationController.getInstance().setUp(_map, new Map(20, 30));
 		} catch (OperationNotSupportedException e1) {
-			e1.printStackTrace();
+			String msg = "Couldn't initialize the map.";
+			Alert.alert(MessageType.ERROR, msg, this);
+			// We should probably disable some of the GUI's functionality
+			_logger.error(msg, e1);
 		}
 		
 		new Thread(new Runnable() {
@@ -62,18 +67,9 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 				try {
 					Thread.sleep(1000);
 					while (true) {
-						// car.updatePosition(new Position(15, 15), new Direction(90));
-						// Thread.sleep(1000);
-						// car.updatePosition(new Position(10, 20), new Direction(180));
-						// Thread.sleep(1000);
-						// car.updatePosition(new Position(5, 15), new Direction(270));
-						// Thread.sleep(1000);
-						// car.updatePosition(new Position(10, 10), new Direction(0));
-						// Thread.sleep(1000);
-						Initializer.getInstance().update();
+						SimulationController.getInstance().update();
 					}
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -91,19 +87,14 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	
 	@Override
 	public void suspend() throws Exception {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	@Override
 	public void resume() throws Exception {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	@Override
 	public boolean shutdown(boolean optional) throws Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
