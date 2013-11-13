@@ -13,6 +13,8 @@ import org.apache.log4j.Logger;
 
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
+import at.fhv.audioracer.communication.world.message.CameraMessage;
+import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
 import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
 import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Car;
@@ -23,6 +25,7 @@ import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.simulator.world.impl.CarClient;
 import at.fhv.audioracer.simulator.world.impl.CarClientListener;
+import at.fhv.audioracer.simulator.world.impl.exception.NoCarsAddedException;
 import at.fhv.audioracer.simulator.world.pivot.WorldSimulatorWindow;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 
@@ -42,7 +45,7 @@ public class SimulationController {
 	private static SimulationController _instance;
 	
 	private ICarClientManager _carClientManager;
-	private Client _camera;
+	private static Client _camera;
 	
 	private MapComponent _map;
 	
@@ -118,6 +121,14 @@ public class SimulationController {
 		logger.info("There are no cars to be removed.");
 	}
 	
+	public void allCarsDetected() throws NoCarsAddedException {
+		if (_carId > 0) {
+			_camera.sendTCP(createAllCarsDetectionFinishedMessage());
+		} else {
+			throw new NoCarsAddedException();
+		}
+	}
+	
 	private void setMap(MapComponent map) {
 		if (map == null) {
 			throw new IllegalArgumentException("map must not be null");
@@ -140,6 +151,10 @@ public class SimulationController {
 		
 	}
 	
+	public Client getCamera() {
+		return _camera;
+	}
+	
 	// helper methods
 	
 	private ConfigureMapMessage createConfigureMapMessage(Map map) {
@@ -154,6 +169,11 @@ public class SimulationController {
 		carDetectedMessage.carId = _carId;
 		carDetectedMessage.image = image;
 		return carDetectedMessage;
+	}
+	
+	private CameraMessage createAllCarsDetectionFinishedMessage() {
+		CameraMessage detectionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
+		return detectionFinished;
 	}
 	
 	private void translateLastCarPosX(float x) {
