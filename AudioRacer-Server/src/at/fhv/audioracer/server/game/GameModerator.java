@@ -118,7 +118,7 @@ public class GameModerator {
 				.getLoginName());
 		
 		SelectCarResponseMessage selectResponse = new SelectCarResponseMessage();
-		selectResponse.selectionSuccess = false;
+		selectResponse.successfull = false;
 		
 		if (playerConnection.getPlayer().getLoginName() == null) {
 			_logger.warn("selectCar - player has to send ConnectRequestMessage first" + " and set a login name for himself!");
@@ -131,7 +131,7 @@ public class GameModerator {
 						Car carToSelect = _carList.get(carId);
 						carToSelect.setPlayer(playerConnection.getPlayer());
 						playerConnection.getPlayer().setCar(carToSelect);
-						selectResponse.selectionSuccess = true;
+						selectResponse.successfull = true;
 					} else {
 						// for development purposes only
 						if (_carList.containsKey(carId) == false) {
@@ -147,7 +147,7 @@ public class GameModerator {
 		
 		_playerServer.sendToTCP(playerConnection.getID(), selectResponse);
 		
-		if (selectResponse.selectionSuccess) {
+		if (selectResponse.successfull) {
 			
 			PlayerConnectedMessage plrConnectedMsg = new PlayerConnectedMessage();
 			plrConnectedMsg.id = playerConnection.getPlayer().getPlayerId();

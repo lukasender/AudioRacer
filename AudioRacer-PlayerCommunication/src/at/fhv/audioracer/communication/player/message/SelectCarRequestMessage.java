@@ -7,4 +7,5 @@ public class SelectCarRequestMessage extends PlayerMessage {
 	public SelectCarRequestMessage() {
 		super(MessageId.SELECT_CAR_REQUEST);
 	}
+	
 }

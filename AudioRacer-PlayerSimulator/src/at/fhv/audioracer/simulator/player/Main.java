@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import at.fhv.audioracer.communication.player.PlayerNetwork;
-import at.fhv.audioracer.communication.player.message.ConnectRequestMessage;
 import at.fhv.audioracer.communication.player.message.ConnectResponseMessage;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
@@ -63,13 +62,14 @@ public class Main {
 		});
 		client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
 		
-		ConnectRequestMessage connectMsg = new ConnectRequestMessage();
-		connectMsg.playerName = "Hello";
-		System.out.println("Try to connect.");
-		client.sendTCP(connectMsg);
-		
 		// Kryo Clients are running as daemons, prevent main application from exit
-		while (true) {
+		try {
+			while (true) {
+				Thread.sleep(Long.MAX_VALUE);
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
