@@ -3,7 +3,11 @@ package at.fhv.audioracer.communication.player;
 import at.fhv.audioracer.communication.player.message.ConnectRequestMessage;
 import at.fhv.audioracer.communication.player.message.ConnectResponseMessage;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
+import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
+import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
+import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
+import at.fhv.audioracer.communication.player.message.UpdateVelocityMessage;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
@@ -25,6 +29,11 @@ public class PlayerNetwork {
 		kryo.register(ConnectRequestMessage.class);
 		kryo.register(ConnectResponseMessage.class);
 		kryo.register(FreeCarsMessage.class);
+		kryo.register(SelectCarRequestMessage.class);
+		kryo.register(SelectCarResponseMessage.class);
+		kryo.register(UpdateVelocityMessage.class);
+		kryo.register(PlayerConnectedMessage.class);
+		
 		kryo.register(int[].class);
 	}
 	

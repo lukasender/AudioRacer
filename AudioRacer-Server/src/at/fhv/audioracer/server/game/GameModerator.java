@@ -65,6 +65,7 @@ public class GameModerator {
 		ConnectResponseMessage resp = new ConnectResponseMessage();
 		resp.playerId = id;
 		_playerServer.sendToTCP(playerConnection.getID(), resp);
+		broadcastFreeCars();
 	}
 	
 	/**
