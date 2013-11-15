@@ -184,6 +184,7 @@ public class GameModerator {
 			// _carList has changed, next broad cast will come fore sure
 			// don't care
 			_logger.warn("ConcurrentModificationException caught in broadcastFreeCars!", e);
+			return;
 		}
 		
 		FreeCarsMessage freeCarsMessage = new FreeCarsMessage();
