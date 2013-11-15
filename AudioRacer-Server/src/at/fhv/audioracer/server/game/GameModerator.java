@@ -1,6 +1,7 @@
 package at.fhv.audioracer.server.game;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -171,13 +172,20 @@ public class GameModerator {
 		ArrayList<Integer> freeCars = new ArrayList<Integer>();
 		Entry<Integer, Car> entry = null;
 		Car car = null;
-		while (it.hasNext()) {
-			entry = it.next();
-			car = entry.getValue();
-			if (car.getPlayer() == null) {
-				freeCars.add(entry.getKey());
+		try {
+			while (it.hasNext()) {
+				entry = it.next();
+				car = entry.getValue();
+				if (car.getPlayer() == null) {
+					freeCars.add(entry.getKey());
+				}
 			}
+		} catch (ConcurrentModificationException e) {
+			// _carList has changed, next broad cast will come fore sure
+			// don't care
+			_logger.warn("ConcurrentModificationException caught in broadcastFreeCars!", e);
 		}
+		
 		FreeCarsMessage freeCarsMessage = new FreeCarsMessage();
 		int free[] = new int[freeCars.size()];
 		for (int i = 0; i < free.length; i++) {
