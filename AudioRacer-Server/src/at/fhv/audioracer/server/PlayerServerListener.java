@@ -3,7 +3,7 @@ package at.fhv.audioracer.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.fhv.audioracer.communication.player.message.ConnectRequestMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
 import at.fhv.audioracer.server.game.GameModerator;
@@ -25,9 +25,9 @@ public class PlayerServerListener extends Listener {
 			PlayerMessage message = (PlayerMessage) object;
 			PlayerConnection playerConnection = (PlayerConnection) connection;
 			switch (message.messageId) {
-				case CONNECT_REQUEST:
-					ConnectRequestMessage conReqMsg = (ConnectRequestMessage) message;
-					_gameModerator.connect(playerConnection, conReqMsg.playerName);
+				case SET_PLAYER_NAME_REQUEST:
+					SetPlayerNameRequestMessage setNameReqMsg = (SetPlayerNameRequestMessage) message;
+					_gameModerator.setPlayerName(playerConnection, setNameReqMsg.playerName);
 					break;
 				case SELECT_CAR_REQUEST:
 					SelectCarRequestMessage selectCarReqMsg = (SelectCarRequestMessage) message;

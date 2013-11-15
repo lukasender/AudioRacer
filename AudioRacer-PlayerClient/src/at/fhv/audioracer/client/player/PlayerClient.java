@@ -178,7 +178,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		if (!_players.containsKey(Integer.valueOf(playerId))) {
 			Player p = new Player();
 			p.setPlayerId(playerId);
-			p.setLoginName(playerName);
+			p.setName(playerName);
 			_players.put(playerId, p);
 		}
 		
@@ -285,7 +285,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		_connected = true;
 		
 		setPlayerServer(serverClient);
-		getPlayer().setPlayerId(getPlayerServer().connect(playerName));
+		getPlayer().setPlayerId(getPlayerServer().setPlayerName(playerName));
 	}
 	
 	public void stopClient() {

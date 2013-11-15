@@ -6,7 +6,7 @@ public interface IPlayerServer {
 	 * @param playerName
 	 * @return playerId
 	 */
-	public int connect(String playerName);
+	public int setPlayerName(String playerName);
 	
 	public void disconnect();
 	

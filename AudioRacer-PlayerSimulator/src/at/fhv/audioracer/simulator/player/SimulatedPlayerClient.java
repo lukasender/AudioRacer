@@ -92,7 +92,7 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 		if (_players != null && !_players.containsKey(playerId)) {
 			Player p = new Player();
 			p.setPlayerId(playerId);
-			p.setLoginName(playerName);
+			p.setName(playerName);
 		}
 		
 	}

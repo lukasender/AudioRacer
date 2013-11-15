@@ -9,10 +9,10 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.fhv.audioracer.communication.player.message.ConnectResponseMessage;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.server.PlayerConnection;
@@ -42,28 +42,28 @@ public class GameModerator {
 	}
 	
 	/**
-	 * called on Player "connect" request
+	 * called on Player tries to set his player name
 	 * 
 	 * @param playerConnection
 	 *            the socket connection of this player
-	 * @param loginName
+	 * @param playerName
 	 *            name of player
 	 */
-	public void connect(PlayerConnection playerConnection, String loginName) {
+	public void setPlayerName(PlayerConnection playerConnection, String playerName) {
 		int id = -1;
-		if (loginName != null) {
+		if (playerName != null) {
 			Player player = playerConnection.getPlayer();
-			player.setLoginName(loginName);
+			player.setName(playerName);
 			synchronized (_playerList) {
 				id = ++_plrId;
 				player.setPlayerId(_plrId);
 				_playerList.put(_plrId, player);
-				_logger.debug("added player {} with playerId {}", loginName, id);
+				_logger.debug("added player {} with playerId {}", playerName, id);
 			}
 		} else {
-			_logger.warn("login in name received is null! This is not allowed!");
+			_logger.warn("player name received is null! This is not allowed!");
 		}
-		ConnectResponseMessage resp = new ConnectResponseMessage();
+		SetPlayerNameResponseMessage resp = new SetPlayerNameResponseMessage();
 		resp.playerId = id;
 		_playerServer.sendToTCP(playerConnection.getID(), resp);
 		broadcastFreeCars();
@@ -121,13 +121,13 @@ public class GameModerator {
 	
 	public void selectCar(PlayerConnection playerConnection, int carId) {
 		_logger.debug("selectCar called from player with id: {} and name: {}", playerConnection.getPlayer().getPlayerId(), playerConnection.getPlayer()
-				.getLoginName());
+				.getName());
 		
 		SelectCarResponseMessage selectResponse = new SelectCarResponseMessage();
 		selectResponse.successfull = false;
 		
-		if (playerConnection.getPlayer().getLoginName() == null) {
-			_logger.warn("selectCar - player has to send ConnectRequestMessage first" + " and set a login name for himself!");
+		if (playerConnection.getPlayer().getName() == null) {
+			_logger.warn("selectCar - player has to set player name first before selecting a car!");
 		} else {
 			synchronized (_lockObject) {
 				if (_gameRunning) {
@@ -144,7 +144,7 @@ public class GameModerator {
 							_logger.warn("car with id: {} doesn't exist!", carId);
 						} else {
 							Player player = _carList.get(carId).getPlayer();
-							_logger.warn("car with id: {} allready owned by login: {}", carId, player.getLoginName());
+							_logger.warn("car with id: {} allready owned by: {}", carId, player.getName());
 						}
 					}
 				}
@@ -157,7 +157,7 @@ public class GameModerator {
 			
 			PlayerConnectedMessage plrConnectedMsg = new PlayerConnectedMessage();
 			plrConnectedMsg.id = playerConnection.getPlayer().getPlayerId();
-			plrConnectedMsg.loginName = playerConnection.getPlayer().getLoginName();
+			plrConnectedMsg.playerName = playerConnection.getPlayer().getName();
 			_playerServer.sendToAllExceptTCP(playerConnection.getID(), plrConnectedMsg);
 			
 			broadcastFreeCars();

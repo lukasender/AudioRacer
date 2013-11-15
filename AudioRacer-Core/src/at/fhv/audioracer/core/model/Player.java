@@ -10,7 +10,7 @@ public class Player {
 	/**
 	 * player name
 	 */
-	private String _loginName;
+	private String _name;
 	
 	/**
 	 * time in milliseconds since game start
@@ -32,12 +32,12 @@ public class Player {
 	 */
 	private Car _car;
 	
-	public String getLoginName() {
-		return _loginName;
+	public String getName() {
+		return _name;
 	}
 	
-	public void setLoginName(String loginName) {
-		this._loginName = loginName;
+	public void setName(String playerName) {
+		this._name = playerName;
 	}
 	
 	public boolean isReady() {

@@ -188,7 +188,7 @@ public class StartUpView extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					if (!_playerClient.hasConnection()) {
-						_playerClient.startClient(_playerClient.getPlayer().getLoginName());
+						_playerClient.startClient(_playerClient.getPlayer().getName());
 						_btnConnect.setText("Disconnect");
 						_lblConnected.setText("Connected");
 					} else {
@@ -209,7 +209,7 @@ public class StartUpView extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				
-				_playerClient.getPlayer().setLoginName(_NameField.getText());
+				_playerClient.getPlayer().setName(_NameField.getText());
 				
 			}
 		});

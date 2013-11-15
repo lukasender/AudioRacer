@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import at.fhv.audioracer.communication.player.PlayerNetwork;
-import at.fhv.audioracer.communication.player.message.ConnectResponseMessage;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
@@ -38,9 +38,9 @@ public class Main {
 				if (object instanceof PlayerMessage) {
 					PlayerMessage message = (PlayerMessage) object;
 					switch (message.messageId) {
-						case CONNECT_RESPONSE:
-							ConnectResponseMessage connectRespone = (ConnectResponseMessage) message;
-							System.out.println("Connected ... server responsed with id: " + connectRespone.playerId);
+						case SET_PLAYER_NAME_RESPONSE:
+							SetPlayerNameResponseMessage setNameRespone = (SetPlayerNameResponseMessage) message;
+							System.out.println("player name set ... server responded with id: " + setNameRespone.playerId);
 							break;
 						case UPDATE_FREE_CARS:
 							System.out.println("Free cars message incoming.");

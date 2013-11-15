@@ -1,7 +1,7 @@
 package at.fhv.audioracer.communication.player;
 
-import at.fhv.audioracer.communication.player.message.ConnectRequestMessage;
-import at.fhv.audioracer.communication.player.message.ConnectResponseMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
@@ -26,8 +26,8 @@ public class PlayerNetwork {
 		
 		// The interfaces that will be used as remote objects must be registered.
 		kryo.register(PlayerMessage.MessageId.class);
-		kryo.register(ConnectRequestMessage.class);
-		kryo.register(ConnectResponseMessage.class);
+		kryo.register(SetPlayerNameRequestMessage.class);
+		kryo.register(SetPlayerNameResponseMessage.class);
 		kryo.register(FreeCarsMessage.class);
 		kryo.register(SelectCarRequestMessage.class);
 		kryo.register(SelectCarResponseMessage.class);

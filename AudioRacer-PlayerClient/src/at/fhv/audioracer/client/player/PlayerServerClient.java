@@ -3,8 +3,8 @@ package at.fhv.audioracer.client.player;
 import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.message.CarImageRequestMessage;
 import at.fhv.audioracer.communication.player.message.CarImageResponseMessage;
-import at.fhv.audioracer.communication.player.message.ConnectRequestMessage;
-import at.fhv.audioracer.communication.player.message.ConnectResponseMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage.MessageId;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
@@ -36,10 +36,10 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	}
 	
 	@Override
-	public int connect(String playerName) {
-		ConnectRequestMessage connectMsg = new ConnectRequestMessage();
-		connectMsg.playerName = playerName;
-		_client.sendTCP(connectMsg);
+	public int setPlayerName(String playerName) {
+		SetPlayerNameRequestMessage setNameMsg = new SetPlayerNameRequestMessage();
+		setNameMsg.playerName = playerName;
+		_client.sendTCP(setNameMsg);
 		
 		_playerIdResponse = -1;
 		
@@ -116,9 +116,9 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 		if (object instanceof PlayerMessage) {
 			PlayerMessage message = (PlayerMessage) object;
 			switch (message.messageId) {
-				case CONNECT_RESPONSE:
-					ConnectResponseMessage connectResponse = (ConnectResponseMessage) message;
-					_playerIdResponse = connectResponse.playerId;
+				case SET_PLAYER_NAME_RESPONSE:
+					SetPlayerNameResponseMessage setNameResponse = (SetPlayerNameResponseMessage) message;
+					_playerIdResponse = setNameResponse.playerId;
 					synchronized (_lock) {
 						_lock.notifyAll(); // could be improved
 					}
