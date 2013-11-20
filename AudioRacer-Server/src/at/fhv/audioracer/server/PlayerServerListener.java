@@ -3,9 +3,10 @@ package at.fhv.audioracer.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
+import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.server.game.GameModerator;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -32,6 +33,11 @@ public class PlayerServerListener extends Listener {
 				case SELECT_CAR_REQUEST:
 					SelectCarRequestMessage selectCarReqMsg = (SelectCarRequestMessage) message;
 					_gameModerator.selectCar(playerConnection, selectCarReqMsg.carId);
+				case SET_READY:
+					Player player = playerConnection.getPlayer();
+					player.setReady(true);
+					_logger.debug("Player {} with id {} in ready state.", player.getName(),
+							player.getPlayerId());
 				default:
 					_logger.warn("Message with id: {} not known!", message.messageId);
 			}
@@ -40,6 +46,7 @@ public class PlayerServerListener extends Listener {
 	
 	public void disconnected(Connection connection) {
 		PlayerConnection playerConnection = (PlayerConnection) connection;
-		_logger.debug("player connection for player with id: {} has been closed.", playerConnection.getPlayer().getPlayerId());
+		_logger.debug("player connection for player with id: {} has been closed.", playerConnection
+				.getPlayer().getPlayerId());
 	}
 }

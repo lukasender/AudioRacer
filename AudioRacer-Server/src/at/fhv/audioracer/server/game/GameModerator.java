@@ -13,6 +13,7 @@ import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
+import at.fhv.audioracer.communication.player.message.StartGameMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.server.PlayerConnection;
@@ -79,10 +80,16 @@ public class GameModerator {
 		
 		synchronized (_lockObject) {
 			if (_gameRunning || _detectionFinished) {
-				_logger.warn("carDetected not allowed!" + " Game running: {}, car detection finished: {}", _gameRunning, _detectionFinished);
+				_logger.warn("carDetected not allowed!"
+						+ " Game running: {}, car detection finished: {}", _gameRunning,
+						_detectionFinished);
 			} else {
 				if (!_carList.containsKey(newCar.getCarId())) {
 					_logger.debug("carDetected - id: {}", newCar.getCarId());
+					
+					// we can put _detectionFinished = false here if we
+					// want to make car detections between game rounds possible
+					
 					_allZigBeeConnected = false;
 					_carList.put(newCar.getCarId(), newCar);
 				} else {
@@ -111,7 +118,12 @@ public class GameModerator {
 		_logger.debug("detectionFinihsed called");
 		
 		synchronized (_lockObject) {
-			_detectionFinished = true;
+			if (_carList.size() > 0) {
+				_detectionFinished = true;
+			} else {
+				_logger.warn("server will not accept detection finished "
+						+ "upon at least one car ist detected!");
+			}
 		}
 	}
 	
@@ -120,8 +132,8 @@ public class GameModerator {
 	}
 	
 	public void selectCar(PlayerConnection playerConnection, int carId) {
-		_logger.debug("selectCar called from player with id: {} and name: {}", playerConnection.getPlayer().getPlayerId(), playerConnection.getPlayer()
-				.getName());
+		_logger.debug("selectCar called from player with id: {} and name: {}", playerConnection
+				.getPlayer().getPlayerId(), playerConnection.getPlayer().getName());
 		
 		SelectCarResponseMessage selectResponse = new SelectCarResponseMessage();
 		selectResponse.successfull = false;
@@ -144,7 +156,8 @@ public class GameModerator {
 							_logger.warn("car with id: {} doesn't exist!", carId);
 						} else {
 							Player player = _carList.get(carId).getPlayer();
-							_logger.warn("car with id: {} allready owned by: {}", carId, player.getName());
+							_logger.warn("car with id: {} allready owned by: {}", carId,
+									player.getName());
 						}
 					}
 				}
@@ -194,5 +207,45 @@ public class GameModerator {
 		}
 		freeCarsMessage.freeCars = free;
 		_playerServer.sendToAllTCP(freeCarsMessage);
+	}
+	
+	public void startModerating() {
+		while (true) {
+			try {
+				Thread.sleep(2000);
+				synchronized (_lockObject) {
+					if (_gameRunning == false && _mapConfigured && _detectionFinished) {
+						
+						boolean playersConnectedAndReady = true;
+						// check all cars available have a player connected (=selectCar)
+						// and this players are all in ready state (=setPlayerReady)
+						// at this state we have at least one Car in _carList
+						Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
+						Entry<Integer, Car> entry = null;
+						Car car = null;
+						while (it.hasNext()) {
+							entry = it.next();
+							car = entry.getValue();
+							if (car.getPlayer() == null) {
+								playersConnectedAndReady = false;
+							} else if (!car.getPlayer().isReady()) {
+								playersConnectedAndReady = false;
+							}
+						}
+						if (playersConnectedAndReady) {
+							_gameRunning = true; // all preconditions OK, start game
+							StartGameMessage startGameMsg = new StartGameMessage();
+							startGameMsg.gameWillStartInMilliseconds = 0;
+							
+							// TODO: good idea to send in synchronized block?
+							_playerServer.sendToAllTCP(startGameMsg);
+						}
+					}
+				}
+				
+			} catch (InterruptedException e) {
+				_logger.warn("GameModerator must not be interrupted but exception caught!", e);
+			}
+		}
 	}
 }

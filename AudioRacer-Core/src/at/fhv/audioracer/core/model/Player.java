@@ -23,9 +23,9 @@ public class Player {
 	private int _coinsLeft;
 	
 	/**
-	 * indicates player ready for next game nor not
+	 * Indicates player ready for next game nor not. Default is false.
 	 */
-	private boolean _isReady;
+	private boolean _isReady = false;
 	
 	/**
 	 * car associated with player
