@@ -16,6 +16,7 @@ import org.apache.pivot.wtk.PushButton;
 import org.apache.pivot.wtk.TextInput;
 
 import at.fhv.audioracer.simulator.world.SimulationController;
+import at.fhv.audioracer.simulator.world.impl.exception.NoCarsAddedException;
 
 public class ConfigurationBorder extends Border implements Bindable {
 	@BXML
@@ -62,6 +63,22 @@ public class ConfigurationBorder extends Border implements Bindable {
 			public void buttonPressed(Button button) {
 				SimulationController.getInstance().removeCar();
 			}
+		});
+		
+		_allCarsDetectedButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				try {
+					SimulationController.getInstance().allCarsDetected();
+					
+					_addCarButton.setEnabled(false);
+					_removeCarButton.setEnabled(false);
+				} catch (NoCarsAddedException e) {
+					Alert.alert(MessageType.INFO, "Detection can't be done at this time. You need to add cars.", ConfigurationBorder.this.getWindow());
+				}
+			}
+			
 		});
 		
 	}

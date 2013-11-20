@@ -36,7 +36,7 @@ public class CameraServerListener extends Listener {
 			switch (message.messageId) {
 				case UPDATE_CAR:
 					UpdateCarMessage updateCarMsg = (UpdateCarMessage) message;
-					_moderator.updateCar(updateCarMsg.carId, updateCarMsg.posX, updateCarMsg.poxY, updateCarMsg.direction);
+					_moderator.updateCar(updateCarMsg.carId, updateCarMsg.posX, updateCarMsg.posY, updateCarMsg.direction);
 					break;
 				case CAR_DETECTED:
 					CarDetectedMessage carDetectedMsg = (CarDetectedMessage) message;

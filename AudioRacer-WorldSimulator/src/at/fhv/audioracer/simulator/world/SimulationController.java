@@ -11,10 +11,12 @@ import javax.naming.OperationNotSupportedException;
 
 import org.apache.log4j.Logger;
 
-import at.fhv.audioracer.communication.world.ICamera;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
-import at.fhv.audioracer.communication.world.WorldNetwork;
+import at.fhv.audioracer.communication.world.message.CameraMessage;
+import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
+import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
+import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.model.Map;
@@ -23,11 +25,11 @@ import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.simulator.world.impl.CarClient;
 import at.fhv.audioracer.simulator.world.impl.CarClientListener;
+import at.fhv.audioracer.simulator.world.impl.exception.NoCarsAddedException;
+import at.fhv.audioracer.simulator.world.pivot.WorldSimulatorWindow;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.rmi.ObjectSpace;
-import com.esotericsoftware.kryonet.rmi.RemoteObject;
 
 // TODO: This class name may change.
 /**
@@ -43,7 +45,7 @@ public class SimulationController {
 	private static SimulationController _instance;
 	
 	private ICarClientManager _carClientManager;
-	private ICamera _camera;
+	private static Client _camera;
 	
 	private MapComponent _map;
 	
@@ -61,7 +63,7 @@ public class SimulationController {
 		
 		// establish the connections
 		_carClientManager = CarClientManager.getInstance();
-		_camera = connectCamera();
+		_camera = WorldSimulatorWindow.getCameraClient();
 	}
 	
 	public static SimulationController getInstance() {
@@ -75,14 +77,14 @@ public class SimulationController {
 	public void setUp(MapComponent mapComponent, Map map) throws OperationNotSupportedException {
 		setMap(mapComponent);
 		getMapComponent().setMap(map);
-		_camera.configureMap(map.getSizeX(), map.getSizeY());
+		_camera.sendTCP(createConfigureMapMessage(map));
 	}
 	
 	public void updateMap(int width, int height) {
 		Map map = getMap();
 		map.setSizeX(width);
 		map.setSizeY(height);
-		_camera.configureMap(width, height);
+		_camera.sendTCP(createConfigureMapMessage(map));
 		getMapComponent().repaint();
 	}
 	
@@ -103,7 +105,8 @@ public class SimulationController {
 		_carClients.add(carClient);
 		
 		byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
-		_camera.carDetected(_carId, byteImage);
+		
+		_camera.sendTCP(createCarDetectedMessage(_carId, byteImage));
 		_carId++;
 		
 		logger.info("added car with id: " + (_carId - 1));
@@ -118,8 +121,12 @@ public class SimulationController {
 		logger.info("There are no cars to be removed.");
 	}
 	
-	public ICamera getCamera() {
-		return _camera;
+	public void allCarsDetected() throws NoCarsAddedException {
+		if (_carId > 0) {
+			_camera.sendTCP(createAllCarsDetectionFinishedMessage());
+		} else {
+			throw new NoCarsAddedException();
+		}
 	}
 	
 	private void setMap(MapComponent map) {
@@ -144,18 +151,29 @@ public class SimulationController {
 		
 	}
 	
+	public Client getCamera() {
+		return _camera;
+	}
+	
 	// helper methods
 	
-	private ICamera connectCamera() {
-		Client client = new Client();
-		client.start();
-		WorldNetwork.register(client);
-		
-		// get the ICamera from the server
-		ICamera camera = ObjectSpace.getRemoteObject(client, WorldNetwork.CAMERA_SERVICE, ICamera.class);
-		((RemoteObject) camera).setTransmitExceptions(false); // disable exception transmitting
-		
-		return camera;
+	private ConfigureMapMessage createConfigureMapMessage(Map map) {
+		ConfigureMapMessage configMap = new ConfigureMapMessage();
+		configMap.sizeX = map.getSizeX();
+		configMap.sizeY = map.getSizeY();
+		return configMap;
+	}
+	
+	private CarDetectedMessage createCarDetectedMessage(int id, byte[] image) {
+		CarDetectedMessage carDetectedMessage = new CarDetectedMessage();
+		carDetectedMessage.carId = _carId;
+		carDetectedMessage.image = image;
+		return carDetectedMessage;
+	}
+	
+	private CameraMessage createAllCarsDetectionFinishedMessage() {
+		CameraMessage detectionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
+		return detectionFinished;
 	}
 	
 	private void translateLastCarPosX(float x) {
