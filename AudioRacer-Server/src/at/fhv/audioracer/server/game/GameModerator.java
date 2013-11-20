@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
+import at.fhv.audioracer.communication.player.message.PlayerDisconnectedMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
@@ -213,39 +214,68 @@ public class GameModerator {
 		while (true) {
 			try {
 				Thread.sleep(2000);
-				synchronized (_lockObject) {
-					if (_gameRunning == false && _mapConfigured && _detectionFinished) {
-						
-						boolean playersConnectedAndReady = true;
-						// check all cars available have a player connected (=selectCar)
-						// and this players are all in ready state (=setPlayerReady)
-						// at this state we have at least one Car in _carList
-						Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
-						Entry<Integer, Car> entry = null;
-						Car car = null;
+			} catch (InterruptedException e) {
+				_logger.warn("GameModerator must not be interrupted but InterruptException "
+						+ "caught in moderation loop!", e);
+			}
+			
+			synchronized (_lockObject) {
+				if (_gameRunning == false && _mapConfigured && _detectionFinished) {
+					boolean startGame = true;
+					// check all cars available have a player connected (=selectCar)
+					// and this players are all in ready state (=setPlayerReady)
+					// at this state we have at least one Car in _carList
+					Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
+					Entry<Integer, Car> entry = null;
+					Car car = null;
+					try {
 						while (it.hasNext()) {
 							entry = it.next();
 							car = entry.getValue();
 							if (car.getPlayer() == null) {
-								playersConnectedAndReady = false;
+								startGame = false;
 							} else if (!car.getPlayer().isReady()) {
-								playersConnectedAndReady = false;
+								startGame = false;
 							}
 						}
-						if (playersConnectedAndReady) {
-							_gameRunning = true; // all preconditions OK, start game
-							StartGameMessage startGameMsg = new StartGameMessage();
-							startGameMsg.gameWillStartInMilliseconds = 0;
-							
-							// TODO: good idea to send in synchronized block?
-							_playerServer.sendToAllTCP(startGameMsg);
-						}
+					} catch (ConcurrentModificationException e) {
+						startGame = false;
+					}
+					
+					if (startGame) {
+						_logger.info("Game preconditions are all given. Game will start now!");
+						_gameRunning = true; // all preconditions OK, start game
+						
+						// TODO: good idea to send in synchronized block?
+						StartGameMessage startGameMsg = new StartGameMessage();
+						startGameMsg.gameWillStartInMilliseconds = 0;
+						_playerServer.sendToAllTCP(startGameMsg);
 					}
 				}
-				
-			} catch (InterruptedException e) {
-				_logger.warn("GameModerator must not be interrupted but exception caught!", e);
 			}
+		}
+	}
+	
+	/**
+	 * @param playerConnection
+	 *            Socket connection of player who send request of type PlayerMessage with PlayerMessage.MessageId = DISCONNECT
+	 */
+	public void disconnectPlayer(PlayerConnection playerConnection) {
+		boolean playerHasBeenDecoubled = false;
+		synchronized (_lockObject) {
+			if (playerConnection.getPlayer().getCar() != null) {
+				// decouple car and player instance
+				Car car = playerConnection.getPlayer().getCar();
+				playerConnection.getPlayer().setCar(null);
+				car.setPlayer(null);
+				playerHasBeenDecoubled = true;
+			}
+		}
+		if (playerHasBeenDecoubled) {
+			PlayerDisconnectedMessage playerDisconnectedMsg = new PlayerDisconnectedMessage();
+			playerDisconnectedMsg.playerId = playerConnection.getPlayer().getPlayerId();
+			_playerServer.sendToAllExceptTCP(playerConnection.getID(), playerDisconnectedMsg);
+			broadcastFreeCars();
 		}
 	}
 }

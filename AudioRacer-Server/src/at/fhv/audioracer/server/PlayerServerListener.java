@@ -38,6 +38,8 @@ public class PlayerServerListener extends Listener {
 					player.setReady(true);
 					_logger.debug("Player {} with id {} in ready state.", player.getName(),
 							player.getPlayerId());
+				case DISCONNECT:
+					_gameModerator.disconnectPlayer(playerConnection);
 				default:
 					_logger.warn("Message with id: {} not known!", message.messageId);
 			}
