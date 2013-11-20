@@ -150,13 +150,17 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	}
 	
 	private static void startCameraClient() throws IOException {
-		// _cameraClient = new Client();
 		_cameraClient = new Client(81920, 2048);
 		_cameraClient.start();
 		
 		WorldNetwork.register(_cameraClient);
 		
 		_cameraClient.connect(1000, InetAddress.getLoopbackAddress(), WorldNetwork.CAMERA_SERVICE_PORT);
+		
+	}
+	
+	public static Client getCameraClient() {
+		return _cameraClient;
 	}
 	
 }

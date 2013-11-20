@@ -19,6 +19,9 @@ public class Car {
 	private final int _carId;
 	
 	private Position _position;
+	/**
+	 * Absolute direction in degrees (0-360°).
+	 */
 	private Direction _direction;
 	
 	private Player _player;
