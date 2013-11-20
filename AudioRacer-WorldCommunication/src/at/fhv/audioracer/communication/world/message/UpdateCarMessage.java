@@ -7,7 +7,7 @@ public class UpdateCarMessage extends CameraMessage {
 	public float posY;
 	public float direction;
 	
-	public UpdateCarMessage(MessageId id) {
+	public UpdateCarMessage() {
 		super(MessageId.UPDATE_CAR);
 	}
 }

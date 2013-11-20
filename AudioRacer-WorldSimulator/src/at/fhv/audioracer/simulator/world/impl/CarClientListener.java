@@ -1,6 +1,5 @@
 package at.fhv.audioracer.simulator.world.impl;
 
-import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
 import at.fhv.audioracer.communication.world.message.UpdateCarMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
@@ -13,7 +12,7 @@ public class CarClientListener implements ICarListener {
 	@Override
 	public void onCarPositionChanged(Car car) {
 		Client camera = SimulationController.getInstance().getCamera();
-		UpdateCarMessage msg = new UpdateCarMessage(MessageId.UPDATE_CAR);
+		UpdateCarMessage msg = new UpdateCarMessage();
 		msg.carId = car.getCarId();
 		msg.direction = car.getDirection().getDirection();
 		msg.posX = car.getPosition().getPosX();
