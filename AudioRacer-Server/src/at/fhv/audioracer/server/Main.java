@@ -43,8 +43,6 @@ public class Main {
 			
 			cameraServer.start();
 			
-			gameModerator.startModerating();
-			
 		} catch (Exception e) {
 			_logger.error("Exception caught during application startup.", e);
 			

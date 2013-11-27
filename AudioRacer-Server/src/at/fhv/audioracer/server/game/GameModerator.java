@@ -53,6 +53,9 @@ public class GameModerator {
 	 */
 	public void setPlayerName(PlayerConnection playerConnection, String playerName) {
 		int id = -1;
+		
+		// TODO: player can set his name twice, this should probably not allowed
+		
 		if (playerName != null) {
 			Player player = playerConnection.getPlayer();
 			player.setName(playerName);
@@ -68,7 +71,7 @@ public class GameModerator {
 		SetPlayerNameResponseMessage resp = new SetPlayerNameResponseMessage();
 		resp.playerId = id;
 		_playerServer.sendToTCP(playerConnection.getID(), resp);
-		broadcastFreeCars();
+		_broadcastFreeCars();
 	}
 	
 	/**
@@ -99,7 +102,7 @@ public class GameModerator {
 			}
 		}
 		
-		broadcastFreeCars();
+		_broadcastFreeCars();
 	}
 	
 	public void configureMap(int sizeX, int sizeY) {
@@ -111,16 +114,21 @@ public class GameModerator {
 			} else {
 				_ranking = new Ranking(sizeX, sizeY);
 				_mapConfigured = true;
+				_checkPreconditionsAndStartGameIfAllFine();
 			}
 		}
 	}
 	
 	public void detectionFinished() {
-		_logger.debug("detectionFinihsed called");
+		_logger.debug("detectionFinished called");
 		
 		synchronized (_lockObject) {
-			if (_carList.size() > 0) {
+			
+			if (_gameRunning) {
+				_logger.warn("detectionFinished cannot be called during game is running!");
+			} else if (_carList.size() > 0) {
 				_detectionFinished = true;
+				_checkPreconditionsAndStartGameIfAllFine();
 			} else {
 				_logger.warn("server will not accept detection finished "
 						+ "upon at least one car ist detected!");
@@ -174,14 +182,14 @@ public class GameModerator {
 			plrConnectedMsg.playerName = playerConnection.getPlayer().getName();
 			_playerServer.sendToAllExceptTCP(playerConnection.getID(), plrConnectedMsg);
 			
-			broadcastFreeCars();
+			_broadcastFreeCars();
 		}
 	}
 	
 	/**
 	 * Send currently free cars to all Players.
 	 */
-	private void broadcastFreeCars() {
+	private void _broadcastFreeCars() {
 		Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
 		ArrayList<Integer> freeCars = new ArrayList<Integer>();
 		Entry<Integer, Car> entry = null;
@@ -210,48 +218,38 @@ public class GameModerator {
 		_playerServer.sendToAllTCP(freeCarsMessage);
 	}
 	
-	public void startModerating() {
-		while (true) {
+	private void _checkPreconditionsAndStartGameIfAllFine() {
+		
+		if (_gameRunning == false && _mapConfigured && _detectionFinished) {
+			boolean startGame = true;
+			// check all cars available have a player connected (=selectCar)
+			// and this players are all in ready state (=setPlayerReady)
+			// at this state we have at least one Car in _carList
+			Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
+			Entry<Integer, Car> entry = null;
+			Car car = null;
 			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				_logger.warn("GameModerator must not be interrupted but InterruptException "
-						+ "caught in moderation loop!", e);
-			}
-			
-			synchronized (_lockObject) {
-				if (_gameRunning == false && _mapConfigured && _detectionFinished) {
-					boolean startGame = true;
-					// check all cars available have a player connected (=selectCar)
-					// and this players are all in ready state (=setPlayerReady)
-					// at this state we have at least one Car in _carList
-					Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
-					Entry<Integer, Car> entry = null;
-					Car car = null;
-					try {
-						while (it.hasNext()) {
-							entry = it.next();
-							car = entry.getValue();
-							if (car.getPlayer() == null) {
-								startGame = false;
-							} else if (!car.getPlayer().isReady()) {
-								startGame = false;
-							}
-						}
-					} catch (ConcurrentModificationException e) {
+				while (it.hasNext()) {
+					entry = it.next();
+					car = entry.getValue();
+					if (car.getPlayer() == null) {
+						startGame = false;
+					} else if (!car.getPlayer().isReady()) {
 						startGame = false;
 					}
-					
-					if (startGame) {
-						_logger.info("Game preconditions are all given. Game will start now!");
-						_gameRunning = true; // all preconditions OK, start game
-						
-						// TODO: good idea to send in synchronized block?
-						StartGameMessage startGameMsg = new StartGameMessage();
-						startGameMsg.gameWillStartInMilliseconds = 0;
-						_playerServer.sendToAllTCP(startGameMsg);
-					}
 				}
+			} catch (ConcurrentModificationException e) {
+				startGame = false;
+			}
+			
+			if (startGame) {
+				_logger.info("Game preconditions are all given. Game will start now!");
+				_gameRunning = true; // all preconditions OK, start game
+				
+				// TODO: good idea to send in synchronized block?
+				StartGameMessage startGameMsg = new StartGameMessage();
+				startGameMsg.gameWillStartInMilliseconds = 0;
+				_playerServer.sendToAllTCP(startGameMsg);
 			}
 		}
 	}
@@ -275,7 +273,20 @@ public class GameModerator {
 			PlayerDisconnectedMessage playerDisconnectedMsg = new PlayerDisconnectedMessage();
 			playerDisconnectedMsg.playerId = playerConnection.getPlayer().getPlayerId();
 			_playerServer.sendToAllExceptTCP(playerConnection.getID(), playerDisconnectedMsg);
-			broadcastFreeCars();
+			_broadcastFreeCars();
+		}
+	}
+	
+	public void setPlayerReady(PlayerConnection playerConnection) {
+		
+		synchronized (_lockObject) {
+			Player player = playerConnection.getPlayer();
+			player.setReady(true);
+			
+			_logger.debug("Player {} with id {} in ready state.", player.getName(),
+					player.getPlayerId());
+			
+			_checkPreconditionsAndStartGameIfAllFine();
 		}
 	}
 }

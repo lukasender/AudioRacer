@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
-import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.server.game.GameModerator;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -34,10 +33,7 @@ public class PlayerServerListener extends Listener {
 					SelectCarRequestMessage selectCarReqMsg = (SelectCarRequestMessage) message;
 					_gameModerator.selectCar(playerConnection, selectCarReqMsg.carId);
 				case SET_READY:
-					Player player = playerConnection.getPlayer();
-					player.setReady(true);
-					_logger.debug("Player {} with id {} in ready state.", player.getName(),
-							player.getPlayerId());
+					_gameModerator.setPlayerReady(playerConnection);
 				case DISCONNECT:
 					_gameModerator.disconnectPlayer(playerConnection);
 				default:
