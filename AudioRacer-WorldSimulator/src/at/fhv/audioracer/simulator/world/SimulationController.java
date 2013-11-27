@@ -1,7 +1,7 @@
 package at.fhv.audioracer.simulator.world;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,9 +103,14 @@ public class SimulationController {
 		_carClientManager.connect(carClient);
 		_carClients.add(carClient);
 		
-		byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
+		// byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
+		// _camera.sendTCP(createCarDetectedMessage(_carId, byteImage));
 		
-		_camera.sendTCP(createCarDetectedMessage(_carId, byteImage));
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ImageIO.write(image, "png", out);
+		out.flush();
+		_camera.sendTCP(createCarDetectedMessage(_carId, out.toByteArray()));
+		
 		_carId++;
 		
 		logger.info("added car with id: " + (_carId - 1));

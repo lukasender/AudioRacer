@@ -34,7 +34,7 @@ public class Main {
 			playerServer.start();
 			
 			// cameraServer = new Server();
-			cameraServer = new Server(16384, 81920);
+			cameraServer = new Server(20 * 16384, 30 * 81920);
 			cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT);
 			
 			CameraServerListener cameraServerListener = new CameraServerListener(gameModerator);

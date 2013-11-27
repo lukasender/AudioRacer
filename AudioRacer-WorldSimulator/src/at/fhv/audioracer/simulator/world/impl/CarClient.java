@@ -89,4 +89,9 @@ public class CarClient implements ICarClient {
 		return new Position(x, y);
 	}
 	
+	@Override
+	public int getCarClientId() {
+		return _car.getCarId();
+	}
+	
 }

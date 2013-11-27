@@ -1,14 +1,11 @@
 package at.fhv.audioracer.simulator.world.pivot;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
 
 import org.apache.pivot.beans.BXML;
@@ -18,6 +15,7 @@ import org.apache.pivot.util.Resources;
 import org.apache.pivot.wtk.Alert;
 import org.apache.pivot.wtk.Application;
 import org.apache.pivot.wtk.Component;
+import org.apache.pivot.wtk.DesktopApplicationContext;
 import org.apache.pivot.wtk.Display;
 import org.apache.pivot.wtk.MessageType;
 import org.apache.pivot.wtk.Window;
@@ -25,13 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.fhv.audioracer.communication.world.WorldNetwork;
-import at.fhv.audioracer.communication.world.message.CameraMessage;
-import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
-import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
-import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.simulator.world.SimulationController;
 import at.fhv.audioracer.ui.pivot.MapComponent;
+import at.fhv.audioracer.ui.util.awt.RepeatingReleasedEventsFixer;
 
 import com.esotericsoftware.kryonet.Client;
 
@@ -103,37 +98,37 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	}
 	
 	public static void main(String[] args) {
-		// new RepeatingReleasedEventsFixer().install();
-		// DesktopApplicationContext.main(WorldSimulatorWindow.class, args);
+		new RepeatingReleasedEventsFixer().install();
+		DesktopApplicationContext.main(WorldSimulatorWindow.class, args);
 		
 		try {
 			
 			// Test purpose only
 			startCameraClient();
 			
-			ConfigureMapMessage configureMap = new ConfigureMapMessage();
-			configureMap.sizeX = 100;
-			configureMap.sizeY = 100;
-			_cameraClient.sendTCP(configureMap);
-			
-			CarDetectedMessage carDetected = new CarDetectedMessage();
-			
-			// read the image and store in byte array
-			ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			URL carImgURL = loader.getResource("at/fhv/audioracer/ui/pivot/car-blue.png");
-			BufferedImage img = ImageIO.read(carImgURL);
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			ImageIO.write(img, "png", out);
-			out.flush();
-			
-			carDetected.carId = 1;
-			carDetected.image = out.toByteArray();
-			out.close();
-			
-			_cameraClient.sendTCP(carDetected);
-			
-			CameraMessage detecionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
-			_cameraClient.sendTCP(detecionFinished);
+			// ConfigureMapMessage configureMap = new ConfigureMapMessage();
+			// configureMap.sizeX = 100;
+			// configureMap.sizeY = 100;
+			// _cameraClient.sendTCP(configureMap);
+			//
+			// CarDetectedMessage carDetected = new CarDetectedMessage();
+			//
+			// // read the image and store in byte array
+			// ClassLoader loader = Thread.currentThread().getContextClassLoader();
+			// URL carImgURL = loader.getResource("at/fhv/audioracer/ui/pivot/car-blue.png");
+			// BufferedImage img = ImageIO.read(carImgURL);
+			// ByteArrayOutputStream out = new ByteArrayOutputStream();
+			// ImageIO.write(img, "png", out);
+			// out.flush();
+			//
+			// carDetected.carId = 1;
+			// carDetected.image = out.toByteArray();
+			// out.close();
+			//
+			// _cameraClient.sendTCP(carDetected);
+			//
+			// CameraMessage detecionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
+			// _cameraClient.sendTCP(detecionFinished);
 			
 			// Kryo Clients are running as daemons, prevent main application from exit
 			while (true) {
@@ -150,7 +145,7 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	}
 	
 	private static void startCameraClient() throws IOException {
-		_cameraClient = new Client(81920, 2048);
+		_cameraClient = new Client(30 * 81920, 20 * 2048);
 		_cameraClient.start();
 		
 		WorldNetwork.register(_cameraClient);
