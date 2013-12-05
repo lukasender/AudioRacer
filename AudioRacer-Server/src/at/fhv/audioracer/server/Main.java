@@ -30,18 +30,22 @@ public class Main {
 			playerServer.addListener(playerServerListener);
 			
 			PlayerNetwork.register(playerServer);
-			playerServer.bind(PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
+			int playerServicePort = PlayerNetwork.PLAYER_SERVICE_PORT;
+			playerServer.bind(playerServicePort, playerServicePort);
 			playerServer.start();
+			_logger.info("PlayerNetwork: " + playerServicePort);
 			
 			// cameraServer = new Server();
 			cameraServer = new Server(16384, 81920);
-			cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT);
+			int worldServicePort = WorldNetwork.CAMERA_SERVICE_PORT;
+			cameraServer.bind(worldServicePort);
 			
 			CameraServerListener cameraServerListener = new CameraServerListener(gameModerator);
 			cameraServer.addListener(cameraServerListener);
 			WorldNetwork.register(cameraServer);
 			
 			cameraServer.start();
+			_logger.info("WorldNetwork: " + worldServicePort);
 			
 		} catch (Exception e) {
 			_logger.error("Exception caught during application startup.", e);
