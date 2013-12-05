@@ -104,9 +104,6 @@ public class SimulationController {
 		_carClientManager.connect(carClient);
 		_carClients.add(carClient);
 		
-		// byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
-		// _camera.sendTCP(createCarDetectedMessage(_carId, byteImage));
-		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", out);
 		out.flush();
