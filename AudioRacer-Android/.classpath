@@ -7,6 +7,6 @@
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-PlayerClient"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-PlayerCommunication"/>
-	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.18-all.jar" sourcepath="/AudioRacer/libs/kryonet-src-2.18.zip"/>
+	<classpathentry exported="true" kind="lib" path="/AudioRacer/libs/kryonet-debug-2.21-all.jar" sourcepath="/AudioRacer/libs/kryonet-2.21-src.zip"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
