@@ -40,6 +40,9 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	private static final Logger _logger = LoggerFactory.getLogger(WorldSimulatorWindow.class);
 	public static final Executor executor = Executors.newSingleThreadExecutor();
 	
+	private static final int DEFAULT_MAP_SIZE_X = 300;
+	private static final int DEFAULT_MAP_SIZE_Y = 300;
+	
 	private static Client _cameraClient;
 	
 	// private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
@@ -48,7 +51,7 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	public void initialize(org.apache.pivot.collections.Map<String, Object> namespace, URL location, Resources resources) {
 		System.out.println("initialize()");
 		try {
-			SimulationController.getInstance().setUp(_map, new Map(20, 30));
+			SimulationController.getInstance().setUp(_map, new Map(DEFAULT_MAP_SIZE_X, DEFAULT_MAP_SIZE_Y));
 		} catch (OperationNotSupportedException e1) {
 			String msg = "Couldn't initialize the map.";
 			Alert.alert(MessageType.ERROR, msg, this);
