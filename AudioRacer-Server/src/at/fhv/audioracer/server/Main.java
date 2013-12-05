@@ -18,6 +18,10 @@ public class Main {
 	private static Logger _logger = LoggerFactory.getLogger(Main.class);
 	
 	public static void main(String[] args) {
+		start(args);
+	}
+	
+	public static void start(String[] args) {
 		PlayerServer playerServer = null;
 		PlayerServerListener playerServerListener = null;
 		Server cameraServer = null;
@@ -55,4 +59,5 @@ public class Main {
 			// TODO: Are this all connections, we need to close?
 		}
 	}
+	
 }

@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import at.fhv.audioracer.communication.world.WorldNetwork;
 import at.fhv.audioracer.core.model.Map;
+import at.fhv.audioracer.server.Main;
 import at.fhv.audioracer.simulator.world.SimulationController;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 import at.fhv.audioracer.ui.util.awt.RepeatingReleasedEventsFixer;
@@ -75,6 +76,7 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	@Override
 	public void startup(Display display, org.apache.pivot.collections.Map<String, String> properties) throws Exception {
 		System.out.println("startup()");
+		
 		BXMLSerializer bxml = new BXMLSerializer();
 		_window = (Window) bxml.readObject(WorldSimulatorWindow.class, "window.bxml");
 		_window.open(display);
@@ -98,6 +100,18 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	}
 	
 	public static void main(String[] args) {
+		
+		_logger.info("Starting AudioRacer WorldSimulator");
+		_logger.info("Initializing server");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				String[] args = null;
+				Main.start(args);
+			}
+		}).start();
+		
+		_logger.info("Starting simulator");
 		new RepeatingReleasedEventsFixer().install();
 		DesktopApplicationContext.main(WorldSimulatorWindow.class, args);
 		
@@ -106,31 +120,6 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 			// Test purpose only
 			startCameraClient();
 			
-			// ConfigureMapMessage configureMap = new ConfigureMapMessage();
-			// configureMap.sizeX = 100;
-			// configureMap.sizeY = 100;
-			// _cameraClient.sendTCP(configureMap);
-			//
-			// CarDetectedMessage carDetected = new CarDetectedMessage();
-			//
-			// // read the image and store in byte array
-			// ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			// URL carImgURL = loader.getResource("at/fhv/audioracer/ui/pivot/car-blue.png");
-			// BufferedImage img = ImageIO.read(carImgURL);
-			// ByteArrayOutputStream out = new ByteArrayOutputStream();
-			// ImageIO.write(img, "png", out);
-			// out.flush();
-			//
-			// carDetected.carId = 1;
-			// carDetected.image = out.toByteArray();
-			// out.close();
-			//
-			// _cameraClient.sendTCP(carDetected);
-			//
-			// CameraMessage detecionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
-			// _cameraClient.sendTCP(detecionFinished);
-			
-			// Kryo Clients are running as daemons, prevent main application from exit
 			while (true) {
 			}
 			
