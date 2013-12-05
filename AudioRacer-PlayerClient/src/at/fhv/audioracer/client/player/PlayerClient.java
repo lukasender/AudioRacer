@@ -20,7 +20,8 @@ import com.esotericsoftware.kryonet.Listener;
 
 public class PlayerClient extends Listener implements IPlayerClient {
 	
-	private static class PlayerClientListenerList extends ListenerList<IPlayerClientListener> implements IPlayerClientListener {
+	private static class PlayerClientListenerList extends ListenerList<IPlayerClientListener>
+			implements IPlayerClientListener {
 		
 		@Override
 		public void onUpdateGameState(int playerId) {
@@ -151,8 +152,8 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	
 	public PlayerClient() {
 		super();
-		_players = new HashMap<>();
-		_cars = new HashMap<>();
+		_players = new HashMap<Integer, Player>();
+		_cars = new HashMap<Integer, Car>();
 		_player = new Player();
 		_listenerList = new PlayerClientListenerList();
 		_connected = false;
@@ -281,7 +282,8 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		
 		_client.addListener(serverClient);
 		_client.addListener(this);
-		_client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
+		_client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT,
+				PlayerNetwork.PLAYER_SERVICE_PORT);
 		_connected = true;
 		
 		setPlayerServer(serverClient);
