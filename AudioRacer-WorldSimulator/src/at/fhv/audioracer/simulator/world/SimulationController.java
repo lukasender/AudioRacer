@@ -54,7 +54,7 @@ public class SimulationController {
 	private List<ICarClient> _carClients;
 	
 	private Position _lastCarPos;
-	private static float TRANSLATE_BY = 2;
+	private static float TRANSLATE_BY = 4;
 	
 	private SimulationController() {
 		_carId = 0;
@@ -182,7 +182,7 @@ public class SimulationController {
 	}
 	
 	private void translateLastCarPosX(float x) {
-		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
+		_lastCarPos = new Position(_lastCarPos.getPosX() + x, _lastCarPos.getPosY());
 	}
 	
 }
