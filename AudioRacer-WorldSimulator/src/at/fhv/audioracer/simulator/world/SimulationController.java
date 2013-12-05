@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.message.CameraMessage;
+import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
 import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
 import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Car;
@@ -176,7 +177,7 @@ public class SimulationController {
 	}
 	
 	private CameraMessage createAllCarsDetectionFinishedMessage() {
-		CameraMessage detectionFinished = new CameraMessage();
+		CameraMessage detectionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
 		return detectionFinished;
 	}
 	
