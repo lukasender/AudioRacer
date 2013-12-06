@@ -18,6 +18,10 @@ public class Main {
 	private static Logger _logger = LoggerFactory.getLogger(Main.class);
 	
 	public static void main(String[] args) {
+		start(args);
+	}
+	
+	public static void start(String[] args) {
 		PlayerServer playerServer = null;
 		PlayerServerListener playerServerListener = null;
 		Server cameraServer = null;
@@ -30,22 +34,18 @@ public class Main {
 			playerServer.addListener(playerServerListener);
 			
 			PlayerNetwork.register(playerServer);
-			int playerServicePort = PlayerNetwork.PLAYER_SERVICE_PORT;
-			playerServer.bind(playerServicePort, playerServicePort);
+			playerServer.bind(PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
 			playerServer.start();
-			_logger.info("PlayerNetwork: " + playerServicePort);
 			
 			// cameraServer = new Server();
-			cameraServer = new Server(16384, 81920);
-			int worldServicePort = WorldNetwork.CAMERA_SERVICE_PORT;
-			cameraServer.bind(worldServicePort);
+			cameraServer = new Server(20 * 16384, 30 * 81920);
+			cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT);
 			
 			CameraServerListener cameraServerListener = new CameraServerListener(gameModerator);
 			cameraServer.addListener(cameraServerListener);
 			WorldNetwork.register(cameraServer);
 			
 			cameraServer.start();
-			_logger.info("WorldNetwork: " + worldServicePort);
 			
 		} catch (Exception e) {
 			_logger.error("Exception caught during application startup.", e);
@@ -59,4 +59,5 @@ public class Main {
 			// TODO: Are this all connections, we need to close?
 		}
 	}
+	
 }

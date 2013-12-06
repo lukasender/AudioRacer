@@ -18,6 +18,8 @@ public class Car {
 	
 	private final int _carId;
 	
+	private int _carClientId;
+	
 	private Position _position;
 	/**
 	 * Absolute direction in degrees (0-360°).
@@ -86,5 +88,13 @@ public class Car {
 	
 	public ListenerList<ICarListener> getCarListenerList() {
 		return _listenerList;
+	}
+	
+	public int getCarClientId() {
+		return _carClientId;
+	}
+	
+	public void setCarClientId(int carClientId) {
+		_carClientId = carClientId;
 	}
 }
