@@ -64,6 +64,10 @@ public class CarClientManager implements ICarClientManager {
 		_carClientList.remove(carClient.getCarClientId());
 	}
 	
+	public ICarClient get(int carClientId) {
+		return _carClientList.get(carClientId);
+	}
+	
 	@Override
 	public void invalidCommand() {
 		_logger.warn("Invalid command!");

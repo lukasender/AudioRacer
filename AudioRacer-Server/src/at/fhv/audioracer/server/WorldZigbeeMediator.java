@@ -32,10 +32,11 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 	private static Logger _logger = LoggerFactory.getLogger(WorldZigbeeMediator.class);
 	private BlockingQueue<ICarClient> _awaitingConnectionQueue = new LinkedBlockingQueue<ICarClient>();
 	private ICarClient _currentCarClientToConnect = null;
+	private Boolean _assignNextCarClient = true;
 	private HashMap<Integer, Integer> _updateCarInvocationCount = new HashMap<Integer, Integer>();
-	private final int _upateCarInvocationCountThreshold = 300;
+	private final int _upateCarInvocationCountThreshold = 200;
 	private int _connectionCount = 0;
-	private float _configurationSpeed = 0.1f;
+	private float _configurationSpeed = 1.f;
 	private float _configurationDirection = 0.0f;
 	private WorldZigbeeConnectionCountListenerList _listenerList = new WorldZigbeeConnectionCountListenerList();
 	
@@ -44,12 +45,17 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 		_logger.info("Mediator thread start.");
 		
 		try {
+			float speed = _configurationSpeed;
 			while (true) {
-				_currentCarClientToConnect = _awaitingConnectionQueue.take();
-				float speed = _configurationSpeed;
-				while (_currentCarClientToConnect != null) {
-					speed *= -1.0f;
+				speed *= -1.f;
+				if (_assignNextCarClient) {
+					_assignNextCarClient = false;
+					_currentCarClientToConnect = _awaitingConnectionQueue.take();
+				} else {
+					Thread.sleep(50);
+					// _logger.debug("try to assign CarClient ... send update velocity.");
 					_currentCarClientToConnect.updateVelocity(speed, _configurationDirection);
+					
 				}
 			}
 		} catch (InterruptedException e) {
@@ -75,17 +81,19 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 			count++;
 			_updateCarInvocationCount.put(car.getCarId(), count);
 		}
+		// _logger.debug("try to assign CarClient with id: {} current updatePos count: {}", carId,
+		// count);
 		
 		if (count > _upateCarInvocationCountThreshold) {
 			int id = _currentCarClientToConnect.getCarClientId();
 			_logger.info(
-					"zigbee connection with carClientId: {} connected with car with id: {} ... {} connections left",
+					"zigbee connection with carClientId: {} connected with car with id: {} ... {} connections left -----------------------",
 					new Object[] { id, car.getCarId(), _awaitingConnectionQueue.size() });
 			car.setCarClientId(id);
 			int oldConnectionCount = _connectionCount;
 			_connectionCount++;
 			_listenerList.onWorldZigbeeConnectionCountChanged(oldConnectionCount, _connectionCount);
-			_currentCarClientToConnect = null; // clear for next
+			_assignNextCarClient = true;
 			_updateCarInvocationCount.clear();
 		}
 	}

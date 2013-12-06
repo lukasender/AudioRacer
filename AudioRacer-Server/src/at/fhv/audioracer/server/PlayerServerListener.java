@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
+import at.fhv.audioracer.communication.player.message.UpdateVelocityMessage;
 import at.fhv.audioracer.server.game.GameModerator;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -25,6 +26,11 @@ public class PlayerServerListener extends Listener {
 			PlayerMessage message = (PlayerMessage) object;
 			PlayerConnection playerConnection = (PlayerConnection) connection;
 			switch (message.messageId) {
+				case UPDATE_VELOCITY:
+					UpdateVelocityMessage updateVelocityMsg = (UpdateVelocityMessage) message;
+					_gameModerator.updateVelocity(playerConnection, updateVelocityMsg.speed,
+							updateVelocityMsg.direction);
+					break;
 				case SET_PLAYER_NAME_REQUEST:
 					SetPlayerNameRequestMessage setNameReqMsg = (SetPlayerNameRequestMessage) message;
 					_gameModerator.setPlayerName(playerConnection, setNameReqMsg.playerName);
@@ -32,10 +38,13 @@ public class PlayerServerListener extends Listener {
 				case SELECT_CAR_REQUEST:
 					SelectCarRequestMessage selectCarReqMsg = (SelectCarRequestMessage) message;
 					_gameModerator.selectCar(playerConnection, selectCarReqMsg.carId);
+					break;
 				case SET_READY:
 					_gameModerator.setPlayerReady(playerConnection);
+					break;
 				case DISCONNECT:
 					_gameModerator.disconnectPlayer(playerConnection);
+					break;
 				default:
 					_logger.warn("Message with id: {} not known!", message.messageId);
 			}

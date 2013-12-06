@@ -1,9 +1,11 @@
 package at.fhv.audioracer.server.game;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -18,6 +20,8 @@ import at.fhv.audioracer.communication.player.message.StartGameMessage;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
+import at.fhv.audioracer.core.util.Direction;
+import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.server.PlayerConnection;
 import at.fhv.audioracer.server.PlayerServer;
@@ -34,7 +38,7 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 	private HashMap<Integer, Player> _playerList = new HashMap<Integer, Player>();
 	private int _plrId = 0;
 	
-	private HashMap<Integer, Car> _carList = new HashMap<Integer, Car>();
+	private Map<Integer, Car> _carList = Collections.synchronizedMap(new HashMap<Integer, Car>());
 	private Thread _worldZigbeeThread = null;
 	private WorldZigbeeMediator _worldZigbeeRunnable = new WorldZigbeeMediator();
 	
@@ -148,12 +152,18 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 		}
 	}
 	
-	public void updateCar(int carId, float posX, float poxY, float direction) {
-		_logger.debug("updateCar called for carId: {} game started: {}", carId, _gameRunning);
+	public void updateCar(int carId, float posX, float posY, float direction) {
+		// _logger.debug(
+		// "updateCar called for carId: {} game started: {} posX: {} posY: {} direction: {}",
+		// new Object[] { carId, _gameRunning, posX, posY, direction });
+		Car car = _carList.get(carId);
 		if (_gameRunning) {
-			
+			_logger.debug("updateCar for id: {}", carId);
+			synchronized (_lockObject) {
+				car.updatePosition(new Position(posX, posY), new Direction(direction));
+			}
 		} else {
-			
+			car.updatePosition(new Position(posX, posY), new Direction(direction));
 		}
 	}
 	
@@ -331,6 +341,17 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 	public void onWorldZigbeeConnectionCountChanged(int oldValue, int newValue) {
 		synchronized (_lockObject) {
 			_checkPreconditionsAndStartGameIfAllFine();
+		}
+	}
+	
+	public void updateVelocity(PlayerConnection playerConnection, float speed, float direction) {
+		ICarClient c = CarClientManager.getInstance().get(
+				playerConnection.getPlayer().getCar().getCarClientId());
+		if (c != null) {
+			c.updateVelocity(speed, direction);
+		} else {
+			_logger.warn("ICarClient for carId: {} is null!", playerConnection.getPlayer().getCar()
+					.getCarId());
 		}
 	}
 }
