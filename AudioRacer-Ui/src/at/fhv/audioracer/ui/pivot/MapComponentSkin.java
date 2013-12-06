@@ -59,10 +59,12 @@ public class MapComponentSkin extends ComponentSkin {
 		
 		for (Car car : _component.getMap().getCars()) {
 			AffineTransform xform = new AffineTransform();
-			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY + (car.getPosition().getPosY() * scale));
-			xform.scale(0.1, 0.1);
+			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY
+					+ (car.getPosition().getPosY() * scale));
+			xform.scale(0.01 * scale, 0.01 * scale);
 			xform.translate(-car.getImage().getWidth() / 2, -car.getImage().getHeight() / 2);
-			xform.rotate(Math.toRadians(car.getDirection().getDirection()), car.getImage().getWidth() / 2, car.getImage().getHeight() / 2);
+			xform.rotate(Math.toRadians(car.getDirection().getDirection()), car.getImage()
+					.getWidth() / 2, car.getImage().getHeight() / 2);
 			graphics.drawImage(car.getImage(), xform, null);
 		}
 	}
