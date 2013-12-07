@@ -1,11 +1,16 @@
 package at.fhv.audioracer.simulator.world.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
 
 public class CarClient implements ICarClient {
+	
+	private static Logger _logger = LoggerFactory.getLogger(CarClient.class);
 	
 	private Car _car = null;
 	
@@ -25,6 +30,9 @@ public class CarClient implements ICarClient {
 	
 	@Override
 	public void updateVelocity(float speed, float direction) {
+		_logger.debug("updateVelocity for car at x: {} y: {} new speed {} new direction: {})", new Object[] { _car.getPosition().getPosX(),
+				_car.getPosition().getPosY(), speed, direction });
+		
 		// get current position and direction
 		Position currentPosition = _car.getPosition();
 		
@@ -87,6 +95,11 @@ public class CarClient implements ICarClient {
 		y += (float) a;
 		
 		return new Position(x, y);
+	}
+	
+	@Override
+	public int getCarClientId() {
+		return _car.getCarId();
 	}
 	
 }
