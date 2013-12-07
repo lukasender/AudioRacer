@@ -1,0 +1,21 @@
+<ps:CarControlSplitPane
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:ps="at.fhv.audioracer.simulator.player.pivot"
+	splitRatio="0.75">
+	
+	<left>
+		<ps:CarControlComponent />
+	</left>
+	<right>
+		<Border styles="{padding: 3}">
+			<Form>
+				<Form.Section heading="Actions">
+					<PushButton bxml:id="_pushButtonSelectCar" buttonData="Select other car" />
+					<PushButton bxml:id="_pushButtonReady" buttonData="Ready" />
+				</Form.Section>
+				<Form.Section heading="Scoreboard">
+				</Form.Section>
+			</Form>
+		</Border>
+	</right>
+</ps:CarControlSplitPane>
