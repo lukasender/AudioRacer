@@ -17,6 +17,7 @@ import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.server.game.GameModerator;
 
 import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.FrameworkMessage;
 import com.esotericsoftware.kryonet.Listener;
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
@@ -36,7 +37,8 @@ public class CameraServerListener extends Listener {
 			switch (message.messageId) {
 				case UPDATE_CAR:
 					UpdateCarMessage updateCarMsg = (UpdateCarMessage) message;
-					_moderator.updateCar(updateCarMsg.carId, updateCarMsg.posX, updateCarMsg.posY, updateCarMsg.direction);
+					_moderator.updateCar(updateCarMsg.carId, updateCarMsg.posX, updateCarMsg.posY,
+							updateCarMsg.direction);
 					break;
 				case CAR_DETECTED:
 					CarDetectedMessage carDetectedMsg = (CarDetectedMessage) message;
@@ -45,7 +47,8 @@ public class CameraServerListener extends Listener {
 					BufferedImage carImage = null;
 					if (carDetectedMsg.image != null && carDetectedMsg.image.length > 0) {
 						try {
-							InputStream in = new ByteInputStream(carDetectedMsg.image, carDetectedMsg.image.length);
+							InputStream in = new ByteInputStream(carDetectedMsg.image,
+									carDetectedMsg.image.length);
 							carImage = ImageIO.read(in);
 							in.close();
 						} catch (IOException e) {
@@ -76,6 +79,8 @@ public class CameraServerListener extends Listener {
 					_logger.warn("Camera message with id: {} not known!", message.messageId);
 					break;
 			}
+		} else if (object instanceof FrameworkMessage.KeepAlive) {
+			// _logger.debug("Received Camera keepAlive ...");
 		}
 	}
 	

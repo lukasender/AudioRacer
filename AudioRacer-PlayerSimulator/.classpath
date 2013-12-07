@@ -4,9 +4,9 @@
 	<classpathentry kind="src" path="res"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-PlayerClient"/>
-	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.18-all.jar" sourcepath="/AudioRacer/libs/kryonet-src-2.18.zip"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/pivot-core-2.0.3.jar" sourcepath="/AudioRacer/libs/apache-pivot-2.0.3-src.zip"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/pivot-wtk-2.0.3.jar" sourcepath="/AudioRacer/libs/apache-pivot-2.0.3-src.zip"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/pivot-wtk-terra-2.0.3.jar" sourcepath="/AudioRacer/libs/apache-pivot-2.0.3-src.zip"/>
+	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.21-all.jar" sourcepath="/AudioRacer/libs/kryonet-2.21-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

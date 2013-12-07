@@ -73,11 +73,12 @@ public class StartUpView extends JFrame {
 			public void valueChanged(ListSelectionEvent e) {
 				
 				Integer selected = _listFreeCars.getSelectedValue();
-				if (_playerClient.getPlayerServer().selectCar(selected)) {
-					ControlView cv = new ControlView(_playerClient);
-					cv.setVisible(true);
+				if (selected != null) {
+					if (_playerClient.getPlayerServer().selectCar(selected)) {
+						ControlView cv = new ControlView(_playerClient);
+						cv.setVisible(true);
+					}
 				}
-				
 			}
 		});
 		
@@ -114,7 +115,8 @@ public class StartUpView extends JFrame {
 			@Override
 			public void onPlayerConnected(int playerId) {
 				Player[] players = new Player[_playerClient.getPlayers().size()];
-				_listConnectedPlayers.setListData(_playerClient.getPlayers().values().toArray(players));
+				_listConnectedPlayers.setListData(_playerClient.getPlayers().values()
+						.toArray(players));
 				
 			}
 			
@@ -125,7 +127,8 @@ public class StartUpView extends JFrame {
 					@Override
 					public void run() {
 						
-						_playerClient.getPlayerServer().updateVelocity(_playerClient.getSpeed(), _playerClient.getDirection());
+						_playerClient.getPlayerServer().updateVelocity(_playerClient.getSpeed(),
+								_playerClient.getDirection());
 						try {
 							Thread.sleep(40);
 						} catch (InterruptedException e) {
@@ -135,15 +138,6 @@ public class StartUpView extends JFrame {
 					}
 				});
 				t.start();
-			}
-		});
-		
-		_listFreeCars.addListSelectionListener(new ListSelectionListener() {
-			
-			@Override
-			public void valueChanged(ListSelectionEvent arg0) {
-				_playerClient.getPlayerServer().selectCar(_listFreeCars.getSelectedValue());
-				
 			}
 		});
 		

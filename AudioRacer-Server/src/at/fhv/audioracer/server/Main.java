@@ -18,6 +18,10 @@ public class Main {
 	private static Logger _logger = LoggerFactory.getLogger(Main.class);
 	
 	public static void main(String[] args) {
+		start(args);
+	}
+	
+	public static void start(String[] args) {
 		PlayerServer playerServer = null;
 		PlayerServerListener playerServerListener = null;
 		Server cameraServer = null;
@@ -34,7 +38,7 @@ public class Main {
 			playerServer.start();
 			
 			// cameraServer = new Server();
-			cameraServer = new Server(16384, 81920);
+			cameraServer = new Server(20 * 16384, 30 * 81920);
 			cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT);
 			
 			CameraServerListener cameraServerListener = new CameraServerListener(gameModerator);
@@ -55,4 +59,5 @@ public class Main {
 			// TODO: Are this all connections, we need to close?
 		}
 	}
+	
 }

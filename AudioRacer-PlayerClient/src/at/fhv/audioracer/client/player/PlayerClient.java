@@ -281,6 +281,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		
 		_client.addListener(serverClient);
 		_client.addListener(this);
+		
 		_client.connect(1000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
 				PlayerNetwork.PLAYER_SERVICE_PORT);
 		_connected = true;
