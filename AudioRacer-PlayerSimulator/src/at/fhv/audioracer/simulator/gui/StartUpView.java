@@ -182,7 +182,7 @@ public class StartUpView extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					if (!_playerClient.hasConnection()) {
-						_playerClient.startClient(_playerClient.getPlayer().getName());
+						_playerClient.startClient(_playerClient.getPlayer().getName(), "localhost");
 						_btnConnect.setText("Disconnect");
 						_lblConnected.setText("Connected");
 					} else {

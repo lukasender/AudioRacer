@@ -1,0 +1,9 @@
+<ps:PlayerNameForm
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:ps="at.fhv.audioracer.simulator.player.pivot">
+
+	<Form.Section heading="AudioRacer - Player simulator">
+		<TextInput bxml:id="_textInputName" Form.Label="Player name" />
+		<PushButton bxml:id="_pushButton" buttonData="Discover servers" />
+	</Form.Section>
+</ps:PlayerNameForm>

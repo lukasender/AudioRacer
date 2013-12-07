@@ -1,7 +1,6 @@
 package at.fhv.audioracer.client.player;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.HashMap;
 
 import at.fhv.audioracer.communication.player.IPlayerClient;
@@ -272,7 +271,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		return _listenerList;
 	}
 	
-	public void startClient(String playerName) throws IOException {
+	public void startClient(String playerName, String host) throws IOException {
 		_client = new Client();
 		_client.start();
 		
@@ -282,7 +281,8 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		
 		_client.addListener(serverClient);
 		_client.addListener(this);
-		_client.connect(1000, InetAddress.getLoopbackAddress(), PlayerNetwork.PLAYER_SERVICE_PORT,
+		
+		_client.connect(1000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
 				PlayerNetwork.PLAYER_SERVICE_PORT);
 		_connected = true;
 		
