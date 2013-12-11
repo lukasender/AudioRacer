@@ -1,9 +1,11 @@
 package at.fhv.audioracer.server.game;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -15,12 +17,19 @@ import at.fhv.audioracer.communication.player.message.PlayerDisconnectedMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
+import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
+import at.fhv.audioracer.core.util.Direction;
+import at.fhv.audioracer.core.util.Position;
+import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.server.PlayerConnection;
 import at.fhv.audioracer.server.PlayerServer;
+import at.fhv.audioracer.server.WorldZigbeeMediator;
+import at.fhv.audioracer.server.model.ICarClientListener;
+import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 
-public class GameModerator {
+public class GameModerator implements ICarClientListener, IWorldZigbeeConnectionCountChanged {
 	
 	private static Logger _logger = LoggerFactory.getLogger(GameModerator.class);
 	private PlayerServer _playerServer;
@@ -29,7 +38,9 @@ public class GameModerator {
 	private HashMap<Integer, Player> _playerList = new HashMap<Integer, Player>();
 	private int _plrId = 0;
 	
-	private HashMap<Integer, Car> _carList = new HashMap<Integer, Car>();
+	private Map<Integer, Car> _carList = Collections.synchronizedMap(new HashMap<Integer, Car>());
+	private Thread _worldZigbeeThread = null;
+	private WorldZigbeeMediator _worldZigbeeRunnable = new WorldZigbeeMediator();
 	
 	private Object _lockObject = new Object();
 	private boolean _gameRunning = false;
@@ -37,10 +48,12 @@ public class GameModerator {
 	// next conditions must be true for game start
 	private boolean _mapConfigured = false;
 	private boolean _detectionFinished = false;
-	private boolean _allZigBeeConnected = false;
 	
 	public GameModerator(PlayerServer playerServer) {
 		_playerServer = playerServer;
+		CarClientManager.getInstance().getCarClientListenerList().add(this);
+		_worldZigbeeThread = new Thread(_worldZigbeeRunnable);
+		CarClientManager.getInstance().getCarClientListenerList().add(_worldZigbeeRunnable);
 	}
 	
 	/**
@@ -91,11 +104,8 @@ public class GameModerator {
 				if (!_carList.containsKey(newCar.getCarId())) {
 					_logger.debug("carDetected - id: {}", newCar.getCarId());
 					
-					// we can put _detectionFinished = false here if we
-					// want to make car detections between game rounds possible
-					
-					_allZigBeeConnected = false;
 					_carList.put(newCar.getCarId(), newCar);
+					newCar.getCarListenerList().add(_worldZigbeeRunnable);
 				} else {
 					_logger.warn("Car with id: {} allready known!", newCar.getCarId());
 				}
@@ -128,6 +138,12 @@ public class GameModerator {
 				_logger.warn("detectionFinished cannot be called during game is running!");
 			} else if (_carList.size() > 0) {
 				_detectionFinished = true;
+				
+				// camera detection of cars finished, connect ZigBee within a background thread and let
+				// this method return instantly so kryonet listener can continue to do its work
+				if (_worldZigbeeThread.isAlive() == false) {
+					_worldZigbeeThread.start();
+				}
 				_checkPreconditionsAndStartGameIfAllFine();
 			} else {
 				_logger.warn("server will not accept detection finished "
@@ -136,8 +152,19 @@ public class GameModerator {
 		}
 	}
 	
-	public void updateCar(int carId, float posX, float poxY, float direction) {
-		_logger.debug("implement me - updateCar called for carId: {}", carId);
+	public void updateCar(int carId, float posX, float posY, float direction) {
+		// _logger.debug(
+		// "updateCar called for carId: {} game started: {} posX: {} posY: {} direction: {}",
+		// new Object[] { carId, _gameRunning, posX, posY, direction });
+		Car car = _carList.get(carId);
+		if (_gameRunning) {
+			_logger.debug("updateCar for id: {}", carId);
+			synchronized (_lockObject) {
+				car.updatePosition(new Position(posX, posY), new Direction(direction));
+			}
+		} else {
+			car.updatePosition(new Position(posX, posY), new Direction(direction));
+		}
 	}
 	
 	public void selectCar(PlayerConnection playerConnection, int carId) {
@@ -221,7 +248,7 @@ public class GameModerator {
 	private void _checkPreconditionsAndStartGameIfAllFine() {
 		
 		if (_gameRunning == false && _mapConfigured && _detectionFinished) {
-			boolean startGame = true;
+			
 			// check all cars available have a player connected (=selectCar)
 			// and this players are all in ready state (=setPlayerReady)
 			// at this state we have at least one Car in _carList
@@ -233,24 +260,34 @@ public class GameModerator {
 					entry = it.next();
 					car = entry.getValue();
 					if (car.getPlayer() == null) {
-						startGame = false;
+						return;
 					} else if (!car.getPlayer().isReady()) {
-						startGame = false;
+						return;
 					}
 				}
 			} catch (ConcurrentModificationException e) {
-				startGame = false;
+				return;
 			}
 			
-			if (startGame) {
-				_logger.info("Game preconditions are all given. Game will start now!");
-				_gameRunning = true; // all preconditions OK, start game
-				
-				// TODO: good idea to send in synchronized block?
-				StartGameMessage startGameMsg = new StartGameMessage();
-				startGameMsg.gameWillStartInMilliseconds = 0;
-				_playerServer.sendToAllTCP(startGameMsg);
+			// check that as much zigBee connections are established as cars available
+			if (_worldZigbeeRunnable.getConnectionCount() != _carList.size()) {
+				_logger.info(
+						"Expected zigBeeConnection count {} currently not fulfill expectation count {} ",
+						_worldZigbeeRunnable.getConnectionCount(), _carList.size());
+				return;
 			}
+			
+			_logger.info("Game preconditions are all given. Game will start now!");
+			_gameRunning = true;
+			
+			if (_worldZigbeeThread.isAlive()) {
+				_worldZigbeeThread.interrupt();
+			}
+			
+			// TODO: good idea to send in synchronized block?
+			StartGameMessage startGameMsg = new StartGameMessage();
+			startGameMsg.gameWillStartInMilliseconds = 0;
+			_playerServer.sendToAllTCP(startGameMsg);
 		}
 	}
 	
@@ -287,6 +324,34 @@ public class GameModerator {
 					player.getPlayerId());
 			
 			_checkPreconditionsAndStartGameIfAllFine();
+		}
+	}
+	
+	@Override
+	public void onCarClientConnect(ICarClient carClient) {
+		// TODO: if game has paused while running, return to game if all connections established again
+	}
+	
+	@Override
+	public void onCarClientDisconnect(ICarClient carClient) {
+		// TODO: if game is running, remember carClientID(s) and pause game
+	}
+	
+	@Override
+	public void onWorldZigbeeConnectionCountChanged(int oldValue, int newValue) {
+		synchronized (_lockObject) {
+			_checkPreconditionsAndStartGameIfAllFine();
+		}
+	}
+	
+	public void updateVelocity(PlayerConnection playerConnection, float speed, float direction) {
+		ICarClient c = CarClientManager.getInstance().get(
+				playerConnection.getPlayer().getCar().getCarClientId());
+		if (c != null) {
+			c.updateVelocity(speed, direction);
+		} else {
+			_logger.warn("ICarClient for carId: {} is null!", playerConnection.getPlayer().getCar()
+					.getCarId());
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package at.fhv.audioracer.simulator.world;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.message.CameraMessage;
+import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
 import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
 import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Car;
@@ -53,7 +54,7 @@ public class SimulationController {
 	private List<ICarClient> _carClients;
 	
 	private Position _lastCarPos;
-	private static float TRANSLATE_BY = 2;
+	private static float TRANSLATE_BY = 4;
 	
 	private SimulationController() {
 		_carId = 0;
@@ -103,9 +104,11 @@ public class SimulationController {
 		_carClientManager.connect(carClient);
 		_carClients.add(carClient);
 		
-		byte[] byteImage = ((DataBufferByte) image.getData().getDataBuffer()).getData();
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ImageIO.write(image, "png", out);
+		out.flush();
+		_camera.sendTCP(createCarDetectedMessage(_carId, out.toByteArray()));
 		
-		_camera.sendTCP(createCarDetectedMessage(_carId, byteImage));
 		_carId++;
 		
 		logger.info("added car with id: " + (_carId - 1));
@@ -171,12 +174,12 @@ public class SimulationController {
 	}
 	
 	private CameraMessage createAllCarsDetectionFinishedMessage() {
-		CameraMessage detectionFinished = new CameraMessage();
+		CameraMessage detectionFinished = new CameraMessage(MessageId.DETECTION_FINISHED);
 		return detectionFinished;
 	}
 	
 	private void translateLastCarPosX(float x) {
-		_lastCarPos = new Position(_lastCarPos.getPosX() + x, 0);
+		_lastCarPos = new Position(_lastCarPos.getPosX() + x, _lastCarPos.getPosY());
 	}
 	
 }

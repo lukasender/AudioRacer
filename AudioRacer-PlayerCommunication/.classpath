@@ -2,6 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.18-all.jar" sourcepath="/AudioRacer/libs/kryonet-src-2.18.zip"/>
+	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.21-all.jar" sourcepath="/AudioRacer/libs/kryonet-2.21-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

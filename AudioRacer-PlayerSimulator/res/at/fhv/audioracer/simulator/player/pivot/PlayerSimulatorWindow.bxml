@@ -1,0 +1,8 @@
+<ps:PlayerSimulatorWindow title="AudioRacer - Player simualtor" maximized="true"
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:ps="at.fhv.audioracer.simulator.player.pivot">
+
+	<FillPane bxml:id="_fillPane">
+		<bxml:include src="PlayerNameForm.bxml" />
+	</FillPane>
+</ps:PlayerSimulatorWindow>

@@ -1,0 +1,14 @@
+<ps:CarSelectForm
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:ps="at.fhv.audioracer.simulator.player.pivot"
+	styles="{fill: true}">
+
+	<Form.Section heading="AudioRacer - Lobby">
+		<Border Form.Label="Car">
+			<ScrollPane preferredHeight="500" horizontalScrollBarPolicy="fill" verticalScrollBarPolicy="fill_to_capacity">
+				<ListView bxml:id="_listView" />
+			</ScrollPane>
+		</Border>
+		<PushButton bxml:id="_pushButtonSelectCar" buttonData="Select car" />
+	</Form.Section>
+</ps:CarSelectForm>

@@ -1,0 +1,14 @@
+<ps:ServerDiscoveryForm
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:ps="at.fhv.audioracer.simulator.player.pivot"
+	styles="{fill: true}">
+
+	<Form.Section heading="AudioRacer - Server discovery">
+		<Border Form.Label="Server">
+			<ScrollPane preferredHeight="500" horizontalScrollBarPolicy="fill" verticalScrollBarPolicy="fill_to_capacity">
+				<ListView bxml:id="_listView" />
+			</ScrollPane>
+		</Border>
+		<PushButton bxml:id="_pushButton" buttonData="Connect" />
+	</Form.Section>
+</ps:ServerDiscoveryForm>
