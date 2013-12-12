@@ -43,7 +43,7 @@ public class Map {
 		_sizeX = sizeX;
 		_sizeY = sizeY;
 		
-		_cars = new HashMap<>();
+		_cars = new HashMap<Integer, Car>();
 		
 		_listenerList = new MapListenerList();
 	}

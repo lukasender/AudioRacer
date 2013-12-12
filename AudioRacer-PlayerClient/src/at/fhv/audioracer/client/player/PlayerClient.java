@@ -8,7 +8,6 @@ import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
-import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.ListenerList;
 import at.fhv.audioracer.core.util.Position;
@@ -83,10 +82,10 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	 */
 	private HashMap<Integer, Player> _players;
 	
-	/*
-	 * holds known cars
+	/**
+	 * currently known cars. <Integer, CarId>
 	 */
-	private HashMap<Integer, Car> _cars;
+	private HashMap<Integer, Integer> _cars;
 	
 	/*
 	 * ids of free cars
@@ -152,7 +151,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	public PlayerClient() {
 		super();
 		_players = new HashMap<Integer, Player>();
-		_cars = new HashMap<Integer, Car>();
+		_cars = new HashMap<Integer, Integer>();
 		_player = new Player();
 		_listenerList = new PlayerClientListenerList();
 		_connected = false;
@@ -211,7 +210,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		// check list for unknown free cars and add them
 		for (int i = 0; i < carIds.length; i++) {
 			if (!_cars.containsKey(carIds[i])) {
-				_cars.put(carIds[i], new Car(carIds[i]));
+				_cars.put(carIds[i], carIds[i]);
 			}
 		}
 		
@@ -243,7 +242,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		return _players;
 	}
 	
-	public HashMap<Integer, Car> getCars() {
+	public HashMap<Integer, Integer> getCars() {
 		return _cars;
 	}
 	

@@ -3,27 +3,42 @@ package at.fhv.audioracer.client.android.activity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import android.app.ListActivity;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 import at.fhv.audioracer.client.android.R;
+import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.info.GameInfo;
-import at.fhv.audioracer.client.android.network.DiscoverHostTask;
-import at.fhv.audioracer.communication.player.PlayerNetwork;
+import at.fhv.audioracer.client.android.network.task.StartClientAsyncTask;
+import at.fhv.audioracer.client.android.network.task.params.StartClientParams;
+import at.fhv.audioracer.client.android.network.util.AndroidThreadProxy;
+import at.fhv.audioracer.client.android.network.util.IThreadProxy;
+import at.fhv.audioracer.client.android.util.Defaults;
+import at.fhv.audioracer.client.player.IServerDiscoverListener;
+import at.fhv.audioracer.client.player.ServerDiscover;
 
-public class JoinGameActivity extends ListActivity {
+public class JoinGameActivity extends ListActivity implements IServerDiscoverListener, IThreadProxy {
+	
+	private static final String GAME_NAME = "AudioRacer";
 	
 	private List<HashMap<String, String>> _games = new ArrayList<HashMap<String, String>>();
 	private SimpleAdapter _gamesListAdapter = null;
+	
+	private ServerDiscover _serverDiscover;
+	
+	public JoinGameActivity() {
+		super();
+		_serverDiscover = new ServerDiscover();
+		_serverDiscover.getListenerList().add((IServerDiscoverListener) new AndroidThreadProxy(this).getProxy());
+	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,29 +57,49 @@ public class JoinGameActivity extends ListActivity {
 		refreshGames.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				AsyncTask<Integer, Integer, List<GameInfo>> discoverHostTask = new DiscoverHostTask().execute(PlayerNetwork.PLAYER_SERVICE_PORT);
 				try {
-					for (GameInfo game : discoverHostTask.get()) {
-						addGame(game);
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (ExecutionException e) {
+					_serverDiscover.stopDiscover();
+					clearGames();
+					_serverDiscover.start();
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 		
+		final Intent selectCarsIntent = new Intent(this, SelectCarActivity.class);
 		ListView gamesListView = (ListView) findViewById(android.R.id.list);
 		gamesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				
+				ClientManager manager = ClientManager.getInstance();
+				
+				// get player name
+				CharSequence playerNameCS = manager.retreivePlayerName(JoinGameActivity.this);
+				String playerName = Defaults.PLAYER_NAME;
+				if (playerNameCS != null) {
+					playerName = playerNameCS.toString();
+				} else {
+					Log.e(ACTIVITY_SERVICE, "Something went wrong? player name is null");
+				}
+				
+				// try to connect and switch to next activity.
 				@SuppressWarnings("unchecked")
 				HashMap<String, String> game = (HashMap<String, String>) parent.getItemAtPosition(position);
+				StartClientAsyncTask startClient = new StartClientAsyncTask();
+				StartClientParams params = new StartClientParams();
+				params.playerName = playerName;
+				params.host = game.get(GameInfo.INFO);
+				startClient.execute(params);
 				
-				Toast.makeText(getApplicationContext(), "Click ListItem Number " + position + "\nGame: " + game.get(GameInfo.NAME), Toast.LENGTH_SHORT).show();
+				_serverDiscover.stopDiscover();
+				
+				startActivity(selectCarsIntent);
 			}
 		});
+		
+		_serverDiscover.start();
 	}
 	
 	@Override
@@ -74,12 +109,44 @@ public class JoinGameActivity extends ListActivity {
 		return true;
 	}
 	
-	private void addGame(GameInfo game) {
+	@Override
+	public void onServerDiscovered(String host) {
+		addGame(new GameInfo(GAME_NAME, host));
+	}
+	
+	@Override
+	public void onServerLost(String host) {
+		removeGame(host);
+	}
+	
+	public void addGame(GameInfo game) {
 		HashMap<String, String> gameMap = new HashMap<String, String>();
 		gameMap.put(GameInfo.NAME, game.getName());
 		gameMap.put(GameInfo.INFO, game.getInfo());
 		_games.add(gameMap);
 		_gamesListAdapter.notifyDataSetChanged();
+	}
+	
+	private void removeGame(String host) {
+		GameInfo toDelete = new GameInfo(GAME_NAME, host);
+		HashMap<String, String> gameMap = new HashMap<String, String>();
+		gameMap.put(GameInfo.NAME, toDelete.getName());
+		gameMap.put(GameInfo.INFO, toDelete.getInfo());
+		boolean removed = _games.remove(gameMap);
+		if (removed) {
+			System.out.println("Removed game with host '" + host + "'");
+		}
+		_gamesListAdapter.notifyDataSetChanged();
+	}
+	
+	public void clearGames() {
+		_games.clear();
+		_gamesListAdapter.notifyDataSetChanged();
+	}
+	
+	@Override
+	public View getView() {
+		return getListView();
 	}
 	
 }

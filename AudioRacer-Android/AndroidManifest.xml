@@ -3,7 +3,7 @@
     package="at.fhv.audioracer.client.android"
     android:versionCode="1"
     android:versionName="1.0" >
-    
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-sdk
@@ -27,6 +27,10 @@
         <activity
             android:name="at.fhv.audioracer.client.android.activity.JoinGameActivity"
             android:label="@string/title_activity_join_game" >
+        </activity>
+        <activity
+            android:name="at.fhv.audioracer.client.android.activity.SelectCarActivity"
+            android:label="@string/title_activity_select_car" >
         </activity>
     </application>
 
