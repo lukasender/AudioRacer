@@ -12,7 +12,7 @@ import at.fhv.audioracer.core.util.Position;
 
 public class CarControlComponent extends Component implements Runnable {
 	
-	private static final float CONTROL_SENSITY = 2.f;
+	private static final float CONTROL_SENSITY = 1.f;
 	protected static final long MAX_CONTROL_WAIT = 10;
 	
 	private volatile boolean _running;
@@ -134,7 +134,8 @@ public class CarControlComponent extends Component implements Runnable {
 				_direction = Math.max(0.f, (_direction - sensity));
 			}
 			
-			// TODO: _playerClient.getPlayerServer().updateVelocity(_speed, _direction);
+			// note that this is sent continuously
+			_playerClient.getPlayerServer().updateVelocity(_speed, _direction);
 			
 			ApplicationContext.queueCallback(new Runnable() {
 				

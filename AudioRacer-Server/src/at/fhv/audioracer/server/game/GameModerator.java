@@ -345,6 +345,9 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 	}
 	
 	public void updateVelocity(PlayerConnection playerConnection, float speed, float direction) {
+		if (_detectionFinished == false)
+			return; // suppress user interaction until camera finished car detection
+			
 		ICarClient c = CarClientManager.getInstance().get(
 				playerConnection.getPlayer().getCar().getCarClientId());
 		if (c != null) {
