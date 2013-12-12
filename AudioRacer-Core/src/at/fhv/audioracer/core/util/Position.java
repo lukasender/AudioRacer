@@ -1,27 +1,24 @@
 package at.fhv.audioracer.core.util;
 
-public class Position {
-	private float _posX;
-	private float _posY;
+public class Position extends Vector {
 	
 	public Position(float x, float y) {
-		_posX = x;
-		_posY = y;
+		super(new float[] { x, y });
 	}
 	
 	public float getPosX() {
-		return _posX;
+		return _values[0];
 	}
 	
 	public void setPosX(float posX) {
-		this._posX = posX;
+		this._values[0] = posX;
 	}
 	
 	public float getPosY() {
-		return _posY;
+		return _values[1];
 	}
 	
 	public void setPosY(float posY) {
-		this._posY = posY;
+		this._values[1] = posY;
 	}
 }
