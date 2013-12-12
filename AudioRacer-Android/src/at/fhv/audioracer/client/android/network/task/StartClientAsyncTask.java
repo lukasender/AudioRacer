@@ -6,7 +6,7 @@ import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.network.task.params.StartClientParams;
 import at.fhv.audioracer.client.player.PlayerClient;
 
-public class StartClientAsyncTask extends NetworkAsyncTask<StartClientParams> {
+public class StartClientAsyncTask extends NetworkAsyncTask<StartClientParams, Boolean> {
 	
 	@Override
 	protected Boolean doInBackground(StartClientParams... params) {
