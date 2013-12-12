@@ -15,8 +15,6 @@ import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 public abstract class NetworkAsyncTask<T extends NetworkParams, R> extends AsyncTask<T, Integer, R> {
 	
 	@Override
-	protected R doInBackground(T... arg0) {
-		throw new UnsupportedOperationException();
-	}
+	protected abstract R doInBackground(T... params);
 	
 }
