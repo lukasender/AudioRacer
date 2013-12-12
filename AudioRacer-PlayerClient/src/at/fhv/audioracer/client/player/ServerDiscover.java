@@ -46,6 +46,7 @@ public class ServerDiscover extends Thread {
 	}
 	
 	public void stopDiscover() {
+		_knownServers.clear();
 		_running = false;
 	}
 	
