@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import at.fhv.audioracer.client.android.R;
+import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.util.Defaults;
 import at.fhv.audioracer.client.android.util.Preferences;
 
@@ -33,14 +34,17 @@ public class StartActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_start);
 		
+		// @formatter:off
 		/* ***************************** *
-		 * only do this while debugging!
-		 * ***************************** */
-//		clearSharedPreferences();
+		 * only do this while debugging! 
+		 * ***************************** *
+		 */
+		// clearSharedPreferences();
+		// @formatter:on
 		
 		_playerNameText = (EditText) findViewById(R.id.player_name);
 		final Intent gamesIntent = new Intent(this, JoinGameActivity.class);
-
+		
 		// load and set player name
 		restorePlayerName();
 		
@@ -69,31 +73,18 @@ public class StartActivity extends Activity {
 		// if the player did not choose a name, a default name is be used.
 		if (playerName.getText().length() > 0) {
 			_playerName = playerName.getText();
-			savePlayerName();
+			ClientManager.getInstance().savePlayerName(this, _playerName);
 		} else {
 			_playerName = Defaults.PLAYER_NAME;
 		}
 	}
 	
 	private void restorePlayerName() {
-		SharedPreferences pref = getSharedPreferences(Preferences.PLAYER_PREFERENCES, MODE_PRIVATE);
-		_playerName = pref.getString(Preferences.PLAYER_NAME, null); // null as default
+		_playerName = ClientManager.getInstance().retreivePlayerName(this);
 		// if _playerName is null, the 'hint' message will be shown.
 		_playerNameText.setText(_playerName);
 		
 		Log.d(Preferences.PLAYER_NAME, "Restored playername: " + ((_playerName == null) ? "null" : _playerName.toString()));
-	}
-	
-	private void savePlayerName() {
-		SharedPreferences pref = getSharedPreferences(Preferences.PLAYER_PREFERENCES, MODE_PRIVATE);
-		SharedPreferences.Editor editor = pref.edit();
-		editor.putString(Preferences.PLAYER_NAME, _playerName.toString());
-		
-		if (editor.commit()) {
-			Log.d(Preferences.PLAYER_NAME, "new player name saved: " + _playerName);
-		} else {
-			Log.e(Preferences.PLAYER_NAME, "could not save new player name");
-		}
 	}
 	
 }
