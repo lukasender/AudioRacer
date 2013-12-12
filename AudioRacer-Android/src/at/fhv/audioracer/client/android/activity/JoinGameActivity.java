@@ -5,18 +5,23 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 import at.fhv.audioracer.client.android.R;
+import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.info.GameInfo;
+import at.fhv.audioracer.client.android.network.task.StartClientAsyncTask;
+import at.fhv.audioracer.client.android.network.task.params.StartClientParams;
 import at.fhv.audioracer.client.android.network.util.AndroidThreadProxy;
 import at.fhv.audioracer.client.android.network.util.IThreadProxy;
+import at.fhv.audioracer.client.android.util.Defaults;
 import at.fhv.audioracer.client.player.IServerDiscoverListener;
 import at.fhv.audioracer.client.player.ServerDiscover;
 
@@ -62,14 +67,35 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 			}
 		});
 		
+		final Intent selectCarsIntent = new Intent(this, SelectCarActivity.class);
 		ListView gamesListView = (ListView) findViewById(android.R.id.list);
 		gamesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				
+				ClientManager manager = ClientManager.getInstance();
+				
+				// get player name
+				CharSequence playerNameCS = manager.retreivePlayerName(JoinGameActivity.this);
+				String playerName = Defaults.PLAYER_NAME;
+				if (playerNameCS != null) {
+					playerName = playerNameCS.toString();
+				} else {
+					Log.e(ACTIVITY_SERVICE, "Something went wrong? player name is null");
+				}
+				
+				// try to connect and switch to next activity.
 				@SuppressWarnings("unchecked")
 				HashMap<String, String> game = (HashMap<String, String>) parent.getItemAtPosition(position);
+				StartClientAsyncTask startClient = new StartClientAsyncTask();
+				StartClientParams params = new StartClientParams();
+				params.playerName = playerName;
+				params.host = game.get(GameInfo.INFO);
+				startClient.execute(params);
 				
-				Toast.makeText(getApplicationContext(), "Click ListItem Number " + position + "\nGame: " + game.get(GameInfo.NAME), Toast.LENGTH_SHORT).show();
+				_serverDiscover.stopDiscover();
+				
+				startActivity(selectCarsIntent);
 			}
 		});
 		
@@ -81,6 +107,16 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.join_game, menu);
 		return true;
+	}
+	
+	@Override
+	public void onServerDiscovered(String host) {
+		addGame(new GameInfo(GAME_NAME, host));
+	}
+	
+	@Override
+	public void onServerLost(String host) {
+		removeGame(host);
 	}
 	
 	public void addGame(GameInfo game) {
@@ -106,16 +142,6 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 	public void clearGames() {
 		_games.clear();
 		_gamesListAdapter.notifyDataSetChanged();
-	}
-	
-	@Override
-	public void onServerDiscovered(String host) {
-		addGame(new GameInfo(GAME_NAME, host));
-	}
-	
-	@Override
-	public void onServerLost(String host) {
-		removeGame(host);
 	}
 	
 	@Override
