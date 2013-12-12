@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import at.fhv.audioracer.client.android.R;
+import at.fhv.audioracer.client.android.aui.SoundPlayer2D;
 import at.fhv.audioracer.client.android.util.Defaults;
 import at.fhv.audioracer.client.android.util.Preferences;
 
@@ -34,13 +35,13 @@ public class StartActivity extends Activity {
 		setContentView(R.layout.activity_start);
 		
 		/* ***************************** *
-		 * only do this while debugging!
-		 * ***************************** */
-//		clearSharedPreferences();
+		 * only do this while debugging! *****************************
+		 */
+		// clearSharedPreferences();
 		
 		_playerNameText = (EditText) findViewById(R.id.player_name);
 		final Intent gamesIntent = new Intent(this, JoinGameActivity.class);
-
+		
 		// load and set player name
 		restorePlayerName();
 		
@@ -53,6 +54,21 @@ public class StartActivity extends Activity {
 				startActivity(gamesIntent);
 			}
 		});
+		
+		Button playSoundButton = (Button) findViewById(R.id.play_sound_button);
+		final Activity _activity = this;
+		playSoundButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				
+				Log.d(UI_MODE_SERVICE, "Play Sound Clicked");
+				SoundPlayer2D soundPlayer = new SoundPlayer2D(100, 5);
+				soundPlayer.test();
+				Log.d(UI_MODE_SERVICE, "Play Sound played");
+				
+			}
+		});
+		
 	}
 	
 	@Override
