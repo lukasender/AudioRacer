@@ -34,7 +34,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 	private ICarClient _currentCarClientToConnect = null;
 	private Boolean _assignNextCarClient = true;
 	private HashMap<Integer, Integer> _updateCarInvocationCount = new HashMap<Integer, Integer>();
-	private final int _upateCarInvocationCountThreshold = 200;
+	private final int _upateCarInvocationCountThreshold = 1000;
 	private int _connectionCount = 0;
 	private float _configurationSpeed = 1.f;
 	private float _configurationDirection = 0.0f;
@@ -84,7 +84,8 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 		// _logger.debug("try to assign CarClient with id: {} current updatePos count: {}", carId,
 		// count);
 		
-		if (count > _upateCarInvocationCountThreshold) {
+		if (count > _upateCarInvocationCountThreshold
+				&& car.getCarClientId() == Car.CAR_CLIENT_NOT_ASSIGNED_ID) {
 			int id = _currentCarClientToConnect.getCarClientId();
 			_logger.info(
 					"zigbee connection with carClientId: {} connected with car with id: {} ... {} connections left -----------------------",

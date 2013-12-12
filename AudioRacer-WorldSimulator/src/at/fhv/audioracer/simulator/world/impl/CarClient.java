@@ -30,8 +30,8 @@ public class CarClient implements ICarClient {
 	
 	@Override
 	public void updateVelocity(float speed, float direction) {
-		_logger.debug("updateVelocity for car at x: {} y: {} new speed {} new direction: {})", new Object[] { _car.getPosition().getPosX(),
-				_car.getPosition().getPosY(), speed, direction });
+		// _logger.debug("updateVelocity for car at x: {} y: {} new speed {} new direction: {})", new Object[] { _car.getPosition().getPosX(),
+		// _car.getPosition().getPosY(), speed, direction });
 		
 		// get current position and direction
 		Position currentPosition = _car.getPosition();

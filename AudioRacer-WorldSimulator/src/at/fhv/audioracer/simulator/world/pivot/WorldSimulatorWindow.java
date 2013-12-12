@@ -44,6 +44,7 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 	private static final int DEFAULT_MAP_SIZE_Y = 300;
 	
 	private static Client _cameraClient;
+	private static Object _lock = new Object();
 	
 	// private static ArrayList<CarCommunicationProxy> _carList = new ArrayList<CarCommunicationProxy>();
 	
@@ -124,6 +125,14 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 			startCameraClient();
 			
 			while (true) {
+				try {
+					synchronized (_lock) {
+						_lock.wait();
+					}
+				} catch (InterruptedException e) {
+					// Restore the interrupted status
+					Thread.currentThread().interrupt();
+				}
 			}
 			
 		} catch (Exception e) {
