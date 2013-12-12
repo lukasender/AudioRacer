@@ -124,6 +124,7 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 		gameMap.put(GameInfo.NAME, game.getName());
 		gameMap.put(GameInfo.INFO, game.getInfo());
 		_games.add(gameMap);
+		Log.d(ACTIVITY_SERVICE, "Added game with host '" + game.getInfo() + "'");
 		_gamesListAdapter.notifyDataSetChanged();
 	}
 	
@@ -134,7 +135,7 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 		gameMap.put(GameInfo.INFO, toDelete.getInfo());
 		boolean removed = _games.remove(gameMap);
 		if (removed) {
-			System.out.println("Removed game with host '" + host + "'");
+			Log.d(ACTIVITY_SERVICE, "Removed game with host '" + host + "'");
 		}
 		_gamesListAdapter.notifyDataSetChanged();
 	}
