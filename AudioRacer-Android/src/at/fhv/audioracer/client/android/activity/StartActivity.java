@@ -60,7 +60,6 @@ public class StartActivity extends Activity {
 		});
 		
 		Button playSoundButton = (Button) findViewById(R.id.play_sound_button);
-		final Activity _activity = this;
 		playSoundButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
