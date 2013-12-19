@@ -47,19 +47,13 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 		_playerClientListener = new IPlayerClientListener.Adapter() {
 			@Override
 			public void onUpdateFreeCars() {
-				try {
-					task.execute(new NetworkParams());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				task.execute(new NetworkParams());
 			}
 		};
-		
 		ClientManager.getInstance().getPlayerClient().getListenerList().add(_playerClientListener);
 		
 		ListView carsListView = (ListView) findViewById(android.R.id.list);
 		carsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				// TODO Auto-generated method stub
@@ -76,7 +70,8 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 	}
 	
 	@Override
-	public void addCars(int[] freeCarIds) {
+	public void addFreeCars(int[] freeCarIds) {
+		Log.d(ACTIVITY_SERVICE, "called addCars()");
 		_cars.clear();
 		for (int id : freeCarIds) {
 			HashMap<String, String> carMap = new HashMap<String, String>();
