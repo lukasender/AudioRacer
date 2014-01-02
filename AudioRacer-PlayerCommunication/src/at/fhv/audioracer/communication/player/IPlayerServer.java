@@ -12,15 +12,14 @@ public interface IPlayerServer {
 	
 	public void updateVelocity(float speed, float direction);
 	
-	public boolean selectCar(int carId);
+	public boolean selectCar(byte carId);
 	
 	/**
 	 * 
 	 * @param carId
 	 * @return Image of the car
 	 */
-	// TODO: image als byte[]?
-	public byte[] getCarImage(int carId);
+	public byte[] getCarImage(byte carId);
 	
 	public void setPlayerReady();
 }

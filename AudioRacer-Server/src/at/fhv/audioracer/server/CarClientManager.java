@@ -64,7 +64,7 @@ public class CarClientManager implements ICarClientManager {
 		_carClientList.remove(carClient.getCarClientId());
 	}
 	
-	public ICarClient get(int carClientId) {
+	public ICarClient get(byte carClientId) {
 		return _carClientList.get(carClientId);
 	}
 	

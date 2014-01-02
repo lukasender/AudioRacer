@@ -8,7 +8,7 @@ import at.fhv.audioracer.core.util.Position;
 
 public class Car {
 
-	public static int CAR_CLIENT_NOT_ASSIGNED_ID = -1;
+	public static byte CAR_CLIENT_NOT_ASSIGNED_ID = -1;
 
 	private static class CarListenerList extends ListenerList<ICarListener>
 			implements ICarListener {
@@ -22,7 +22,7 @@ public class Car {
 
 	private final byte _carId;
 
-	private int _carClientId = CAR_CLIENT_NOT_ASSIGNED_ID;
+	private byte _carClientId = CAR_CLIENT_NOT_ASSIGNED_ID;
 
 	private Position _position;
 	/**
@@ -102,11 +102,11 @@ public class Car {
 		return _listenerList;
 	}
 
-	public int getCarClientId() {
+	public byte getCarClientId() {
 		return _carClientId;
 	}
 
-	public void setCarClientId(int carClientId) {
+	public void setCarClientId(byte carClientId) {
 		_carClientId = carClientId;
 	}
 }

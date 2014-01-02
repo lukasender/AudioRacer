@@ -86,7 +86,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 		
 		if (count > _upateCarInvocationCountThreshold
 				&& car.getCarClientId() == Car.CAR_CLIENT_NOT_ASSIGNED_ID) {
-			int id = _currentCarClientToConnect.getCarClientId();
+			byte id = _currentCarClientToConnect.getCarClientId();
 			_logger.info(
 					"zigbee connection with carClientId: {} connected with car with id: {} ... {} connections left -----------------------",
 					new Object[] { id, car.getCarId(), _awaitingConnectionQueue.size() });

@@ -68,7 +68,7 @@ public class CarSelectForm extends Form implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
-				if (_playerClient.getPlayerServer().selectCar((int) _listView.getSelectedItem())) {
+				if (_playerClient.getPlayerServer().selectCar((byte) _listView.getSelectedItem())) {
 					PlayerSimulatorWindow.getInstance().setContent(CarControlSplitPane.class);
 					_playerClient.getListenerList().remove(_playerClientListener);
 				}
