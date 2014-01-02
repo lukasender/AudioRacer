@@ -34,7 +34,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 	private ICarClient _currentCarClientToConnect = null;
 	private Boolean _assignNextCarClient = true;
 	private HashMap<Byte, Integer> _updateCarInvocationCount = new HashMap<Byte, Integer>();
-	private final int _upateCarInvocationCountThreshold = 1000;
+	private final int _upateCarInvocationCountThreshold = 100;
 	private int _connectionCount = 0;
 	private float _configurationSpeed = 1.f;
 	private float _configurationDirection = 0.0f;

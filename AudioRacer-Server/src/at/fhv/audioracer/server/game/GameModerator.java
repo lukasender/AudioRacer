@@ -1,5 +1,6 @@
 package at.fhv.audioracer.server.game;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -33,12 +34,16 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	
 	private static Logger _logger = LoggerFactory.getLogger(GameModerator.class);
 	private PlayerServer _playerServer;
-	private Ranking _ranking;
+	private CheckpointUtil _checkpointUtil = new CheckpointUtil();
+	private int _checkpointStartCount = 5;
 	
 	private HashMap<Integer, Player> _playerList = new HashMap<Integer, Player>();
 	private int _plrId = 0;
 	
 	private Map<Byte, Car> _carList = Collections.synchronizedMap(new HashMap<Byte, Car>());
+	private Map<Byte, ArrayDeque<Position>> _checkpoints = Collections
+			.synchronizedMap(new HashMap<Byte, ArrayDeque<Position>>());
+	
 	private Thread _worldZigbeeThread = null;
 	private WorldZigbeeMediator _worldZigbeeRunnable = new WorldZigbeeMediator();
 	
@@ -105,6 +110,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					_logger.debug("carDetected - id: {}", newCar.getCarId());
 					
 					_carList.put(newCar.getCarId(), newCar);
+					_checkpoints.put(newCar.getCarId(), new ArrayDeque<Position>());
 					newCar.getCarListenerList().add(_worldZigbeeRunnable);
 				} else {
 					_logger.warn("Car with id: {} allready known!", newCar.getCarId());
@@ -122,8 +128,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			if (_gameRunning) {
 				_logger.warn("configureMap not allowed while game is running!");
 			} else {
-				_ranking = new Ranking(sizeX, sizeY);
 				_mapConfigured = true;
+				_checkpointUtil.setMapSize(sizeX, sizeY);
 				_checkPreconditionsAndStartGameIfAllFine();
 			}
 		}
@@ -158,10 +164,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		// new Object[] { carId, _gameRunning, posX, posY, direction });
 		Car car = _carList.get(carId);
 		if (_gameRunning) {
-			_logger.debug("updateCar for id: {}", carId);
-			synchronized (_lockObject) {
-				car.updatePosition(new Position(posX, posY), new Direction(direction));
-			}
+			
 		} else {
 			car.updatePosition(new Position(posX, posY), new Direction(direction));
 		}
@@ -255,10 +258,14 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
 			Entry<Byte, Car> entry = null;
 			Car car = null;
+			Car cars[] = new Car[_carList.size()];
+			int carsCount = -1;
 			try {
 				while (it.hasNext()) {
 					entry = it.next();
 					car = entry.getValue();
+					carsCount++;
+					cars[carsCount] = car;
 					if (car.getPlayer() == null) {
 						return;
 					} else if (!car.getPlayer().isReady()) {
@@ -277,7 +284,30 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				return;
 			}
 			
-			_logger.info("Game preconditions are all given. Game will start now!");
+			_logger.info("Game preconditions are all given.");
+			_logger.info("Generate checkpoints ....");
+			
+			float randomVectorLength = 0;
+			Position previousCheckpoint = null;
+			for (int i = 0; i < _checkpointStartCount; i++) {
+				randomVectorLength = _checkpointUtil.generateRandomVectorLength();
+				for (int y = 0; y < cars.length; y++) {
+					car = cars[y];
+					if (i == 0) {
+						previousCheckpoint = car.getPosition();
+					} else {
+						previousCheckpoint = _checkpoints.get(car.getCarId()).getFirst();
+					}
+					_logger.debug("generate checkpoint number: {} for carId: {}", i, car.getCarId());
+					_checkpoints.get(car.getCarId()).addLast(
+							_checkpointUtil.generateNextCheckpoint(previousCheckpoint,
+									randomVectorLength));
+				}
+			}
+			
+			_logger.info("Checkpoints generated ....");
+			_logger.info("Game will start now.");
+			
 			_gameRunning = true;
 			
 			if (_worldZigbeeThread.isAlive()) {

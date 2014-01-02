@@ -9,23 +9,22 @@ import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.core.util.Vector;
 
 /**
- * Sound Player for top down 2d (left/right, front/rear) sound for stereo sound channel.
+ * Sound Player for top down 2d (left/right, move to/ move away) sound with a moving observer and a static sound source.
  * 
  * @author Stephan
  * 
  */
-public strictfp class SoundPlayer2D {
+public class SoundPlayer2D {
 	
 	Handler handler = new Handler();
 	
 	private final double duration = 0.25; // seconds
 	private final int sampleRate = 22500; // samples per second
 	private final double samples[] = new double[sampleRate / 16 + 1]; // buffer for sample minimum frequency allowed 16hz
-	// private final double freqOfTone = 220; // in hz, is now parameter of genTone()
 	private byte generatedSnd[] = new byte[samples.length * 2 * 2]; // raw sound dataArray for two channels and two byte/sample
 	private long _oldTime; // last position change
 	private boolean _stop; // sound play/stop
-	private double _velocity;
+	private double _velocity; // calculated velocity of moving observer
 	
 	/**
 	 * base frequency of checkpoint tone
@@ -42,6 +41,9 @@ public strictfp class SoundPlayer2D {
 	 */
 	private double _maxDistance;
 	
+	/**
+	 * AudioTrack which is used for streaming the generated sound
+	 */
 	private AudioTrack _audioTrack;
 	
 	private double _scaleOfVelocity;
@@ -51,7 +53,7 @@ public strictfp class SoundPlayer2D {
 	 * @param maxDistance
 	 *            maximum distance to next checkpoint if 0 than 100 is assumed
 	 * @param scaleOfVelocity
-	 *            scales Velocity to higher values to increase doppler effect
+	 *            scales Velocity to higher values to increase doppler effect it is not checked against to high values
 	 */
 	public SoundPlayer2D(double maxDistance, double scaleOfVelocity) {
 		_baseFrequency = 440;
@@ -72,8 +74,14 @@ public strictfp class SoundPlayer2D {
 		
 	}
 	
+	/**
+	 * verification flag to ensure that play thread is only started once
+	 */
 	private boolean playStarted = false;
 	
+	/**
+	 * starts AudioTrack stream, start again only after calling stop()
+	 */
 	public void play() {
 		
 		if (playStarted) {
@@ -101,7 +109,7 @@ public strictfp class SoundPlayer2D {
 						}
 						continue;
 					}
-					genTone(_position);
+					genTone();
 					
 					Vector unitVector = _position.norm();
 					float cos = unitVector.getValues()[0] / unitVector.getValues()[1];
@@ -126,6 +134,7 @@ public strictfp class SoundPlayer2D {
 						e.printStackTrace();
 					}
 				}
+				playStarted = false;
 			}
 		});
 		soundThread.start();
@@ -137,18 +146,19 @@ public strictfp class SoundPlayer2D {
 	 */
 	public void stop() {
 		
-		// _audioTrack.flush();
-		// _audioTrack.stop();
+		_audioTrack.flush();
+		_audioTrack.stop();
 		_stop = true;
 		
 	}
 	
 	/**
+	 * Sets relative position of moving object to static object
 	 * 
 	 * @param position
-	 *            of next checkpoint in unit in meters
+	 *            of next checkpoint in meters
 	 */
-	synchronized public void setVector(Position position) {
+	synchronized public void setPosition(Position position) {
 		if (_position == null) {
 			_position = new Position(position.getPosX(), position.getPosY());
 			_oldTime = System.currentTimeMillis();
@@ -163,11 +173,17 @@ public strictfp class SoundPlayer2D {
 		
 	}
 	
-	private void genTone(Position position) {
-		// calculate frequency depending on new position
-		if (position == null) {
-			return;
-		}
+	/**
+	 * generates tone according to current relative velocity (trajectory speed) of moving object tot static object
+	 * 
+	 * tone is generated with speedOfSound in air and 20°C which is 343m/s
+	 * 
+	 */
+	private void genTone() {
+		
+		/**
+		 * local variable for velocity, important for thread safety
+		 */
 		double velocity;
 		
 		synchronized (this) {
@@ -176,10 +192,16 @@ public strictfp class SoundPlayer2D {
 		
 		double speedOfSound = 343; // 343m/s air with 20°C
 		
+		/**
+		 * set frequency to base frequency
+		 */
 		double frequency = _baseFrequency;
 		if (!Double.isNaN(velocity) && !Double.isInfinite(velocity)) {
 			frequency = _baseFrequency / (1 - (velocity / speedOfSound));
 		}
+		/**
+		 * check for supersonic speed
+		 */
 		if (Double.isNaN(frequency)) {
 			Log.d("audioracer", "Help!");
 		}
@@ -188,6 +210,11 @@ public strictfp class SoundPlayer2D {
 		genTone(frequency);
 	}
 	
+	/**
+	 * generate tone with a given frequency
+	 * 
+	 * @param freqOfTone
+	 */
 	private void genTone(double freqOfTone) {
 		
 		Log.d("audioracer", System.currentTimeMillis() + " Frequency: " + freqOfTone);
@@ -221,6 +248,9 @@ public strictfp class SoundPlayer2D {
 		}
 	}
 	
+	/**
+	 * flag for ensuring that test thread is started only once
+	 */
 	private boolean testStarted = false;
 	
 	/**
@@ -255,7 +285,7 @@ public strictfp class SoundPlayer2D {
 					}
 					float nextPosX = currentPosX + step;
 					testPosition.setPosX(nextPosX);
-					soundPlayer.setVector(testPosition);
+					soundPlayer.setPosition(testPosition);
 					
 					// for (double velocity = 0; velocity <= 100; velocity += 0.1) {
 					// // testPosition.setPosY((testPosition.getPosY() - velocity) % 1000);

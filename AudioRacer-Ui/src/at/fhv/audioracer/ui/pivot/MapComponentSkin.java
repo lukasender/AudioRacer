@@ -1,11 +1,14 @@
 package at.fhv.audioracer.ui.pivot;
 
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 
 import org.apache.pivot.wtk.skin.ComponentSkin;
 
 import at.fhv.audioracer.core.model.Car;
+import at.fhv.audioracer.core.model.Checkpoint;
 import at.fhv.audioracer.core.model.Map;
 
 public class MapComponentSkin extends ComponentSkin {
@@ -57,8 +60,8 @@ public class MapComponentSkin extends ComponentSkin {
 		int mapHeight = (int) Math.floor(mapSizeY * scale);
 		graphics.drawRect(mapX, mapY, mapWidth, mapHeight);
 		
+		AffineTransform xform = new AffineTransform();
 		for (Car car : _component.getMap().getCars()) {
-			AffineTransform xform = new AffineTransform();
 			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY
 					+ (car.getPosition().getPosY() * scale));
 			xform.scale(0.01 * scale, 0.01 * scale);
@@ -66,6 +69,15 @@ public class MapComponentSkin extends ComponentSkin {
 			xform.rotate(Math.toRadians(car.getDirection().getDirection()), car.getImage()
 					.getWidth() / 2, car.getImage().getHeight() / 2);
 			graphics.drawImage(car.getImage(), xform, null);
+		}
+		
+		for (Checkpoint cp : _component.getMap().getCheckpoints()) {
+			Shape circle = new Ellipse2D.Double(cp.getPosition().getPosX() - cp.getRadius(), cp
+					.getPosition().getPosY() - cp.getRadius(), 2.0 * cp.getRadius(),
+					2.0 * cp.getRadius());
+			xform.translate(mapX + (cp.getPosition().getPosX() * scale), mapY
+					+ (cp.getPosition().getPosY() * scale));
+			graphics.draw(circle);
 		}
 	}
 }

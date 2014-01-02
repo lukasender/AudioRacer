@@ -1,5 +1,6 @@
 package at.fhv.audioracer.core.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,12 +32,21 @@ public class Map {
 				;
 			}
 		}
+
+		@Override
+		public void onCheckpointChange() {
+			for (IMapListener listener : listeners()) {
+				listener.onCheckpointChange();
+			}
+
+		}
 	}
 
 	private int _sizeX;
 	private int _sizeY;
 
 	private java.util.Map<Byte, Car> _cars;
+	private ArrayList<Checkpoint> _checkpoints;
 
 	private MapListenerList _listenerList;
 
@@ -45,6 +55,7 @@ public class Map {
 		_sizeY = sizeY;
 
 		_cars = new HashMap<Byte, Car>();
+		_checkpoints = new ArrayList<Checkpoint>();
 
 		_listenerList = new MapListenerList();
 	}
@@ -92,8 +103,26 @@ public class Map {
 		return car;
 	}
 
+	public void addCheckpoint(Checkpoint addedCP) {
+		if (!_checkpoints.contains(addedCP)) {
+			_checkpoints.add(addedCP);
+			_listenerList.onCheckpointChange();
+		}
+	}
+
+	public void removeCheckpoint(Checkpoint removedCP) {
+		if (_checkpoints.contains(removedCP)) {
+			_checkpoints.remove(removedCP);
+			_listenerList.onCheckpointChange();
+		}
+	}
+
 	public Collection<Car> getCars() {
 		return Collections.unmodifiableCollection(_cars.values());
+	}
+
+	public Collection<Checkpoint> getCheckpoints() {
+		return Collections.unmodifiableCollection(_checkpoints);
 	}
 
 	public ListenerList<IMapListener> getMapListenerList() {
