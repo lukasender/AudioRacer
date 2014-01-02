@@ -67,7 +67,13 @@ public class MapComponent extends Component implements IMapListener, ICarListene
 	}
 	
 	@Override
-	public void repaint(final int xArgument, final int yArgument, final int width, final int height, final boolean immediate) {
+	public void onCheckpointChange() {
+		repaint();
+	}
+	
+	@Override
+	public void repaint(final int xArgument, final int yArgument, final int width,
+			final int height, final boolean immediate) {
 		if (EventQueue.isDispatchThread()) {
 			super.repaint(xArgument, yArgument, width, height, immediate);
 		} else {
