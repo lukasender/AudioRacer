@@ -26,14 +26,14 @@ public class CarSelectForm extends Form implements Bindable {
 	@BXML
 	private PushButton _pushButtonSelectCar;
 	
-	private List<Integer> _freeCars;
+	private List<Byte> _freeCars;
 	
 	private PlayerClient _playerClient;
 	private IPlayerClientListener _playerClientListener;
 	
 	public CarSelectForm() {
 		_playerClient = PlayerSimulatorWindow.getInstance().getPlayerClient();
-		_freeCars = new LinkedList<Integer>();
+		_freeCars = new LinkedList<Byte>();
 	}
 	
 	@Override
@@ -44,7 +44,7 @@ public class CarSelectForm extends Form implements Bindable {
 				ApplicationContext.queueCallback(new Runnable() {
 					public void run() {
 						_freeCars.clear();
-						for (Integer carId : _playerClient.getFreeCarIds()) {
+						for (byte carId : _playerClient.getFreeCarIds()) {
 							_freeCars.add(carId);
 						}
 					}
@@ -52,7 +52,7 @@ public class CarSelectForm extends Form implements Bindable {
 			}
 		};
 		_playerClient.getListenerList().add(_playerClientListener);
-		for (Integer carId : _playerClient.getFreeCarIds()) {
+		for (byte carId : _playerClient.getFreeCarIds()) {
 			_freeCars.add(carId);
 		}
 		_listView.setListData(_freeCars);

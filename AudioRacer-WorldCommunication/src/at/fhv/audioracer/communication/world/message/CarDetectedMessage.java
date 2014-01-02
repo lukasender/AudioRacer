@@ -2,7 +2,7 @@ package at.fhv.audioracer.communication.world.message;
 
 public class CarDetectedMessage extends CameraMessage {
 	
-	public int carId;
+	public byte carId;
 	public byte[] image;
 	
 	public CarDetectedMessage() {

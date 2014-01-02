@@ -10,25 +10,25 @@ import org.slf4j.LoggerFactory;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.core.util.ListenerList;
-import at.fhv.audioracer.server.model.ICarClientListener;
+import at.fhv.audioracer.server.model.ICarManagerListener;
 
 public class CarClientManager implements ICarClientManager {
 	
 	private static Logger _logger = LoggerFactory.getLogger(CarClientManager.class);
 	
-	private static class CarClientListenerList extends ListenerList<ICarClientListener> implements
-			ICarClientListener {
+	private static class CarClientListenerList extends ListenerList<ICarManagerListener> implements
+			ICarManagerListener {
 		
 		@Override
 		public void onCarClientConnect(ICarClient carClient) {
-			for (ICarClientListener listener : listeners()) {
+			for (ICarManagerListener listener : listeners()) {
 				listener.onCarClientConnect(carClient);
 			}
 		}
 		
 		@Override
 		public void onCarClientDisconnect(ICarClient carClient) {
-			for (ICarClientListener listener : listeners()) {
+			for (ICarManagerListener listener : listeners()) {
 				listener.onCarClientDisconnect(carClient);
 			}
 		}
@@ -36,8 +36,8 @@ public class CarClientManager implements ICarClientManager {
 	}
 	
 	private CarClientListenerList _listenerList = new CarClientListenerList();
-	private Map<Integer, ICarClient> _carClientList = Collections
-			.synchronizedMap(new HashMap<Integer, ICarClient>());
+	private Map<Byte, ICarClient> _carClientList = Collections
+			.synchronizedMap(new HashMap<Byte, ICarClient>());
 	private static CarClientManager _instance;
 	
 	private CarClientManager() {
@@ -73,7 +73,7 @@ public class CarClientManager implements ICarClientManager {
 		_logger.warn("Invalid command!");
 	}
 	
-	public ListenerList<ICarClientListener> getCarClientListenerList() {
+	public ListenerList<ICarManagerListener> getCarClientListenerList() {
 		return _listenerList;
 	}
 }

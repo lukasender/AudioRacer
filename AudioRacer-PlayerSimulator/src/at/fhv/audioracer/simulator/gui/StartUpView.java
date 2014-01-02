@@ -32,7 +32,7 @@ public class StartUpView extends JFrame {
 	
 	private PlayerClient _playerClient;
 	
-	private JList<Integer> _listFreeCars;
+	private JList<Byte> _listFreeCars;
 	private JList<Player> _listConnectedPlayers;
 	
 	private JLabel _lblConnected;
@@ -72,7 +72,7 @@ public class StartUpView extends JFrame {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				
-				Integer selected = _listFreeCars.getSelectedValue();
+				Byte selected = _listFreeCars.getSelectedValue();
 				if (selected != null) {
 					if (_playerClient.getPlayerServer().selectCar(selected)) {
 						ControlView cv = new ControlView(_playerClient);
@@ -92,7 +92,7 @@ public class StartUpView extends JFrame {
 			
 			@Override
 			public void onUpdateFreeCars() {
-				Integer[] temp = new Integer[_playerClient.getFreeCarIds().length];
+				Byte[] temp = new Byte[_playerClient.getFreeCarIds().length];
 				for (int i = 0; i < temp.length; i++) {
 					temp[i] = _playerClient.getFreeCarIds()[i];
 				}

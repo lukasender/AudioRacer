@@ -26,10 +26,10 @@ import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.server.PlayerConnection;
 import at.fhv.audioracer.server.PlayerServer;
 import at.fhv.audioracer.server.WorldZigbeeMediator;
-import at.fhv.audioracer.server.model.ICarClientListener;
+import at.fhv.audioracer.server.model.ICarManagerListener;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 
-public class GameModerator implements ICarClientListener, IWorldZigbeeConnectionCountChanged {
+public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectionCountChanged {
 	
 	private static Logger _logger = LoggerFactory.getLogger(GameModerator.class);
 	private PlayerServer _playerServer;
@@ -38,7 +38,7 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 	private HashMap<Integer, Player> _playerList = new HashMap<Integer, Player>();
 	private int _plrId = 0;
 	
-	private Map<Integer, Car> _carList = Collections.synchronizedMap(new HashMap<Integer, Car>());
+	private Map<Byte, Car> _carList = Collections.synchronizedMap(new HashMap<Byte, Car>());
 	private Thread _worldZigbeeThread = null;
 	private WorldZigbeeMediator _worldZigbeeRunnable = new WorldZigbeeMediator();
 	
@@ -217,9 +217,9 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 	 * Send currently free cars to all Players.
 	 */
 	private void _broadcastFreeCars() {
-		Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
-		ArrayList<Integer> freeCars = new ArrayList<Integer>();
-		Entry<Integer, Car> entry = null;
+		Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
+		ArrayList<Byte> freeCars = new ArrayList<Byte>();
+		Entry<Byte, Car> entry = null;
 		Car car = null;
 		try {
 			while (it.hasNext()) {
@@ -237,9 +237,9 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 		}
 		
 		FreeCarsMessage freeCarsMessage = new FreeCarsMessage();
-		int free[] = new int[freeCars.size()];
+		byte free[] = new byte[freeCars.size()];
 		for (int i = 0; i < free.length; i++) {
-			free[i] = freeCars.get(i).intValue();
+			free[i] = freeCars.get(i).byteValue();
 		}
 		freeCarsMessage.freeCars = free;
 		_playerServer.sendToAllTCP(freeCarsMessage);
@@ -252,8 +252,8 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 			// check all cars available have a player connected (=selectCar)
 			// and this players are all in ready state (=setPlayerReady)
 			// at this state we have at least one Car in _carList
-			Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
-			Entry<Integer, Car> entry = null;
+			Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
+			Entry<Byte, Car> entry = null;
 			Car car = null;
 			try {
 				while (it.hasNext()) {

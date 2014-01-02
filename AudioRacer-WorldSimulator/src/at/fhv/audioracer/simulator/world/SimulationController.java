@@ -49,7 +49,7 @@ public class SimulationController {
 	
 	private MapComponent _map;
 	
-	private int _carId;
+	private byte _carId;
 	
 	private List<ICarClient> _carClients;
 	
