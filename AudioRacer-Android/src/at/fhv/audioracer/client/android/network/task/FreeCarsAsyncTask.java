@@ -8,7 +8,7 @@ public class FreeCarsAsyncTask extends NetworkAsyncTask<NetworkParams, Boolean> 
 	
 	private IFreeCarsListener _listener;
 	
-	private int[] _freeCars;
+	private byte[] _freeCars;
 	
 	public FreeCarsAsyncTask(IFreeCarsListener listener) {
 		_listener = listener;

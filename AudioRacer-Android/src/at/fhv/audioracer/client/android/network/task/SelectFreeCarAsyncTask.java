@@ -25,7 +25,7 @@ public class SelectFreeCarAsyncTask extends NetworkAsyncTask<SelectCarParams, Su
 	
 	@Override
 	protected SuccessMessage doInBackground(SelectCarParams... params) {
-		int carId = params[0].carId;
+		byte carId = params[0].carId;
 		boolean success = ClientManager.getInstance().getPlayerClient().getPlayerServer().selectCar(carId);
 		return new SuccessMessage(success, carId);
 	}

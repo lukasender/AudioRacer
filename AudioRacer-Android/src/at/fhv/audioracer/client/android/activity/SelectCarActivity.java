@@ -73,7 +73,7 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 				HashMap<String, String> car = (HashMap<String, String>) parent.getItemAtPosition(position);
 				int carId = Integer.parseInt(car.get(CarInfo.ID));
 				SelectCarParams params = new SelectCarParams();
-				params.carId = carId;
+				params.carId = (byte) carId;
 				
 				// TODO: This always creates a new async task. What about the previously started tasks? Do we need to take care of them?
 				final SelectFreeCarAsyncTask task = new SelectFreeCarAsyncTask(SelectCarActivity.this);
@@ -90,7 +90,7 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 	}
 	
 	@Override
-	public void addFreeCars(int[] freeCarIds) {
+	public void addFreeCars(byte[] freeCarIds) {
 		Log.d(ACTIVITY_SERVICE, "called addCars()");
 		_cars.clear();
 		for (int id : freeCarIds) {
