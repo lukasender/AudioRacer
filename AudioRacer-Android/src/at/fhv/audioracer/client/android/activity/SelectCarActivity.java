@@ -12,15 +12,21 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IFreeCarsListener;
+import at.fhv.audioracer.client.android.activity.listener.ISelectCarListener;
 import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.info.CarInfo;
 import at.fhv.audioracer.client.android.network.task.FreeCarsAsyncTask;
+import at.fhv.audioracer.client.android.network.task.SelectFreeCarAsyncTask;
+import at.fhv.audioracer.client.android.network.task.SelectFreeCarAsyncTask.SuccessMessage;
 import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
+import at.fhv.audioracer.client.android.network.task.params.SelectCarParams;
 import at.fhv.audioracer.client.player.IPlayerClientListener;
+import at.fhv.audioracer.client.player.PlayerClient;
 
-public class SelectCarActivity extends ListActivity implements IFreeCarsListener {
+public class SelectCarActivity extends ListActivity implements IFreeCarsListener, ISelectCarListener {
 	
 	/**
 	 * Available cars.
@@ -29,6 +35,8 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 	private SimpleAdapter _carsListAdapter = null;
 	
 	private IPlayerClientListener _playerClientListener;
+	
+	private PlayerClient _playerClient = ClientManager.getInstance().getPlayerClient();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,27 +51,33 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 		);
 		setListAdapter(_carsListAdapter);
 		
-		final FreeCarsAsyncTask task = new FreeCarsAsyncTask(SelectCarActivity.this);
 		_playerClientListener = new IPlayerClientListener.Adapter() {
 			@Override
 			public void onUpdateFreeCars() {
-				try {
-					task.execute(new NetworkParams());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				Log.d(ACTIVITY_SERVICE, "called onUpdateFreeCars()");
+				
+				// TODO: This always creates a new async task. What about the previously started tasks? Do we need to take care of them?
+				final FreeCarsAsyncTask task = new FreeCarsAsyncTask(SelectCarActivity.this);
+				task.execute(new NetworkParams());
 			}
+			
 		};
-		
-		ClientManager.getInstance().getPlayerClient().getListenerList().add(_playerClientListener);
+		_playerClient.getListenerList().add(_playerClientListener);
 		
 		ListView carsListView = (ListView) findViewById(android.R.id.list);
 		carsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				// TODO Auto-generated method stub
+				Log.d(ACTIVITY_SERVICE, "called onItemClick()");
+				@SuppressWarnings("unchecked")
+				HashMap<String, String> car = (HashMap<String, String>) parent.getItemAtPosition(position);
+				int carId = Integer.parseInt(car.get(CarInfo.ID));
+				SelectCarParams params = new SelectCarParams();
+				params.carId = carId;
 				
+				// TODO: This always creates a new async task. What about the previously started tasks? Do we need to take care of them?
+				final SelectFreeCarAsyncTask task = new SelectFreeCarAsyncTask(SelectCarActivity.this);
+				task.execute(params);
 			}
 		});
 	}
@@ -76,14 +90,27 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 	}
 	
 	@Override
-	public void addCars(int[] freeCarIds) {
+	public void addFreeCars(int[] freeCarIds) {
+		Log.d(ACTIVITY_SERVICE, "called addCars()");
 		_cars.clear();
 		for (int id : freeCarIds) {
 			HashMap<String, String> carMap = new HashMap<String, String>();
 			carMap.put(CarInfo.NAME, "Car " + id);
+			carMap.put(CarInfo.ID, "" + id);
 			_cars.add(carMap);
 			_carsListAdapter.notifyDataSetChanged();
 			Log.d(ACTIVITY_SERVICE, "Added car with id '" + id + "'");
+		}
+	}
+	
+	@Override
+	public void notifySuccess(SuccessMessage message) {
+		if (message.success) {
+			// car was free, change to xyzActivity # TODO <-- change xyz to the actual name.
+			Toast.makeText(getApplicationContext(), "Selected car " + message.carId + " :)", Toast.LENGTH_SHORT).show();
+			_playerClient.getListenerList().remove(_playerClientListener);
+		} else {
+			Toast.makeText(getApplicationContext(), "Sorry, but car " + message.carId + " isn't available anymore.", Toast.LENGTH_SHORT).show();
 		}
 	}
 	

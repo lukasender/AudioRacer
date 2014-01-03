@@ -8,6 +8,8 @@ public class FreeCarsAsyncTask extends NetworkAsyncTask<NetworkParams, Boolean> 
 	
 	private IFreeCarsListener _listener;
 	
+	private int[] _freeCars;
+	
 	public FreeCarsAsyncTask(IFreeCarsListener listener) {
 		_listener = listener;
 	}
@@ -15,10 +17,15 @@ public class FreeCarsAsyncTask extends NetworkAsyncTask<NetworkParams, Boolean> 
 	@Override
 	protected Boolean doInBackground(NetworkParams... params) {
 		try {
-			_listener.addCars(ClientManager.getInstance().getPlayerClient().getFreeCarIds());
+			_freeCars = ClientManager.getInstance().getPlayerClient().getFreeCarIds();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	@Override
+	protected void onPostExecute(Boolean result) {
+		_listener.addFreeCars(_freeCars);
 	}
 }

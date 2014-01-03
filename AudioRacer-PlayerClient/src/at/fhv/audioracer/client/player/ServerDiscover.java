@@ -74,4 +74,8 @@ public class ServerDiscover extends Thread {
 			}
 		}
 	}
+	
+	public void clearCache() {
+		_knownServers.clear();
+	}
 }

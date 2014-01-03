@@ -58,9 +58,8 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 			@Override
 			public void onClick(View v) {
 				try {
-					_serverDiscover.stopDiscover();
 					clearGames();
-					_serverDiscover.start();
+					_serverDiscover.clearCache();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -100,6 +99,12 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 		});
 		
 		_serverDiscover.start();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
 	}
 	
 	@Override
