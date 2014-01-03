@@ -11,17 +11,23 @@ public class CheckpointUtil {
 	private int _mapSizeX = 0;
 	private int _mapSizeY = 0;
 	private float _minVectorLength = 0;
-	private int _minVectorLengthMapRatio = 6;
+	private int _minVectorLengthMapRatio = 2;
 	private float _maxVectorLength = 0;
+	private float _checkpointRadius = 0;
 	
 	public void setMapSize(int mapX, int mapY) {
 		_mapSizeX = mapX;
 		_mapSizeY = mapY;
 		_minVectorLength = (float) Math.min(mapX, mapY) / _minVectorLengthMapRatio;
 		_maxVectorLength = (float) (Math.min(mapX, mapY)) / 2;
+		_checkpointRadius = (float) (Math.min(mapX, mapY)) / 10;
 		
 		_logger.debug("mapSizeX: {} mapSizeY: {} _minVectorLength: {} maxVectorLength: {}",
 				new Object[] { _mapSizeX, _mapSizeY, _minVectorLength, _maxVectorLength });
+	}
+	
+	public Position generateNextCheckpoint(Position currentPosition) {
+		return generateNextCheckpoint(currentPosition, _minVectorLength);
 	}
 	
 	public Position generateNextCheckpoint(Position currentPosition, float vectorLength) {
@@ -40,7 +46,7 @@ public class CheckpointUtil {
 			
 			xNew = x + (float) b;
 			yNew = y + (float) a;
-			if (xNew > 0 && yNew > 0) {
+			if (xNew > 0 && yNew > 0 && xNew < _mapSizeX && yNew < _mapSizeY) {
 				break;
 			}
 		}
@@ -60,5 +66,9 @@ public class CheckpointUtil {
 				+ (float) (Math.random() * ((_maxVectorLength - _minVectorLength) + 1));
 		_logger.debug("next random generated vector length: {}", rand);
 		return rand;
+	}
+	
+	public float getCheckpointRadius() {
+		return _checkpointRadius;
 	}
 }

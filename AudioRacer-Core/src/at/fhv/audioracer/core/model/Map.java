@@ -122,7 +122,7 @@ public class Map {
 	}
 
 	public Collection<Checkpoint> getCheckpoints() {
-		return Collections.unmodifiableCollection(_checkpoints);
+		return new ArrayList<Checkpoint>(_checkpoints);
 	}
 
 	public ListenerList<IMapListener> getMapListenerList() {

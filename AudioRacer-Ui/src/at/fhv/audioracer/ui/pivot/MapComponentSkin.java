@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.util.Collection;
 
 import org.apache.pivot.wtk.skin.ComponentSkin;
 
@@ -60,6 +61,11 @@ public class MapComponentSkin extends ComponentSkin {
 		int mapHeight = (int) Math.floor(mapSizeY * scale);
 		graphics.drawRect(mapX, mapY, mapWidth, mapHeight);
 		
+		// System.out.println("mapX: " + mapX + " mapY: " + mapY + " scale: " + scale + " mapSizeX: "
+		// + mapSizeX + " mapSizeY: " + mapSizeY + " width: " + width + " height: " + height
+		// + " scaleWidth: " + scaleWidth + " scaleHeight: " + scaleHeigth + " mapWidth: "
+		// + mapWidth + " mapHeight: " + mapHeight);
+		
 		for (Car car : _component.getMap().getCars()) {
 			AffineTransform xform = new AffineTransform();
 			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY
@@ -71,14 +77,22 @@ public class MapComponentSkin extends ComponentSkin {
 			graphics.drawImage(car.getImage(), xform, null);
 		}
 		
-		for (Checkpoint cp : _component.getMap().getCheckpoints()) {
-			AffineTransform xform = new AffineTransform();
-			Shape circle = new Ellipse2D.Double(cp.getPosition().getPosX() - cp.getRadius(), cp
-					.getPosition().getPosY() - cp.getRadius(), 2.0 * cp.getRadius(),
-					2.0 * cp.getRadius());
-			xform.translate(mapX + (cp.getPosition().getPosX() * scale), mapY
-					+ (cp.getPosition().getPosY() * scale));
+		Collection<Checkpoint> c = _component.getMap().getCheckpoints();
+		// if (c == null) {
+		// c = new ArrayList<Checkpoint>();
+		// }
+		// byte b = 0;
+		// c.add(new Checkpoint(b, new Position(33.53742f, 35.255993f), 10.0f, 1));
+		for (Checkpoint cp : c) {
+			Shape circle = new Ellipse2D.Double(mapX
+					+ (cp.getPosition().getPosX() * scale - (scale * cp.getRadius())), mapY
+					+ (cp.getPosition().getPosY() * scale - (scale * cp.getRadius())),
+					(scale * 2.0 * cp.getRadius()), (scale * 2.0 * cp.getRadius()));
 			graphics.draw(circle);
+			
+			graphics.drawString("car-id: " + cp.getCarId() + " nr: " + cp.getCheckpointNumber(),
+					mapX + cp.getPosition().getPosX() * scale, mapY + cp.getPosition().getPosY()
+							* scale);
 		}
 	}
 }

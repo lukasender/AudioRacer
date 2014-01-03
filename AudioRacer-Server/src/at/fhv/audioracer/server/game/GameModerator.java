@@ -20,6 +20,7 @@ import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessa
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
+import at.fhv.audioracer.core.model.Checkpoint;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
@@ -304,10 +305,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			_logger.info("Game preconditions are all given.");
 			_logger.info("Generate checkpoints ....");
 			
-			float randomVectorLength = 0;
 			Position previousCheckpoint = null;
 			for (int i = 0; i < _checkpointStartCount; i++) {
-				randomVectorLength = _checkpointUtil.generateRandomVectorLength();
 				for (int y = 0; y < cars.length; y++) {
 					car = cars[y];
 					if (i == 0) {
@@ -316,9 +315,15 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 						previousCheckpoint = _checkpoints.get(car.getCarId()).getFirst();
 					}
 					_logger.debug("generate checkpoint number: {} for carId: {}", i, car.getCarId());
-					_checkpoints.get(car.getCarId()).addLast(
-							_checkpointUtil.generateNextCheckpoint(previousCheckpoint,
-									randomVectorLength));
+					Position nextP = _checkpointUtil.generateNextCheckpoint(previousCheckpoint);
+					// nextP.setPosX(33.53742f);
+					// nextP.setPosY(35.255993f);
+					if (_map != null) {
+						Checkpoint nextCP = new Checkpoint(car.getCarId(), nextP,
+								_checkpointUtil.getCheckpointRadius(), i + 1);
+						_map.addCheckpoint(nextCP);
+					}
+					_checkpoints.get(car.getCarId()).addFirst(nextP);
 				}
 			}
 			
