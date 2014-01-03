@@ -11,5 +11,8 @@
     <string name="title_activity_select_car">SelectCarActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="play_sound">Play sound</string>
+    <string name="title_activity_play_game">PlayGame</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>
