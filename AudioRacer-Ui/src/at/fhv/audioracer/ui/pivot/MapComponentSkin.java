@@ -60,8 +60,8 @@ public class MapComponentSkin extends ComponentSkin {
 		int mapHeight = (int) Math.floor(mapSizeY * scale);
 		graphics.drawRect(mapX, mapY, mapWidth, mapHeight);
 		
-		AffineTransform xform = new AffineTransform();
 		for (Car car : _component.getMap().getCars()) {
+			AffineTransform xform = new AffineTransform();
 			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY
 					+ (car.getPosition().getPosY() * scale));
 			xform.scale(0.01 * scale, 0.01 * scale);
@@ -72,6 +72,7 @@ public class MapComponentSkin extends ComponentSkin {
 		}
 		
 		for (Checkpoint cp : _component.getMap().getCheckpoints()) {
+			AffineTransform xform = new AffineTransform();
 			Shape circle = new Ellipse2D.Double(cp.getPosition().getPosX() - cp.getRadius(), cp
 					.getPosition().getPosY() - cp.getRadius(), 2.0 * cp.getRadius(),
 					2.0 * cp.getRadius());
