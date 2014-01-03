@@ -54,11 +54,21 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	private boolean _mapConfigured = false;
 	private boolean _detectionFinished = false;
 	
-	public GameModerator(PlayerServer playerServer) {
-		_playerServer = playerServer;
+	private at.fhv.audioracer.core.model.Map _map = null;
+	private static GameModerator _gameModerator = null;
+	
+	private GameModerator() {
+		_playerServer = PlayerServer.getInstance();
 		CarClientManager.getInstance().getCarClientListenerList().add(this);
 		_worldZigbeeThread = new Thread(_worldZigbeeRunnable);
 		CarClientManager.getInstance().getCarClientListenerList().add(_worldZigbeeRunnable);
+	}
+	
+	public static GameModerator getInstance() {
+		if (_gameModerator == null) {
+			_gameModerator = new GameModerator();
+		}
+		return _gameModerator;
 	}
 	
 	/**
@@ -111,6 +121,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					
 					_carList.put(newCar.getCarId(), newCar);
 					_checkpoints.put(newCar.getCarId(), new ArrayDeque<Position>());
+					if (_map != null) {
+						_map.addCar(newCar);
+					}
 					newCar.getCarListenerList().add(_worldZigbeeRunnable);
 				} else {
 					_logger.warn("Car with id: {} allready known!", newCar.getCarId());
@@ -130,6 +143,10 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			} else {
 				_mapConfigured = true;
 				_checkpointUtil.setMapSize(sizeX, sizeY);
+				if (_map != null) {
+					_map.setSizeX(sizeX);
+					_map.setSizeY(sizeY);
+				}
 				_checkPreconditionsAndStartGameIfAllFine();
 			}
 		}
@@ -386,5 +403,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			_logger.warn("ICarClient for carId: {} is null!", playerConnection.getPlayer().getCar()
 					.getCarId());
 		}
+	}
+	
+	public void setMap(at.fhv.audioracer.core.model.Map map) {
+		_map = map;
 	}
 }
