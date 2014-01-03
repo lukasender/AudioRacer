@@ -1,5 +1,6 @@
 package at.fhv.audioracer.server.game;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -19,6 +20,7 @@ import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessa
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
+import at.fhv.audioracer.core.model.Checkpoint;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
@@ -26,19 +28,23 @@ import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.server.PlayerConnection;
 import at.fhv.audioracer.server.PlayerServer;
 import at.fhv.audioracer.server.WorldZigbeeMediator;
-import at.fhv.audioracer.server.model.ICarClientListener;
+import at.fhv.audioracer.server.model.ICarManagerListener;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 
-public class GameModerator implements ICarClientListener, IWorldZigbeeConnectionCountChanged {
+public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectionCountChanged {
 	
 	private static Logger _logger = LoggerFactory.getLogger(GameModerator.class);
 	private PlayerServer _playerServer;
-	private Ranking _ranking;
+	private CheckpointUtil _checkpointUtil = new CheckpointUtil();
+	private int _checkpointStartCount = 5;
 	
 	private HashMap<Integer, Player> _playerList = new HashMap<Integer, Player>();
 	private int _plrId = 0;
 	
-	private Map<Integer, Car> _carList = Collections.synchronizedMap(new HashMap<Integer, Car>());
+	private Map<Byte, Car> _carList = Collections.synchronizedMap(new HashMap<Byte, Car>());
+	private Map<Byte, ArrayDeque<Position>> _checkpoints = Collections
+			.synchronizedMap(new HashMap<Byte, ArrayDeque<Position>>());
+	
 	private Thread _worldZigbeeThread = null;
 	private WorldZigbeeMediator _worldZigbeeRunnable = new WorldZigbeeMediator();
 	
@@ -49,11 +55,21 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 	private boolean _mapConfigured = false;
 	private boolean _detectionFinished = false;
 	
-	public GameModerator(PlayerServer playerServer) {
-		_playerServer = playerServer;
+	private at.fhv.audioracer.core.model.Map _map = null;
+	private static GameModerator _gameModerator = null;
+	
+	private GameModerator() {
+		_playerServer = PlayerServer.getInstance();
 		CarClientManager.getInstance().getCarClientListenerList().add(this);
 		_worldZigbeeThread = new Thread(_worldZigbeeRunnable);
 		CarClientManager.getInstance().getCarClientListenerList().add(_worldZigbeeRunnable);
+	}
+	
+	public static GameModerator getInstance() {
+		if (_gameModerator == null) {
+			_gameModerator = new GameModerator();
+		}
+		return _gameModerator;
 	}
 	
 	/**
@@ -105,6 +121,10 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 					_logger.debug("carDetected - id: {}", newCar.getCarId());
 					
 					_carList.put(newCar.getCarId(), newCar);
+					_checkpoints.put(newCar.getCarId(), new ArrayDeque<Position>());
+					if (_map != null) {
+						_map.addCar(newCar);
+					}
 					newCar.getCarListenerList().add(_worldZigbeeRunnable);
 				} else {
 					_logger.warn("Car with id: {} allready known!", newCar.getCarId());
@@ -122,8 +142,12 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 			if (_gameRunning) {
 				_logger.warn("configureMap not allowed while game is running!");
 			} else {
-				_ranking = new Ranking(sizeX, sizeY);
 				_mapConfigured = true;
+				_checkpointUtil.setMapSize(sizeX, sizeY);
+				if (_map != null) {
+					_map.setSizeX(sizeX);
+					_map.setSizeY(sizeY);
+				}
 				_checkPreconditionsAndStartGameIfAllFine();
 			}
 		}
@@ -152,22 +176,19 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 		}
 	}
 	
-	public void updateCar(int carId, float posX, float posY, float direction) {
+	public void updateCar(byte carId, float posX, float posY, float direction) {
 		// _logger.debug(
 		// "updateCar called for carId: {} game started: {} posX: {} posY: {} direction: {}",
 		// new Object[] { carId, _gameRunning, posX, posY, direction });
 		Car car = _carList.get(carId);
 		if (_gameRunning) {
-			_logger.debug("updateCar for id: {}", carId);
-			synchronized (_lockObject) {
-				car.updatePosition(new Position(posX, posY), new Direction(direction));
-			}
+			car.updatePosition(new Position(posX, posY), new Direction(direction));
 		} else {
 			car.updatePosition(new Position(posX, posY), new Direction(direction));
 		}
 	}
 	
-	public void selectCar(PlayerConnection playerConnection, int carId) {
+	public void selectCar(PlayerConnection playerConnection, byte carId) {
 		_logger.debug("selectCar called from player with id: {} and name: {}", playerConnection
 				.getPlayer().getPlayerId(), playerConnection.getPlayer().getName());
 		
@@ -217,9 +238,9 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 	 * Send currently free cars to all Players.
 	 */
 	private void _broadcastFreeCars() {
-		Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
-		ArrayList<Integer> freeCars = new ArrayList<Integer>();
-		Entry<Integer, Car> entry = null;
+		Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
+		ArrayList<Byte> freeCars = new ArrayList<Byte>();
+		Entry<Byte, Car> entry = null;
 		Car car = null;
 		try {
 			while (it.hasNext()) {
@@ -237,9 +258,9 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 		}
 		
 		FreeCarsMessage freeCarsMessage = new FreeCarsMessage();
-		int free[] = new int[freeCars.size()];
+		byte free[] = new byte[freeCars.size()];
 		for (int i = 0; i < free.length; i++) {
-			free[i] = freeCars.get(i).intValue();
+			free[i] = freeCars.get(i).byteValue();
 		}
 		freeCarsMessage.freeCars = free;
 		_playerServer.sendToAllTCP(freeCarsMessage);
@@ -252,13 +273,17 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 			// check all cars available have a player connected (=selectCar)
 			// and this players are all in ready state (=setPlayerReady)
 			// at this state we have at least one Car in _carList
-			Iterator<Entry<Integer, Car>> it = _carList.entrySet().iterator();
-			Entry<Integer, Car> entry = null;
+			Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
+			Entry<Byte, Car> entry = null;
 			Car car = null;
+			Car cars[] = new Car[_carList.size()];
+			int carsCount = -1;
 			try {
 				while (it.hasNext()) {
 					entry = it.next();
 					car = entry.getValue();
+					carsCount++;
+					cars[carsCount] = car;
 					if (car.getPlayer() == null) {
 						return;
 					} else if (!car.getPlayer().isReady()) {
@@ -277,7 +302,34 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 				return;
 			}
 			
-			_logger.info("Game preconditions are all given. Game will start now!");
+			_logger.info("Game preconditions are all given.");
+			_logger.info("Generate checkpoints ....");
+			
+			Position previousCheckpoint = null;
+			for (int i = 0; i < _checkpointStartCount; i++) {
+				for (int y = 0; y < cars.length; y++) {
+					car = cars[y];
+					if (i == 0) {
+						previousCheckpoint = car.getPosition();
+					} else {
+						previousCheckpoint = _checkpoints.get(car.getCarId()).getFirst();
+					}
+					_logger.debug("generate checkpoint number: {} for carId: {}", i, car.getCarId());
+					Position nextP = _checkpointUtil.generateNextCheckpoint(previousCheckpoint);
+					// nextP.setPosX(33.53742f);
+					// nextP.setPosY(35.255993f);
+					if (_map != null) {
+						Checkpoint nextCP = new Checkpoint(car.getCarId(), nextP,
+								_checkpointUtil.getCheckpointRadius(), i + 1);
+						_map.addCheckpoint(nextCP);
+					}
+					_checkpoints.get(car.getCarId()).addFirst(nextP);
+				}
+			}
+			
+			_logger.info("Checkpoints generated ....");
+			_logger.info("Game will start now.");
+			
 			_gameRunning = true;
 			
 			if (_worldZigbeeThread.isAlive()) {
@@ -356,5 +408,9 @@ public class GameModerator implements ICarClientListener, IWorldZigbeeConnection
 			_logger.warn("ICarClient for carId: {} is null!", playerConnection.getPlayer().getCar()
 					.getCarId());
 		}
+	}
+	
+	public void setMap(at.fhv.audioracer.core.model.Map map) {
+		_map = map;
 	}
 }

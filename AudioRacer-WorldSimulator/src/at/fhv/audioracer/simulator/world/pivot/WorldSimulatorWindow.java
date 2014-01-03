@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import at.fhv.audioracer.communication.world.WorldNetwork;
 import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.server.Main;
+import at.fhv.audioracer.server.pivot.ServerView;
 import at.fhv.audioracer.simulator.world.SimulationController;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 import at.fhv.audioracer.ui.util.awt.RepeatingReleasedEventsFixer;
@@ -110,10 +111,20 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				String[] args = null;
+				String[] args = new String[1];
+				args[0] = "--gui=false";
 				Main.start(args);
 			}
 		}).start();
+		new RepeatingReleasedEventsFixer().install();
+		DesktopApplicationContext.main(ServerView.class, args);
+		
+		// ugly but it works for the moment ....
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			
+		}
 		
 		_logger.info("Starting simulator");
 		new RepeatingReleasedEventsFixer().install();

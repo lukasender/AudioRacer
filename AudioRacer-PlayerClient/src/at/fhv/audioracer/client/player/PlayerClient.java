@@ -85,12 +85,12 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	/**
 	 * currently known cars. <Integer, CarId>
 	 */
-	private HashMap<Integer, Integer> _cars;
+	private HashMap<Byte, Byte> _cars;
 	
 	/*
 	 * ids of free cars
 	 */
-	private int[] _freeCarIds;
+	private byte[] _freeCarIds;
 	
 	/*
 	 * player of this client
@@ -151,7 +151,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	public PlayerClient() {
 		super();
 		_players = new HashMap<Integer, Player>();
-		_cars = new HashMap<Integer, Integer>();
+		_cars = new HashMap<Byte, Byte>();
 		_player = new Player();
 		_listenerList = new PlayerClientListenerList();
 		_connected = false;
@@ -205,7 +205,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	}
 	
 	@Override
-	public void updateFreeCars(int[] carIds) {
+	public void updateFreeCars(byte[] carIds) {
 		
 		// check list for unknown free cars and add them
 		for (int i = 0; i < carIds.length; i++) {
@@ -242,11 +242,11 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		return _players;
 	}
 	
-	public HashMap<Integer, Integer> getCars() {
+	public HashMap<Byte, Byte> getCars() {
 		return _cars;
 	}
 	
-	public int[] getFreeCarIds() {
+	public byte[] getFreeCarIds() {
 		return _freeCarIds;
 	}
 	

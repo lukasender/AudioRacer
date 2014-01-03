@@ -35,6 +35,6 @@
         android:layout_alignLeft="@+id/search_games_button"
         android:layout_alignRight="@+id/search_games_button"
         android:layout_centerVertical="true"
-        android:text="Play Sound" />
+        android:text="@string/play_sound" />
 
 </RelativeLayout>

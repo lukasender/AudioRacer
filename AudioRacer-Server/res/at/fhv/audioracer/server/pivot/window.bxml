@@ -1,0 +1,22 @@
+<ps:ServerView title="AudioRacer - Server Monitor GUI" maximized="true"
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:ar="at.fhv.audioracer.ui.pivot"
+	xmlns:ps="at.fhv.audioracer.server.pivot">
+	
+	<CardPane styles="{padding:3}">
+		<SplitPane bxml:id="splitPane" orientation="horizontal"
+			splitRatio="0.75">
+			<left>
+				<Border title="World">
+					<ar:MapComponent bxml:id="_map" />
+				</Border>
+			</left>
+			<right>
+				<Border title="Game State Variables">
+					<Label text="Goes here"/>
+				</Border>
+			</right>
+		</SplitPane>
+	</CardPane>
+    
+</ps:ServerView>

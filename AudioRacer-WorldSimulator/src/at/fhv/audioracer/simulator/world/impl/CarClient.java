@@ -59,7 +59,8 @@ public class CarClient implements ICarClient {
 		return new Direction(newDirection);
 	}
 	
-	private Position calcNewPosition(float speed, Position currentPosition, Direction currentDirection) {
+	private Position calcNewPosition(float speed, Position currentPosition,
+			Direction currentDirection) {
 		// @formatter:off
 		/*
 		             /|
@@ -98,7 +99,7 @@ public class CarClient implements ICarClient {
 	}
 	
 	@Override
-	public int getCarClientId() {
+	public byte getCarClientId() {
 		return _car.getCarId();
 	}
 	

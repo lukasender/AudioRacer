@@ -12,6 +12,18 @@ public class PlayerServer extends Server {
 	
 	private static Logger _logger = LoggerFactory.getLogger(PlayerServer.class);
 	
+	private static PlayerServer _playerServer = null;
+	
+	private PlayerServer() {
+	}
+	
+	public static PlayerServer getInstance() {
+		if (_playerServer == null) {
+			_playerServer = new PlayerServer();
+		}
+		return _playerServer;
+	}
+	
 	@Override
 	protected Connection newConnection() {
 		

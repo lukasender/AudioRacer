@@ -11,10 +11,10 @@ import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.util.ListenerList;
-import at.fhv.audioracer.server.model.ICarClientListener;
+import at.fhv.audioracer.server.model.ICarManagerListener;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 
-public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientListener {
+public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerListener {
 	
 	private static class WorldZigbeeConnectionCountListenerList extends
 			ListenerList<IWorldZigbeeConnectionCountChanged> implements
@@ -33,8 +33,8 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 	private BlockingQueue<ICarClient> _awaitingConnectionQueue = new LinkedBlockingQueue<ICarClient>();
 	private ICarClient _currentCarClientToConnect = null;
 	private Boolean _assignNextCarClient = true;
-	private HashMap<Integer, Integer> _updateCarInvocationCount = new HashMap<Integer, Integer>();
-	private final int _upateCarInvocationCountThreshold = 1000;
+	private HashMap<Byte, Integer> _updateCarInvocationCount = new HashMap<Byte, Integer>();
+	private final int _upateCarInvocationCountThreshold = 100;
 	private int _connectionCount = 0;
 	private float _configurationSpeed = 1.f;
 	private float _configurationDirection = 0.0f;
@@ -72,7 +72,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 	@Override
 	public void onCarPositionChanged(Car car) {
 		int count = 0;
-		int carId = car.getCarId();
+		byte carId = car.getCarId();
 		if (_updateCarInvocationCount.containsKey(carId) == false) {
 			count = 1;
 			_updateCarInvocationCount.put(carId, count);
@@ -86,7 +86,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarClientLi
 		
 		if (count > _upateCarInvocationCountThreshold
 				&& car.getCarClientId() == Car.CAR_CLIENT_NOT_ASSIGNED_ID) {
-			int id = _currentCarClientToConnect.getCarClientId();
+			byte id = _currentCarClientToConnect.getCarClientId();
 			_logger.info(
 					"zigbee connection with carClientId: {} connected with car with id: {} ... {} connections left -----------------------",
 					new Object[] { id, car.getCarId(), _awaitingConnectionQueue.size() });

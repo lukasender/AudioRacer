@@ -3,12 +3,12 @@ package at.fhv.audioracer.client.player;
 import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.message.CarImageRequestMessage;
 import at.fhv.audioracer.communication.player.message.CarImageResponseMessage;
-import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
-import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage.MessageId;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
+import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.UpdateVelocityMessage;
 
 import com.esotericsoftware.kryonet.Client;
@@ -69,7 +69,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	}
 	
 	@Override
-	public boolean selectCar(int carId) {
+	public boolean selectCar(byte carId) {
 		_selectCarResponse = false;
 		
 		SelectCarRequestMessage msg = new SelectCarRequestMessage();
@@ -88,7 +88,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	}
 	
 	@Override
-	public byte[] getCarImage(int carId) {
+	public byte[] getCarImage(byte carId) {
 		_carImageResponse = null;
 		
 		CarImageRequestMessage msg = new CarImageRequestMessage();

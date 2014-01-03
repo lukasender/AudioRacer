@@ -14,6 +14,8 @@ import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
 import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.communication.world.message.UpdateCarMessage;
 import at.fhv.audioracer.core.model.Car;
+import at.fhv.audioracer.core.util.Direction;
+import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.game.GameModerator;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -61,9 +63,9 @@ public class CameraServerListener extends Listener {
 					
 					if (carImage != null) {
 						
-						// TODO: We should also send current Position and Direction on new car detected
-						
-						Car car = new Car(carDetectedMsg.carId, null, null, carImage);
+						Car car = new Car(carDetectedMsg.carId, new Position(carDetectedMsg.posX,
+								carDetectedMsg.posY), new Direction(carDetectedMsg.direction),
+								carImage);
 						_moderator.carDetected(car);
 					}
 					

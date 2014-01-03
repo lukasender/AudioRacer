@@ -37,7 +37,7 @@ public class PlayerNetwork {
 		kryo.register(StartGameMessage.class);
 		kryo.register(PlayerMessage.class);
 		
-		kryo.register(int[].class);
+		kryo.register(byte[].class);
 	}
 	
 }

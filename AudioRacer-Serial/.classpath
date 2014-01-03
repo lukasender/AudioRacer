@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-WorldCommunication"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Server"/>
+	<classpathentry kind="lib" path="/AudioRacer/libs/jssc.jar" sourcepath="/AudioRacer/libs/jssc-2.6.0-src.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Core"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

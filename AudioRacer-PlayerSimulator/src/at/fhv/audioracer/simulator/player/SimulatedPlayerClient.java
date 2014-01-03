@@ -33,12 +33,12 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 	/**
 	 * holds free cars
 	 */
-	protected HashMap<Integer, Car> _freeCars;
+	protected HashMap<Byte, Car> _freeCars;
 	
 	/**
 	 * holds every known car
 	 */
-	protected HashMap<Integer, Car> _cars;
+	protected HashMap<Byte, Car> _cars;
 	
 	/**
 	 * holds connected players
@@ -72,8 +72,8 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 	
 	public SimulatedPlayerClient() {
 		
-		_cars = new HashMap<Integer, Car>();
-		_freeCars = new HashMap<Integer, Car>();
+		_cars = new HashMap<Byte, Car>();
+		_freeCars = new HashMap<Byte, Car>();
 		_player = new Player();
 		_nextCheckpoint = new Checkpoint();
 		_listener = new LinkedList<>();
@@ -114,9 +114,9 @@ public class SimulatedPlayerClient extends Connection implements IPlayerClient {
 	}
 	
 	@Override
-	public void updateFreeCars(int[] carIds) {
+	public void updateFreeCars(byte[] carIds) {
 		
-		for (int currId : carIds) {
+		for (byte currId : carIds) {
 			if (_cars.containsKey(currId)) {
 				_freeCars.put(currId, _cars.get(currId));
 			} else {
