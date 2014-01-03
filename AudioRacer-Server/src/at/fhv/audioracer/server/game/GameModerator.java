@@ -158,19 +158,19 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		}
 	}
 	
-	public void updateCar(int carId, float posX, float posY, float direction) {
+	public void updateCar(byte carId, float posX, float posY, float direction) {
 		// _logger.debug(
 		// "updateCar called for carId: {} game started: {} posX: {} posY: {} direction: {}",
 		// new Object[] { carId, _gameRunning, posX, posY, direction });
 		Car car = _carList.get(carId);
 		if (_gameRunning) {
-			
+			car.updatePosition(new Position(posX, posY), new Direction(direction));
 		} else {
 			car.updatePosition(new Position(posX, posY), new Direction(direction));
 		}
 	}
 	
-	public void selectCar(PlayerConnection playerConnection, int carId) {
+	public void selectCar(PlayerConnection playerConnection, byte carId) {
 		_logger.debug("selectCar called from player with id: {} and name: {}", playerConnection
 				.getPlayer().getPlayerId(), playerConnection.getPlayer().getName());
 		

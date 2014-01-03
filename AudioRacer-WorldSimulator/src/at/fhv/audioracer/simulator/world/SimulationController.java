@@ -107,7 +107,7 @@ public class SimulationController {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", out);
 		out.flush();
-		_camera.sendTCP(createCarDetectedMessage(_carId, out.toByteArray()));
+		_camera.sendTCP(createCarDetectedMessage(car, out.toByteArray()));
 		
 		_carId++;
 		
@@ -166,9 +166,12 @@ public class SimulationController {
 		return configMap;
 	}
 	
-	private CarDetectedMessage createCarDetectedMessage(int id, byte[] image) {
+	private CarDetectedMessage createCarDetectedMessage(Car car, byte[] image) {
 		CarDetectedMessage carDetectedMessage = new CarDetectedMessage();
-		carDetectedMessage.carId = _carId;
+		carDetectedMessage.carId = car.getCarId();
+		carDetectedMessage.posX = car.getPosition().getPosX();
+		carDetectedMessage.posY = car.getPosition().getPosY();
+		carDetectedMessage.direction = car.getDirection().getDirection();
 		carDetectedMessage.image = image;
 		return carDetectedMessage;
 	}
