@@ -12,7 +12,13 @@
     <string name="hello_world">Hello world!</string>
     <string name="play_sound">Play sound</string>
     <string name="title_activity_play_game">PlayGame</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="play_game_content">AudioRacer</string>
+    
+    <string name="std_ctrl">Standard</string>
+    
+    <string name="ctrl_up">up</string>
+    <string name="ctrl_down">down</string>
+    <string name="ctrl_left">left</string>
+    <string name="ctrl_right">right</string>
 
 </resources>

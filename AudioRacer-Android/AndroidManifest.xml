@@ -35,6 +35,7 @@
         <activity
             android:name="at.fhv.audioracer.client.android.activity.PlayGameActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="landscape"
             android:label="@string/title_activity_play_game"
             android:theme="@style/FullscreenTheme" >
         </activity>

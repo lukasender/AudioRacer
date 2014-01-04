@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="#9a9a9a"
     tools:context=".PlayGameActivity" >
 
     <!--
@@ -10,38 +10,90 @@
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc.
     -->
+    
+    <LinearLayout 
+        android:id="@+id/choose_controls"
+	    style="?buttonBarStyle"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_gravity="center"
+	    android:background="@color/black_overlay"
+	    android:orientation="horizontal"
+	    tools:ignore="UselessParent" >
+	    
+        <Button 
+        	android:id="@+id/std_ctrl"
+            style="?buttonBarButtonStyle"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        android:layout_weight="1"
+	        android:text="@string/std_ctrl" />
+            />
+        
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:keepScreenOn="true"
-        android:text="@string/dummy_content"
-        android:textColor="#33b5e5"
-        android:textSize="50sp"
-        android:textStyle="bold" />
-
-    <!--
-         This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows.
-    -->
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true" >
-
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            style="?buttonBarStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent" >
-        </LinearLayout>
-    </FrameLayout>
+    <LinearLayout
+	    android:id="@+id/standard_controls"
+	    style="?buttonBarStyle"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_gravity="center"
+	    android:background="@color/black_overlay"
+	    android:orientation="horizontal"
+	    tools:ignore="UselessParent" >
+	
+	    <LinearLayout
+	        style="?buttonBarStyle"
+	        android:layout_width="wrap_content"
+	    	android:layout_height="match_parent"
+	    	android:layout_gravity="center"
+	    	android:layout_weight="0.6"
+	        android:orientation="vertical"
+	    	>
+	    	<Button
+		    	 android:id="@+id/std_ctrl_up"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_gravity="center"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_up" />
+	    	<Button
+		    	 android:id="@+id/std_ctrl_down"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_gravity="center"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_down" />
+	    </LinearLayout>
+	    
+	    <LinearLayout
+	        style="?buttonBarStyle"
+	        android:layout_width="wrap_content"
+	    	android:layout_height="match_parent"
+	    	android:layout_gravity="center"
+	    	android:layout_weight="0.4"
+	        android:orientation="horizontal"
+	    	>
+	        
+		     <Button
+		         android:id="@+id/std_ctrl_left"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_left" />
+		     
+		     <Button
+		         android:id="@+id/std_ctrl_right"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_right" />
+	    </LinearLayout>
+	</LinearLayout>
 
 </FrameLayout>

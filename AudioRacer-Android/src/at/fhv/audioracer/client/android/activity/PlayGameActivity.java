@@ -1,45 +1,36 @@
 package at.fhv.audioracer.client.android.activity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import at.fhv.audioracer.client.android.R;
+import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
+import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
+import at.fhv.audioracer.communication.player.IPlayerServer;
 
 /**
- * An example full-screen activity that shows and hides the system UI (i.e. status bar and navigation/system bar) with user interaction.
- * 
- * @see SystemUiHider
+ * This is the main activity to play the game.<br>
+ * At first, a player can choose between different 'control modes':<br>
+ * <ul>
+ * <li>Standard controls: 4 buttons layout: up, down, left, right</li>
+ * <li>(not yet implemented) Joystick controls: use an 'on-screen-joystick' to control the car.</li>
+ * <li>(not yet implemented) Motion controls: use the motion sensors to control the car.</li>
+ * </ul>
  */
 public class PlayGameActivity extends Activity {
-	/**
-	 * Whether or not the system UI should be auto-hidden after {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-	 */
-	private static final boolean AUTO_HIDE = true;
 	
-	/**
-	 * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after user interaction before hiding the system UI.
-	 */
-	private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+	private SystemUiHider _systemUiHider;
 	
-	/**
-	 * If set, will toggle the system UI visibility upon interaction. Otherwise, will show the system UI visibility upon interaction.
-	 */
-	private static final boolean TOGGLE_ON_CLICK = true;
+	private IPlayerServer _playerServer;
 	
-	/**
-	 * The flags to pass to {@link SystemUiHider#getInstance}.
-	 */
-	private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
-	
-	/**
-	 * The instance of the {@link SystemUiHider} for this activity.
-	 */
-	private SystemUiHider mSystemUiHider;
+	protected boolean _speedUp;
+	protected boolean _speedDown;
+	protected boolean _steerLeft;
+	protected boolean _steerRight;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,97 +38,104 @@ public class PlayGameActivity extends Activity {
 		
 		setContentView(R.layout.activity_play_game);
 		
-		final View controlsView = findViewById(R.id.fullscreen_content_controls);
-		final View contentView = findViewById(R.id.fullscreen_content);
+		_playerServer = ClientManager.getInstance().getPlayerClient().getPlayerServer();
 		
-		// Set up an instance of SystemUiHider to control the system UI for
-		// this activity.
-		mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
-		mSystemUiHider.setup();
-		mSystemUiHider.setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
-			// Cached values.
-			int mControlsHeight;
-			int mShortAnimTime;
-			
+		// get all views
+		final View chooseControlsView = findViewById(R.id.choose_controls);
+		final View standardControlsView = findViewById(R.id.standard_controls);
+		
+		// set other views than 'chooseControlsView' invisible
+		standardControlsView.setVisibility(View.INVISIBLE);
+		
+		/* ChooseControls */
+		
+		// Choose 'Standard controls'
+		// set 'chooseControlsView' to invisible, set 'standardControlsView' to visible
+		final Button stdCtrlButton = (Button) findViewById(R.id.std_ctrl);
+		stdCtrlButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+			public void onClick(View v) {
+				chooseControlsView.setVisibility(View.INVISIBLE);
+				standardControlsView.setVisibility(View.VISIBLE);
+				ready();
+			}
+		});
+		
+		final Button upButton = (Button) findViewById(R.id.std_ctrl_up);
+		final Button downButton = (Button) findViewById(R.id.std_ctrl_down);
+		final Button leftButton = (Button) findViewById(R.id.std_ctrl_left);
+		final Button rightButton = (Button) findViewById(R.id.std_ctrl_right);
+		upButton.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (MotionEvent.ACTION_DOWN == event.getAction()) {
+					_speedUp = true;
+				}
+				if (MotionEvent.ACTION_UP == event.getAction()) {
+					_speedUp = false;
+				}
+				Log.d("foo", "speedUp " + _speedUp);
+				return false;
+			}
+		});
+		downButton.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (MotionEvent.ACTION_DOWN == event.getAction()) {
+					_speedDown = true;
+				}
+				if (MotionEvent.ACTION_UP == event.getAction()) {
+					_speedDown = false;
+				}
+				Log.d("foo", "speedDown " + _speedDown);
+				return false;
+			}
+		});
+		leftButton.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (MotionEvent.ACTION_DOWN == event.getAction()) {
+					_steerLeft = true;
+				}
+				if (MotionEvent.ACTION_UP == event.getAction()) {
+					_steerLeft = false;
+				}
+				Log.d("foo", "steerLeft " + _steerLeft);
+				return false;
+			}
+		});
+		rightButton.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (MotionEvent.ACTION_DOWN == event.getAction()) {
+					_steerRight = true;
+				}
+				if (MotionEvent.ACTION_UP == event.getAction()) {
+					_steerRight = false;
+				}
+				Log.d("foo", "steerRight " + _steerRight);
+				return false;
+			}
+		});
+		
+		/* End of: ChooseControls */
+		
+		// hide SystemUi
+		_systemUiHider = new SystemUiHiderAndroidRacer(this, standardControlsView, SystemUiHider.FLAG_FULLSCREEN);
+		_systemUiHider.setup();
+		_systemUiHider.setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
+			@Override
 			public void onVisibilityChange(boolean visible) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-					// If the ViewPropertyAnimator API is available
-					// (Honeycomb MR2 and later), use it to animate the
-					// in-layout UI controls at the bottom of the
-					// screen.
-					if (mControlsHeight == 0) {
-						mControlsHeight = controlsView.getHeight();
-					}
-					if (mShortAnimTime == 0) {
-						mShortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-					}
-					controlsView.animate().translationY(visible ? 0 : mControlsHeight).setDuration(mShortAnimTime);
-				} else {
-					// If the ViewPropertyAnimator APIs aren't
-					// available, simply show or hide the in-layout UI
-					// controls.
-					controlsView.setVisibility(visible ? View.VISIBLE : View.GONE);
-				}
-				
-				if (visible && AUTO_HIDE) {
-					// Schedule a hide().
-					delayedHide(AUTO_HIDE_DELAY_MILLIS);
-				}
+				Log.d("foo", "onVisibilityChange: visible? " + visible);
 			}
 		});
 		
-		// Set up the user interaction to manually show or hide the system UI.
-		contentView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (TOGGLE_ON_CLICK) {
-					mSystemUiHider.toggle();
-				} else {
-					mSystemUiHider.show();
-				}
-			}
-		});
+		_systemUiHider.hide();
 	}
 	
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
-		super.onPostCreate(savedInstanceState);
-		
-		// Trigger the initial hide() shortly after the activity has been
-		// created, to briefly hint to the user that UI controls
-		// are available.
-		delayedHide(100);
+	private void ready() {
+		// TODO
+		// _playerServer.setPlayerReady();
 	}
 	
-	/**
-	 * Touch listener to use for in-layout UI controls to delay hiding the system UI. This is to prevent the jarring behavior of controls going away while
-	 * interacting with activity UI.
-	 */
-	View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-		@Override
-		public boolean onTouch(View view, MotionEvent motionEvent) {
-			if (AUTO_HIDE) {
-				delayedHide(AUTO_HIDE_DELAY_MILLIS);
-			}
-			return false;
-		}
-	};
-	
-	Handler mHideHandler = new Handler();
-	Runnable mHideRunnable = new Runnable() {
-		@Override
-		public void run() {
-			mSystemUiHider.hide();
-		}
-	};
-	
-	/**
-	 * Schedules a call to hide() in [delay] milliseconds, canceling any previously scheduled calls.
-	 */
-	private void delayedHide(int delayMillis) {
-		mHideHandler.removeCallbacks(mHideRunnable);
-		mHideHandler.postDelayed(mHideRunnable, delayMillis);
-	}
 }
