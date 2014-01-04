@@ -13,7 +13,6 @@ import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
 import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
 import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
-import at.fhv.audioracer.communication.player.IPlayerServer;
 
 /**
  * This is the main activity to play the game.<br>
@@ -27,8 +26,6 @@ import at.fhv.audioracer.communication.player.IPlayerServer;
 public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private SystemUiHider _systemUiHider;
-	
-	private IPlayerServer _playerServer;
 	
 	public static enum ControlMode {
 		STANDARD,
@@ -50,8 +47,6 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_play_game);
-		
-		_playerServer = ClientManager.getInstance().getPlayerClient().getPlayerServer();
 		
 		// get all views
 		_chooseControlsView = findViewById(R.id.choose_controls);
@@ -154,11 +149,71 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			case STANDARD:
 				_chooseControlsView.setVisibility(View.INVISIBLE);
 				_standardControlsView.setVisibility(View.VISIBLE);
+				
+				_running = true;
+				new StandardControlThread().start();
+				
 				break;
 			default:
 				// set control to STANDARD
 				setControlMode(ControlMode.STANDARD);
 		}
 	}
+	
+	/* copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
+	
+	private static final float CONTROL_SENSITY = 1.f;
+	protected static final long MAX_CONTROL_WAIT = 10;
+	
+	private volatile boolean _running;
+	private float _speed;
+	private float _direction;
+	
+	protected class StandardControlThread extends Thread {
+		
+		@Override
+		public void run() {
+			long lastUpdate = System.currentTimeMillis();
+			while (_running) {
+				long now = System.currentTimeMillis();
+				float sensity = (((now - lastUpdate) / 1000.f) * CONTROL_SENSITY);
+				if (_speedUp) {
+					_speed = Math.min(1.f, (_speed + sensity));
+				} else if (_speedDown) {
+					_speed = Math.max(-1.f, (_speed - sensity));
+				} else if (_speed < 0) {
+					_speed = Math.min(0.f, (_speed + sensity));
+				} else if (_speed > 0) {
+					_speed = Math.max(0.f, (_speed - sensity));
+				}
+				
+				if (_steerLeft) {
+					_direction = Math.max(-1.f, (_direction - sensity));
+				} else if (_steerRight) {
+					_direction = Math.min(1.f, (_direction + sensity));
+				} else if (_direction < 0) {
+					_direction = Math.min(0.f, (_direction + sensity));
+				} else if (_direction > 0) {
+					_direction = Math.max(0.f, (_direction - sensity));
+				}
+				
+				// note that this is sent continuously
+				ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_speed, _direction);
+				
+				long wait = MAX_CONTROL_WAIT - (System.currentTimeMillis() - lastUpdate);
+				lastUpdate = now;
+				if (wait > 0) {
+					try {
+						Thread.sleep(wait);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
+	/* end of: copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
 	
 }
