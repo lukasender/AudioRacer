@@ -18,6 +18,7 @@ import at.fhv.audioracer.communication.player.message.PlayerDisconnectedMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
+import at.fhv.audioracer.communication.player.message.UpdateGameStateMessage;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Checkpoint;
@@ -34,6 +35,7 @@ import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectionCountChanged {
 	
 	private static Logger _logger = LoggerFactory.getLogger(GameModerator.class);
+	// TODO: player server is not threat safe at all
 	private PlayerServer _playerServer;
 	private CheckpointUtil _checkpointUtil = new CheckpointUtil();
 	private int _checkpointStartCount = 5;
@@ -50,6 +52,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	
 	private Object _lockObject = new Object();
 	private boolean _gameRunning = false;
+	private long _gameStartTimeInMillis;
 	
 	// next conditions must be true for game start
 	private boolean _mapConfigured = false;
@@ -182,10 +185,43 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		// new Object[] { carId, _gameRunning, posX, posY, direction });
 		Car car = _carList.get(carId);
 		if (_gameRunning) {
-			car.updatePosition(new Position(posX, posY), new Direction(direction));
-		} else {
-			car.updatePosition(new Position(posX, posY), new Direction(direction));
+			
+			// handle checkpoint reached first
+			Position nextCheckpointPosition = _checkpoints.get(car.getCarId()).peekFirst();
+			if (nextCheckpointPosition != null) {
+				if (_checkpointUtil.checkpointMatch(new Position(posX, posY),
+						nextCheckpointPosition)) {
+					
+					if (_map != null) {
+						int cpNum = ((_checkpointStartCount - _checkpoints.get(car.getCarId())
+								.size()) + 1);
+						Checkpoint reachedCP = new Checkpoint(car.getCarId(),
+								nextCheckpointPosition, _checkpointUtil.getCheckpointRadius(),
+								cpNum);
+						
+						_logger.info(
+								"Checkpoint nr: {} car-id: {} pos: {} reached. Moderate and remove.",
+								new Object[] { cpNum, car.getCarId(),
+										nextCheckpointPosition.getPosX(),
+										nextCheckpointPosition.getPosY() });
+						_map.removeCheckpoint(reachedCP);
+					}
+					
+					long currentTime = System.currentTimeMillis();
+					int timeSinceGameStart = (int) (currentTime - _gameStartTimeInMillis);
+					_checkpoints.get(car.getCarId()).pollFirst();
+					UpdateGameStateMessage updateGameStateMsg = new UpdateGameStateMessage();
+					updateGameStateMsg.carId = car.getCarId();
+					updateGameStateMsg.time = timeSinceGameStart;
+					updateGameStateMsg.coinsLeft = _checkpoints.get(car.getCarId()).size();
+					_logger.info("Player: {} coins left: {}", car.getPlayer().getName(),
+							updateGameStateMsg.coinsLeft);
+					_playerServer.sendToAllTCP(updateGameStateMsg);
+				}
+			}
+			
 		}
+		car.updatePosition(new Position(posX, posY), new Direction(direction));
 	}
 	
 	public void selectCar(PlayerConnection playerConnection, byte carId) {
@@ -323,7 +359,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 								_checkpointUtil.getCheckpointRadius(), i + 1);
 						_map.addCheckpoint(nextCP);
 					}
-					_checkpoints.get(car.getCarId()).addFirst(nextP);
+					_checkpoints.get(car.getCarId()).addLast(nextP);
 				}
 			}
 			
@@ -339,6 +375,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			// TODO: good idea to send in synchronized block?
 			StartGameMessage startGameMsg = new StartGameMessage();
 			startGameMsg.gameWillStartInMilliseconds = 0;
+			_gameStartTimeInMillis = System.currentTimeMillis();
 			_playerServer.sendToAllTCP(startGameMsg);
 		}
 	}

@@ -58,7 +58,9 @@ public class CheckpointUtil {
 	}
 	
 	public boolean checkpointMatch(Position currentPosition, Position checkpoint) {
-		return false;
+		return Math.pow((currentPosition.getPosX() - checkpoint.getPosX()), 2)
+				+ Math.pow(currentPosition.getPosY() - checkpoint.getPosY(), 2) < Math.pow(
+				_checkpointRadius, 2);
 	}
 	
 	public float generateRandomVectorLength() {
