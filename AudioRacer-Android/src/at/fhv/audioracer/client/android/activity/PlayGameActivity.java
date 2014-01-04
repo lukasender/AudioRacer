@@ -7,7 +7,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import at.fhv.audioracer.client.android.R;
+import at.fhv.audioracer.client.android.activity.listener.IControlMode;
 import at.fhv.audioracer.client.android.controller.ClientManager;
+import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
+import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
 import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
 import at.fhv.audioracer.communication.player.IPlayerServer;
@@ -21,16 +24,26 @@ import at.fhv.audioracer.communication.player.IPlayerServer;
  * <li>(not yet implemented) Motion controls: use the motion sensors to control the car.</li>
  * </ul>
  */
-public class PlayGameActivity extends Activity {
+public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private SystemUiHider _systemUiHider;
 	
 	private IPlayerServer _playerServer;
 	
+	public static enum ControlMode {
+		STANDARD,
+		// JOYSTICK,
+		// SENSOR,
+		;
+	}
+	
 	protected boolean _speedUp;
 	protected boolean _speedDown;
 	protected boolean _steerLeft;
 	protected boolean _steerRight;
+	
+	private View _chooseControlsView;
+	private View _standardControlsView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +54,11 @@ public class PlayGameActivity extends Activity {
 		_playerServer = ClientManager.getInstance().getPlayerClient().getPlayerServer();
 		
 		// get all views
-		final View chooseControlsView = findViewById(R.id.choose_controls);
-		final View standardControlsView = findViewById(R.id.standard_controls);
+		_chooseControlsView = findViewById(R.id.choose_controls);
+		_standardControlsView = findViewById(R.id.standard_controls);
 		
 		// set other views than 'chooseControlsView' invisible
-		standardControlsView.setVisibility(View.INVISIBLE);
+		_standardControlsView.setVisibility(View.INVISIBLE);
 		
 		/* ChooseControls */
 		
@@ -55,9 +68,7 @@ public class PlayGameActivity extends Activity {
 		stdCtrlButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				chooseControlsView.setVisibility(View.INVISIBLE);
-				standardControlsView.setVisibility(View.VISIBLE);
-				ready();
+				ready(ControlMode.STANDARD);
 			}
 		});
 		
@@ -121,7 +132,7 @@ public class PlayGameActivity extends Activity {
 		/* End of: ChooseControls */
 		
 		// hide SystemUi
-		_systemUiHider = new SystemUiHiderAndroidRacer(this, standardControlsView, SystemUiHider.FLAG_FULLSCREEN);
+		_systemUiHider = new SystemUiHiderAndroidRacer(this, _standardControlsView, SystemUiHider.FLAG_FULLSCREEN);
 		_systemUiHider.setup();
 		_systemUiHider.setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
 			@Override
@@ -133,9 +144,21 @@ public class PlayGameActivity extends Activity {
 		_systemUiHider.hide();
 	}
 	
-	private void ready() {
-		// TODO
-		// _playerServer.setPlayerReady();
+	private void ready(ControlMode mode) {
+		new PlayerReadyAsyncTask(this, mode).execute(new NetworkParams());
+	}
+	
+	@Override
+	public void setControlMode(ControlMode mode) {
+		switch (mode) {
+			case STANDARD:
+				_chooseControlsView.setVisibility(View.INVISIBLE);
+				_standardControlsView.setVisibility(View.VISIBLE);
+				break;
+			default:
+				// set control to STANDARD
+				setControlMode(ControlMode.STANDARD);
+		}
 	}
 	
 }
