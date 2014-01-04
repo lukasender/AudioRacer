@@ -16,11 +16,26 @@ public class CarClient implements ICarClient {
 			}
 		}
 		
+		@Override
+		public void onTrim(CarClient carClient) {
+			for (ICarClientListener listener : listeners()) {
+				listener.onTrim(carClient);
+			}
+		}
+		
 	}
 	
 	class Velocity {
 		byte speed;
 		byte direction;
+		
+		public Velocity(float speed, float direction) {
+			int realSpeed = (int) (((speed * -1) * (MAX_CONTROL_VALUE / 2.0)) + (MAX_CONTROL_VALUE / 2.0));
+			int realDirection = (int) (((direction * -1) * (MAX_CONTROL_VALUE / 2.0)) + (MAX_CONTROL_VALUE / 2.0));
+			
+			this.speed = (byte) realSpeed;
+			this.direction = (byte) realDirection;
+		}
 	}
 	
 	private final Object _lock;
@@ -61,16 +76,16 @@ public class CarClient implements ICarClient {
 	
 	@Override
 	public void updateVelocity(float speed, float direction) {
-		int realSpeed = (int) (((speed * -1) * (MAX_CONTROL_VALUE / 2.0)) + (MAX_CONTROL_VALUE / 2.0));
-		int realDirection = (int) (((direction * -1) * (MAX_CONTROL_VALUE / 2.0)) + (MAX_CONTROL_VALUE / 2.0));
-		
-		Velocity velocity = new Velocity();
-		velocity.speed = (byte) realSpeed;
-		velocity.direction = (byte) realDirection;
+		Velocity velocity = new Velocity(speed, direction);
 		
 		synchronized (_lock) {
 			_velocity = velocity;
 		}
 		_listenerList.onVelocityChanged(this);
+	}
+	
+	@Override
+	public void trim() {
+		_listenerList.onTrim(this);
 	}
 }

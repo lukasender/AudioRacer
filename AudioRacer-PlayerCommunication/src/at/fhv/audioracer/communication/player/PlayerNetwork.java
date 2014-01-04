@@ -8,6 +8,7 @@ import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
+import at.fhv.audioracer.communication.player.message.UpdateGameStateMessage;
 import at.fhv.audioracer.communication.player.message.UpdateVelocityMessage;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -36,6 +37,7 @@ public class PlayerNetwork {
 		kryo.register(PlayerConnectedMessage.class);
 		kryo.register(StartGameMessage.class);
 		kryo.register(PlayerMessage.class);
+		kryo.register(UpdateGameStateMessage.class);
 		
 		kryo.register(byte[].class);
 	}
