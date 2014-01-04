@@ -28,13 +28,4 @@
         android:ems="10"
         android:hint="@string/player_name" />
 
-    <Button
-        android:id="@+id/play_sound_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/search_games_button"
-        android:layout_alignRight="@+id/search_games_button"
-        android:layout_centerVertical="true"
-        android:text="@string/play_sound" />
-
 </RelativeLayout>

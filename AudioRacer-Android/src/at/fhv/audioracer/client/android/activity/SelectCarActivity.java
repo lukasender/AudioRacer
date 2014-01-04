@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -106,9 +107,11 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 	@Override
 	public void notifySuccess(SuccessMessage message) {
 		if (message.success) {
-			// car was free, change to xyzActivity # TODO <-- change xyz to the actual name.
+			// car was free, change to playGameActivity
 			Toast.makeText(getApplicationContext(), "Selected car " + message.carId + " :)", Toast.LENGTH_SHORT).show();
 			_playerClient.getListenerList().remove(_playerClientListener);
+			final Intent playGameIntent = new Intent(this, PlayGameActivity.class);
+			startActivity(playGameIntent);
 		} else {
 			Toast.makeText(getApplicationContext(), "Sorry, but car " + message.carId + " isn't available anymore.", Toast.LENGTH_SHORT).show();
 		}

@@ -1,0 +1,99 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#9a9a9a"
+    tools:context=".PlayGameActivity" >
+
+    <!--
+         The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc.
+    -->
+    
+    <LinearLayout 
+        android:id="@+id/choose_controls"
+	    style="?buttonBarStyle"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_gravity="center"
+	    android:background="@color/black_overlay"
+	    android:orientation="horizontal"
+	    tools:ignore="UselessParent" >
+	    
+        <Button 
+        	android:id="@+id/std_ctrl"
+            style="?buttonBarButtonStyle"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        android:layout_weight="1"
+	        android:text="@string/std_ctrl" />
+            />
+        
+    </LinearLayout>
+
+    <LinearLayout
+	    android:id="@+id/standard_controls"
+	    style="?buttonBarStyle"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_gravity="center"
+	    android:background="@color/black_overlay"
+	    android:orientation="horizontal"
+	    tools:ignore="UselessParent" >
+	
+	    <LinearLayout
+	        style="?buttonBarStyle"
+	        android:layout_width="wrap_content"
+	    	android:layout_height="match_parent"
+	    	android:layout_gravity="center"
+	    	android:layout_weight="0.6"
+	        android:orientation="vertical"
+	    	>
+	    	<Button
+		    	 android:id="@+id/std_ctrl_up"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_gravity="center"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_up" />
+	    	<Button
+		    	 android:id="@+id/std_ctrl_down"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_gravity="center"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_down" />
+	    </LinearLayout>
+	    
+	    <LinearLayout
+	        style="?buttonBarStyle"
+	        android:layout_width="wrap_content"
+	    	android:layout_height="match_parent"
+	    	android:layout_gravity="center"
+	    	android:layout_weight="0.4"
+	        android:orientation="horizontal"
+	    	>
+	        
+		     <Button
+		         android:id="@+id/std_ctrl_left"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_left" />
+		     
+		     <Button
+		         android:id="@+id/std_ctrl_right"
+		         style="?buttonBarButtonStyle"
+		         android:layout_width="match_parent"
+		         android:layout_height="match_parent"
+		         android:layout_weight="1"
+		         android:text="@string/ctrl_right" />
+	    </LinearLayout>
+	</LinearLayout>
+
+</FrameLayout>
