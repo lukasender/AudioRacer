@@ -16,9 +16,15 @@ import at.fhv.audioracer.serial.CarClient.Velocity;
 import at.fhv.audioracer.server.CarClientManager;
 
 public class SerialInterface implements SerialPortEventListener, ICarClientListener {
+	private static class Command {
+		byte command;
+		CarClient car;
+	}
+	
 	private static final byte CAR_CONNECTED = 0x1;
 	private static final byte CAR_DISCONNECTED = 0x2;
 	private static final byte CAR_UPDATE_VELOCITY = 0x3;
+	private static final byte CAR_TRIM = 0x4;
 	
 	private final Lock _lock;
 	
@@ -31,7 +37,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	private boolean _carriageReturnReceived = false;
 	
 	private Map<Byte, CarClient> _carClients;
-	private BlockingQueue<CarClient> _writingQueue;
+	private BlockingQueue<Command> _writingQueue;
 	
 	public SerialInterface(String port) throws SerialPortException {
 		_lock = new ReentrantLock();
@@ -47,7 +53,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 		
 		_carClients = new HashMap<Byte, CarClient>();
 		
-		_writingQueue = new LinkedBlockingDeque<CarClient>();
+		_writingQueue = new LinkedBlockingDeque<Command>();
 		startWriting();
 	}
 	
@@ -125,7 +131,21 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	
 	@Override
 	public void onVelocityChanged(CarClient carClient) {
-		_writingQueue.add(carClient);
+		Command command = new Command();
+		command.command = CAR_UPDATE_VELOCITY;
+		command.car = carClient;
+		
+		_writingQueue.add(command);
+		startWriting();
+	}
+	
+	@Override
+	public void onTrim(CarClient carClient) {
+		Command command = new Command();
+		command.command = CAR_TRIM;
+		command.car = carClient;
+		
+		_writingQueue.add(command);
 		startWriting();
 	}
 	
@@ -167,11 +187,19 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 				_lock.unlock();
 				locked = false;
 				
-				CarClient carClient = _writingQueue.take();
-				Velocity velocity = carClient.getVelocity();
-				if (velocity != null) {
-					byte[] buff = new byte[] { CAR_UPDATE_VELOCITY, carClient.getCarClientId(),
-							velocity.speed, velocity.direction };
+				byte[] buff = null;
+				Command command = _writingQueue.take();
+				if (command.command == CAR_UPDATE_VELOCITY) {
+					Velocity velocity = command.car.getVelocity();
+					if (velocity != null) {
+						buff = new byte[] { command.command, command.car.getCarClientId(),
+								velocity.speed, velocity.direction };
+					}
+				} else {
+					buff = new byte[] { command.command, command.car.getCarClientId(), 0, 0 }; // always padding to 4 byte
+				}
+				
+				if (buff != null) {
 					_serialPort.writeBytes(buff);
 				}
 				

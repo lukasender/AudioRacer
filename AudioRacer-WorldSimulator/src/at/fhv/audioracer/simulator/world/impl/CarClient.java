@@ -45,6 +45,11 @@ public class CarClient implements ICarClient {
 		_car.updatePosition(newPosition, newDirection);
 	}
 	
+	@Override
+	public void trim() {
+		// not required in the simulator (neutral control positions are known)
+	}
+	
 	/**
 	 * 
 	 * @param direction
@@ -59,8 +64,7 @@ public class CarClient implements ICarClient {
 		return new Direction(newDirection);
 	}
 	
-	private Position calcNewPosition(float speed, Position currentPosition,
-			Direction currentDirection) {
+	private Position calcNewPosition(float speed, Position currentPosition, Direction currentDirection) {
 		// @formatter:off
 		/*
 		             /|
@@ -102,5 +106,4 @@ public class CarClient implements ICarClient {
 	public byte getCarClientId() {
 		return _car.getCarId();
 	}
-	
 }
