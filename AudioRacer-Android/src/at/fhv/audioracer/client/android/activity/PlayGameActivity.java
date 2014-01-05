@@ -1,11 +1,23 @@
 package at.fhv.audioracer.client.android.activity;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
 import at.fhv.audioracer.client.android.controller.ClientManager;
@@ -30,8 +42,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	public static enum ControlMode {
 		STANDARD,
 		// JOYSTICK,
-		// SENSOR,
-		;
+		SENSOR, ;
 	}
 	
 	protected boolean _speedUp;
@@ -41,6 +52,11 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private View _chooseControlsView;
 	private View _standardControlsView;
+	private View _motionSensorControlsView;
+	
+	private ImageView _msCtrlImgView;
+	
+	private List<ThreadControlMode> _threads;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,19 +67,36 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		// get all views
 		_chooseControlsView = findViewById(R.id.choose_controls);
 		_standardControlsView = findViewById(R.id.standard_controls);
+		_motionSensorControlsView = findViewById(R.id.motion_sensor_controls);
+		
+		// get the 'motion sensor' image view.
+		// a circle and the current 'motion position' will be drawn onto this view.
+		_msCtrlImgView = (ImageView) findViewById(R.id.ms_ctrl_img_view);
 		
 		// set other views than 'chooseControlsView' invisible
 		_standardControlsView.setVisibility(View.INVISIBLE);
 		
+		// possible threads
+		_threads = new LinkedList<PlayGameActivity.ThreadControlMode>();
+		_threads.add(new ThreadControlMode(ControlMode.STANDARD, new StandardControlThread()));
+		_threads.add(new ThreadControlMode(ControlMode.SENSOR, new MotionSensorControlThread()));
+		
 		/* ChooseControls */
 		
 		// Choose 'Standard controls'
-		// set 'chooseControlsView' to invisible, set 'standardControlsView' to visible
 		final Button stdCtrlButton = (Button) findViewById(R.id.std_ctrl);
 		stdCtrlButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				ready(ControlMode.STANDARD);
+			}
+		});
+		// Choose 'Motion Sensor'
+		final Button msCtrlButton = (Button) findViewById(R.id.ms_ctrl);
+		msCtrlButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				ready(ControlMode.SENSOR);
 			}
 		});
 		
@@ -149,10 +182,16 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			case STANDARD:
 				_chooseControlsView.setVisibility(View.INVISIBLE);
 				_standardControlsView.setVisibility(View.VISIBLE);
+				_motionSensorControlsView.setVisibility(View.INVISIBLE);
 				
-				_running = true;
-				new StandardControlThread().start();
+				startThread(mode);
+				break;
+			case SENSOR:
+				_chooseControlsView.setVisibility(View.INVISIBLE);
+				_standardControlsView.setVisibility(View.INVISIBLE);
+				_motionSensorControlsView.setVisibility(View.VISIBLE);
 				
+				startThread(mode);
 				break;
 			default:
 				// set control to STANDARD
@@ -160,60 +199,171 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
+	private void startThread(ControlMode mode) {
+		for (ThreadControlMode tcm : _threads) {
+			if (tcm.mode == mode) {
+				tcm.thread.start();
+				return;
+			}
+		}
+	}
+	
+	private void stopAllThreads() {
+		for (ThreadControlMode tcm : _threads) {
+			tcm.thread.halt();
+		}
+	}
+	
+	/* Standard controls */
 	/* copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
 	
 	private static final float CONTROL_SENSITY = 1.f;
 	protected static final long MAX_CONTROL_WAIT = 10;
 	
-	private volatile boolean _running;
 	private float _speed;
 	private float _direction;
 	
-	protected class StandardControlThread extends Thread {
+	private class ThreadControlMode {
+		private ControlMode mode;
+		private ControlThread thread;
+		
+		public ThreadControlMode(ControlMode mode, ControlThread thread) {
+			this.mode = mode;
+			this.thread = thread;
+		}
+	}
+	
+	protected abstract class ControlThread extends Thread {
+		
+		private volatile boolean _running;
+		
+		protected long _lastUpdate;
+		
+		@Override
+		public synchronized void start() {
+			super.start();
+			_running = true;
+		}
+		
+		public synchronized void halt() {
+			_running = false;
+		}
 		
 		@Override
 		public void run() {
-			long lastUpdate = System.currentTimeMillis();
+			_lastUpdate = System.currentTimeMillis();
 			while (_running) {
 				long now = System.currentTimeMillis();
-				float sensity = (((now - lastUpdate) / 1000.f) * CONTROL_SENSITY);
-				if (_speedUp) {
-					_speed = Math.min(1.f, (_speed + sensity));
-				} else if (_speedDown) {
-					_speed = Math.max(-1.f, (_speed - sensity));
-				} else if (_speed < 0) {
-					_speed = Math.min(0.f, (_speed + sensity));
-				} else if (_speed > 0) {
-					_speed = Math.max(0.f, (_speed - sensity));
-				}
-				
-				if (_steerLeft) {
-					_direction = Math.max(-1.f, (_direction - sensity));
-				} else if (_steerRight) {
-					_direction = Math.min(1.f, (_direction + sensity));
-				} else if (_direction < 0) {
-					_direction = Math.min(0.f, (_direction + sensity));
-				} else if (_direction > 0) {
-					_direction = Math.max(0.f, (_direction - sensity));
-				}
-				
-				// note that this is sent continuously
-				ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_speed, _direction);
-				
-				long wait = MAX_CONTROL_WAIT - (System.currentTimeMillis() - lastUpdate);
-				lastUpdate = now;
+				control();
+				long wait = MAX_CONTROL_WAIT - (System.currentTimeMillis() - _lastUpdate);
+				_lastUpdate = now;
 				if (wait > 0) {
 					try {
 						Thread.sleep(wait);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
 			}
 		}
+		
+		public abstract void control();
+	}
+	
+	protected class StandardControlThread extends ControlThread {
+		@Override
+		public void control() {
+			float sensity = (((System.currentTimeMillis() - _lastUpdate) / 1000.f) * CONTROL_SENSITY);
+			if (_speedUp) {
+				_speed = Math.min(1.f, (_speed + sensity));
+			} else if (_speedDown) {
+				_speed = Math.max(-1.f, (_speed - sensity));
+			} else if (_speed < 0) {
+				_speed = Math.min(0.f, (_speed + sensity));
+			} else if (_speed > 0) {
+				_speed = Math.max(0.f, (_speed - sensity));
+			}
+			
+			if (_steerLeft) {
+				_direction = Math.max(-1.f, (_direction - sensity));
+			} else if (_steerRight) {
+				_direction = Math.min(1.f, (_direction + sensity));
+			} else if (_direction < 0) {
+				_direction = Math.min(0.f, (_direction + sensity));
+			} else if (_direction > 0) {
+				_direction = Math.max(0.f, (_direction - sensity));
+			}
+			
+			// note that this is sent continuously
+			ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_speed, _direction);
+		}
 	}
 	
 	/* end of: copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
+	/* end of: Standard controls */
+	
+	/* Motion sensor controls */
+	protected class MotionSensorControlThread extends ControlThread {
+		
+		private Bitmap _bmp;
+		private Paint _cPaint;
+		private Paint _pPaint;
+		private Canvas _cv;
+		
+		private Integer _minDim = null;
+		
+		private int _centerPoint;
+		
+		public MotionSensorControlThread() {
+			int cxy = getMinScreenDimension();
+			_bmp = Bitmap.createBitmap(cxy, cxy, Bitmap.Config.ARGB_8888);
+			_cv = new Canvas(_bmp);
+			
+			// circle paint
+			_cPaint = new Paint();
+			_cPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+			_cPaint.setColor(Color.WHITE);
+			
+			// point paint
+			_pPaint = new Paint();
+			_pPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+			_pPaint.setColor(Color.BLUE);
+		}
+		
+		private int getMinScreenDimension() {
+			if (_minDim == null) {
+				Display display = getWindowManager().getDefaultDisplay();
+				Point size = new Point();
+				display.getSize(size);
+				_minDim = Math.min(size.x, size.y);
+				Log.d(ACTIVITY_SERVICE, "getMinScreenDimension: " + _minDim);
+			}
+			return _minDim;
+		}
+		
+		@Override
+		public void control() {
+			int cxy = getMinScreenDimension();
+			int centerXY = cxy / 2;
+			_centerPoint = centerXY + new Random().nextInt(100);
+			Log.d("foo", "run() " + _centerPoint);
+			
+			_msCtrlImgView.post(new Runnable() {
+				@Override
+				public void run() {
+					int cxy = getMinScreenDimension();
+					int centerXY = cxy / 2;
+					int radius = cxy / 2;
+					
+					_cv.drawCircle(centerXY, centerXY, radius, _cPaint);
+					_cv.drawCircle(_centerPoint, _centerPoint, 5, _pPaint);
+					
+					_msCtrlImgView.setBackground(new BitmapDrawable(getResources(), _bmp));
+					Log.d("foo", "run() paint " + _centerPoint);
+				}
+			});
+		}
+	}
+	/* end of: Motion sensor controls */
 	
 }
