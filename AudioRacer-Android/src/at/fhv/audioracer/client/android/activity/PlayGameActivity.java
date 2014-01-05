@@ -2,15 +2,19 @@ package at.fhv.audioracer.client.android.activity;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -312,7 +316,12 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		
 		private Integer _minDim = null;
 		
-		private int _centerPoint;
+		float _x;
+		float _y;
+		float _z;
+		
+		private SensorManager _sensorManager;
+		private Sensor _sensor;
 		
 		public MotionSensorControlThread() {
 			int cxy = getMinScreenDimension();
@@ -341,25 +350,48 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			return _minDim;
 		}
 		
+		private void initSensorValues() {
+			if (_sensorManager == null) {
+				_sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+				_sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+				
+				_sensorManager.registerListener(new SensorEventListener() {
+					@Override
+					public void onSensorChanged(SensorEvent event) {
+						float[] values = event.values;
+						_x = values[0];
+						_y = values[1];
+						_z = values[2];
+						Log.d("sensor", _x + ",\t " + _y + ",\t " + _z);
+					}
+					
+					@Override
+					public void onAccuracyChanged(Sensor sensor, int accuracy) {
+						// no op
+					}
+					
+				}, _sensor, SensorManager.SENSOR_DELAY_GAME);
+			}
+		}
+		
 		@Override
 		public void control() {
-			int cxy = getMinScreenDimension();
-			int centerXY = cxy / 2;
-			_centerPoint = centerXY + new Random().nextInt(100);
-			Log.d("foo", "run() " + _centerPoint);
+			initSensorValues();
+			
+			final int cxy = getMinScreenDimension();
+			final int centerXY = cxy / 2;
+			final int radius = cxy / 2;
+			final int motionX = centerXY + (int) (radius * _y);
+			final int motionY = centerXY + (int) (radius * _x);
 			
 			_msCtrlImgView.post(new Runnable() {
 				@Override
 				public void run() {
-					int cxy = getMinScreenDimension();
-					int centerXY = cxy / 2;
-					int radius = cxy / 2;
 					
 					_cv.drawCircle(centerXY, centerXY, radius, _cPaint);
-					_cv.drawCircle(_centerPoint, _centerPoint, 5, _pPaint);
+					_cv.drawCircle(motionX, motionY, 5, _pPaint);
 					
 					_msCtrlImgView.setBackground(new BitmapDrawable(getResources(), _bmp));
-					Log.d("foo", "run() paint " + _centerPoint);
 				}
 			});
 		}
