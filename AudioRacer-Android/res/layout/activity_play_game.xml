@@ -29,10 +29,19 @@
 	        android:layout_gravity="center"
 	        android:layout_weight="1"
 	        android:text="@string/std_ctrl" />
-            />
+        
+        <Button 
+        	android:id="@+id/ms_ctrl"
+            style="?buttonBarButtonStyle"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        android:layout_weight="1"
+	        android:text="@string/ms_ctrl" />
         
     </LinearLayout>
 
+    <!-- Standard controls -->
     <LinearLayout
 	    android:id="@+id/standard_controls"
 	    style="?buttonBarStyle"
@@ -95,5 +104,26 @@
 		         android:text="@string/ctrl_right" />
 	    </LinearLayout>
 	</LinearLayout>
+	<!-- End of: Standard controls -->
+	
+	<!-- Motion sensor controls -->
+	<LinearLayout
+	    android:id="@+id/motion_sensor_controls"
+	    style="?buttonBarStyle"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_gravity="center"
+	    android:background="@color/black_overlay"
+	    android:orientation="vertical"
+	    tools:ignore="UselessParent" >
+	    
+        <ImageView 
+	        android:id="@+id/ms_ctrl_img_view"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        />
+	</LinearLayout>
+	<!-- End of: Motion sensor controls -->
 
 </FrameLayout>
