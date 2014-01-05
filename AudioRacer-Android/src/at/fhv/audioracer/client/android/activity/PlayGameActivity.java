@@ -214,7 +214,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private void stopAllThreads() {
 		for (ThreadControlMode tcm : _threads) {
-			tcm.thread.halt();
+			tcm.thread.stop();
 		}
 	}
 	
@@ -237,26 +237,25 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
-	protected abstract class ControlThread extends Thread {
+	protected abstract class ControlThread implements Runnable {
 		
-		private volatile boolean _running;
+		protected volatile long _lastUpdate;
+		private volatile Thread _thread;
 		
-		protected long _lastUpdate;
-		
-		@Override
-		public synchronized void start() {
-			super.start();
-			_running = true;
+		public void start() {
+			_thread = new Thread(this);
+			_thread.start();
 		}
 		
-		public synchronized void halt() {
-			_running = false;
+		public void stop() {
+			_thread = null;
 		}
 		
 		@Override
 		public void run() {
+			Thread thisThread = Thread.currentThread();
 			_lastUpdate = System.currentTimeMillis();
-			while (_running) {
+			while (thisThread == _thread) {
 				long now = System.currentTimeMillis();
 				control();
 				long wait = MAX_CONTROL_WAIT - (System.currentTimeMillis() - _lastUpdate);
@@ -372,6 +371,17 @@ public class PlayGameActivity extends Activity implements IControlMode {
 					
 				}, _sensor, SensorManager.SENSOR_DELAY_GAME);
 			}
+		}
+		
+		private void reset() {
+			_sensorManager = null;
+			_sensor = null;
+		}
+		
+		@Override
+		public void stop() {
+			super.stop();
+			reset();
 		}
 		
 		@Override
