@@ -4,20 +4,18 @@ import at.fhv.audioracer.client.android.activity.listener.IFreeCarsListener;
 import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 
-public class FreeCarsAsyncTask extends NetworkAsyncTask<NetworkParams, Boolean> {
+public class FreeCarsAsyncTask extends NetworkAsyncTask<NetworkParams, byte[]> {
 	
 	private IFreeCarsListener _listener;
-	
-	private byte[] _freeCars;
 	
 	public FreeCarsAsyncTask(IFreeCarsListener listener) {
 		_listener = listener;
 	}
 	
 	@Override
-	protected Boolean doInBackground(NetworkParams... params) {
+	protected byte[] doInBackground(NetworkParams... params) {
 		try {
-			_freeCars = ClientManager.getInstance().getPlayerClient().getFreeCarIds();
+			return ClientManager.getInstance().getPlayerClient().getFreeCarIds();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -25,7 +23,7 @@ public class FreeCarsAsyncTask extends NetworkAsyncTask<NetworkParams, Boolean> 
 	}
 	
 	@Override
-	protected void onPostExecute(Boolean result) {
-		_listener.addFreeCars(_freeCars);
+	protected void onPostExecute(byte[] result) {
+		_listener.addFreeCars(result);
 	}
 }

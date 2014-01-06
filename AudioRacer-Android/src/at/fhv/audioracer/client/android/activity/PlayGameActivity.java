@@ -62,6 +62,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private List<ThreadControlMode> _threads;
 	
+	private ControlMode _chosenControlMode;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -176,12 +178,34 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_systemUiHider.hide();
 	}
 	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// enable controls again.
+		if (_chosenControlMode != null) {
+			setControlMode(_chosenControlMode);
+		}
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		stopAllThreads();
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		stopAllThreads();
+	}
+	
 	private void ready(ControlMode mode) {
 		new PlayerReadyAsyncTask(this, mode).execute(new NetworkParams());
 	}
 	
 	@Override
 	public void setControlMode(ControlMode mode) {
+		_chosenControlMode = mode;
 		switch (mode) {
 			case STANDARD:
 				_chooseControlsView.setVisibility(View.INVISIBLE);
@@ -214,7 +238,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private void stopAllThreads() {
 		for (ThreadControlMode tcm : _threads) {
-			tcm.thread.halt();
+			tcm.thread.stop();
 		}
 	}
 	
@@ -237,27 +261,30 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
-	protected abstract class ControlThread extends Thread {
+	protected abstract class ControlThread implements Runnable {
 		
-		private volatile boolean _running;
+		protected volatile long _lastUpdate;
+		private volatile Thread _thread;
 		
-		protected long _lastUpdate;
-		
-		@Override
-		public synchronized void start() {
-			super.start();
-			_running = true;
+		public void start() {
+			_thread = new Thread(this);
+			_thread.start();
 		}
 		
-		public synchronized void halt() {
-			_running = false;
+		public void stop() {
+			_thread = null;
+			reset();
 		}
+		
+		protected abstract void reset();
 		
 		@Override
 		public void run() {
+			Thread thisThread = Thread.currentThread();
 			_lastUpdate = System.currentTimeMillis();
-			while (_running) {
+			while (thisThread == _thread) {
 				long now = System.currentTimeMillis();
+				// call the 'hook'
 				control();
 				long wait = MAX_CONTROL_WAIT - (System.currentTimeMillis() - _lastUpdate);
 				_lastUpdate = now;
@@ -301,6 +328,15 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			// note that this is sent continuously
 			ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_speed, _direction);
 		}
+		
+		@Override
+		protected void reset() {
+			_speedUp = false;
+			_speedDown = false;
+			_steerLeft = false;
+			_steerRight = false;
+		}
+		
 	}
 	
 	/* end of: copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
@@ -322,6 +358,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		
 		private SensorManager _sensorManager;
 		private Sensor _sensor;
+		
+		private SensorEventListener _sensorListener;
 		
 		public MotionSensorControlThread() {
 			int cxy = getMinScreenDimension();
@@ -354,8 +392,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			if (_sensorManager == null) {
 				_sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 				_sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-				
-				_sensorManager.registerListener(new SensorEventListener() {
+				_sensorListener = new SensorEventListener() {
+					
 					@Override
 					public void onSensorChanged(SensorEvent event) {
 						float[] values = event.values;
@@ -370,8 +408,18 @@ public class PlayGameActivity extends Activity implements IControlMode {
 						// no op
 					}
 					
-				}, _sensor, SensorManager.SENSOR_DELAY_GAME);
+				};
+				_sensorManager.registerListener(_sensorListener, _sensor, SensorManager.SENSOR_DELAY_GAME);
 			}
+		}
+		
+		@Override
+		protected void reset() {
+			if (_sensorManager != null) {
+				_sensorManager.unregisterListener(_sensorListener);
+			}
+			_sensorManager = null;
+			_sensor = null;
 		}
 		
 		@Override
