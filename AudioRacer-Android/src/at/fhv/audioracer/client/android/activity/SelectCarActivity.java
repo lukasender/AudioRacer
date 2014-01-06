@@ -57,7 +57,6 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 			public void onUpdateFreeCars() {
 				Log.d(ACTIVITY_SERVICE, "called onUpdateFreeCars()");
 				
-				// TODO: This always creates a new async task. What about the previously started tasks? Do we need to take care of them?
 				final FreeCarsAsyncTask task = new FreeCarsAsyncTask(SelectCarActivity.this);
 				task.execute(new NetworkParams());
 			}
@@ -76,7 +75,6 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 				SelectCarParams params = new SelectCarParams();
 				params.carId = (byte) carId;
 				
-				// TODO: This always creates a new async task. What about the previously started tasks? Do we need to take care of them?
 				final SelectFreeCarAsyncTask task = new SelectFreeCarAsyncTask(SelectCarActivity.this);
 				task.execute(params);
 			}
