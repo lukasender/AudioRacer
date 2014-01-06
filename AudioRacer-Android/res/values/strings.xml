@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Audio racer</string>
-    <string name="title_activity_start">StartActivity</string>
+    <string name="app_name">AudioRacer</string>
+    <string name="title_activity_start">AudioRacer - Start</string>
     <string name="search_games_button">Join a game</string>
     <string name="player_name">Choose a player name</string>
-    <string name="title_activity_join_game">JoinGameActivity</string>
+    <string name="title_activity_join_game">AudioRacer - Join a Game</string>
     <string name="refresh_games_button">Refresh</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_select_car">SelectCarActivity</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_select_car">AudioRacer - Select a Car</string>
     <string name="play_sound">Play sound</string>
-    <string name="title_activity_play_game">PlayGame</string>
-    <string name="play_game_content">AudioRacer</string>
+    <string name="title_activity_play_game">AudioRacer - Play!</string>
     
     <string name="std_ctrl">Standard</string>
     <string name="ms_ctrl">Motion Sensor</string>
