@@ -34,10 +34,45 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 	
 	private ServerDiscover _serverDiscover;
 	
-	public JoinGameActivity() {
-		super();
+	private IServerDiscoverListener _proxy;
+	
+	private void init() {
+		_proxy = (IServerDiscoverListener) new AndroidThreadProxy(this).getProxy();
 		_serverDiscover = new ServerDiscover();
-		_serverDiscover.getListenerList().add((IServerDiscoverListener) new AndroidThreadProxy(this).getProxy());
+		_serverDiscover.getListenerList().add(_proxy);
+	}
+	
+	private void halt() {
+		if (_serverDiscover != null) {
+			_serverDiscover.stopDiscover();
+		}
+	}
+	
+	private void reset() {
+		halt();
+		_proxy = null;
+		_serverDiscover = null;
+		clearGames();
+		init();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		reset();
+		_serverDiscover.start();
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		halt();
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		halt();
 	}
 	
 	@Override
@@ -92,19 +127,10 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 				params.host = game.get(GameInfo.INFO);
 				startClient.execute(params);
 				
-				_serverDiscover.stopDiscover();
-				
 				startActivity(selectCarsIntent);
 			}
 		});
 		
-		_serverDiscover.start();
-	}
-	
-	@Override
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
 	}
 	
 	@Override
