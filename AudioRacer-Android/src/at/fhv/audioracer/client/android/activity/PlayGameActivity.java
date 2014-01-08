@@ -336,6 +336,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			_speedDown = false;
 			_steerLeft = false;
 			_steerRight = false;
+			_speed = 0.0f;
+			_direction = 0.0f;
 		}
 		
 	}
