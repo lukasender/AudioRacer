@@ -400,7 +400,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 						_x = values[0];
 						_y = values[1];
 						_z = values[2];
-						Log.d("sensor", _x + ",\t " + _y + ",\t " + _z);
+						String xyz = String.format("%f4.5\t%f4.5\t%f4.5", _x, _y, _z);
+						Log.d("sensor", xyz);
 					}
 					
 					@Override
