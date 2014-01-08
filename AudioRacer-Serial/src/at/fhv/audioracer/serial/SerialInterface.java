@@ -12,6 +12,10 @@ import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.fhv.audioracer.serial.CarClient.Velocity;
 import at.fhv.audioracer.server.CarClientManager;
 
@@ -23,8 +27,11 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	
 	private static final byte CAR_CONNECTED = 0x1;
 	private static final byte CAR_DISCONNECTED = 0x2;
-	private static final byte CAR_UPDATE_VELOCITY = 0x3;
-	private static final byte CAR_TRIM = 0x4;
+	private static final byte CAR_UPDATE_VELOCITY = (byte) 0xFF;
+	private static final byte CAR_TRIM = (byte) 0xFE;
+	private static final byte START = (byte) 0xFD;
+	
+	private static Logger _logger = LoggerFactory.getLogger(SerialInterface.class);
 	
 	private final Lock _lock;
 	
@@ -54,6 +61,9 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 		_carClients = new HashMap<Byte, CarClient>();
 		
 		_writingQueue = new LinkedBlockingDeque<Command>();
+		Command startCommand = new Command();
+		startCommand.command = START;
+		_writingQueue.add(startCommand);
 		startWriting();
 	}
 	
@@ -96,6 +106,8 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 							break;
 						case CAR_DISCONNECTED:
 							carDisconnected();
+						case START:
+							interfaceStarted();
 							break;
 					}
 				}
@@ -110,10 +122,14 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	
 	private void carConnected() throws SerialPortException {
 		byte id = _serialPort.readBytes(1)[0];
-		
+		carConnected(id);
+	}
+	
+	private void carConnected(byte id) {
 		CarClient carClient = _carClients.get(id);
 		if (carClient == null) {
 			carClient = new CarClient(id);
+			_carClients.put(id, carClient);
 			carClient.getListenerList().add(this);
 		}
 		
@@ -122,10 +138,26 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	
 	private void carDisconnected() throws SerialPortException {
 		byte id = _serialPort.readBytes(1)[0];
-		
+		carDisconnected(id);
+	}
+	
+	private void carDisconnected(byte id) {
 		CarClient carClient = _carClients.get(id);
 		if (carClient != null) {
 			CarClientManager.getInstance().disconnect(carClient);
+		}
+	}
+	
+	private void interfaceStarted() throws SerialPortException {
+		_logger.debug("started.");
+		byte connectedCars = _serialPort.readBytes(1)[0];
+		
+		for (byte i = 0; i < 8; i++) {
+			if ((connectedCars & (1 << i)) != 0) {
+				carConnected(i);
+			} else {
+				carDisconnected(i);
+			}
 		}
 	}
 	
@@ -178,6 +210,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 		// Ensure, that _running has always the correct value!
 		// This means, before the thread could end, the lock must be acquired.
 		// Also _running must be set before the thread starts.
+		_logger.debug("Start writing");
 		_lock.lock();
 		boolean locked = true;
 		try {
@@ -196,7 +229,8 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 								velocity.speed, velocity.direction };
 					}
 				} else {
-					buff = new byte[] { command.command, command.car.getCarClientId(), 0, 0 }; // always padding to 4 byte
+					buff = new byte[] { command.command,
+							(command.car != null ? command.car.getCarClientId() : 0), 0, 0 }; // always padding to 4 byte
 				}
 				
 				if (buff != null) {
@@ -206,6 +240,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 				_lock.lock();
 				locked = true;
 			}
+			_logger.debug("Stop writing");
 		} catch (SerialPortException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
