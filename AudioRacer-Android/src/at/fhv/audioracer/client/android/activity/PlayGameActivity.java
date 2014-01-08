@@ -120,8 +120,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				if (MotionEvent.ACTION_UP == event.getAction()) {
 					_speedUp = false;
 				}
-				Log.d("foo", "speedUp " + _speedUp);
-				return false;
+				Log.d("control", "speedUp " + _speedUp);
+				return true;
 			}
 		});
 		downButton.setOnTouchListener(new View.OnTouchListener() {
@@ -133,8 +133,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				if (MotionEvent.ACTION_UP == event.getAction()) {
 					_speedDown = false;
 				}
-				Log.d("foo", "speedDown " + _speedDown);
-				return false;
+				Log.d("control", "speedDown " + _speedDown);
+				return true;
 			}
 		});
 		leftButton.setOnTouchListener(new View.OnTouchListener() {
@@ -146,8 +146,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				if (MotionEvent.ACTION_UP == event.getAction()) {
 					_steerLeft = false;
 				}
-				Log.d("foo", "steerLeft " + _steerLeft);
-				return false;
+				Log.d("control", "steerLeft " + _steerLeft);
+				return true;
 			}
 		});
 		rightButton.setOnTouchListener(new View.OnTouchListener() {
@@ -159,8 +159,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				if (MotionEvent.ACTION_UP == event.getAction()) {
 					_steerRight = false;
 				}
-				Log.d("foo", "steerRight " + _steerRight);
-				return false;
+				Log.d("control", "steerRight " + _steerRight);
+				return true;
 			}
 		});
 		
