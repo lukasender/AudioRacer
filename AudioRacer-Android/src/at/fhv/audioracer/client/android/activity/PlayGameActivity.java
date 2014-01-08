@@ -22,11 +22,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
 import at.fhv.audioracer.client.android.controller.ClientManager;
-import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
-import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
 import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
 
@@ -46,7 +45,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	public static enum ControlMode {
 		STANDARD,
 		// JOYSTICK,
-		SENSOR, ;
+		SENSOR, SETTINGS_TRIM, ;
 	}
 	
 	protected boolean _speedUp;
@@ -54,15 +53,39 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	protected boolean _steerLeft;
 	protected boolean _steerRight;
 	
-	private View _chooseControlsView;
+	private View _controlsSettingsControlsView;
 	private View _standardControlsView;
 	private View _motionSensorControlsView;
+	private View _trimSettingsView;
 	
 	private ImageView _msCtrlImgView;
 	
 	private List<ThreadControlMode> _threads;
 	
+	private List<View> _views;
+	
 	private ControlMode _chosenControlMode;
+	
+	private TextView _tsSpeedValueTextView;
+	private TextView _tsSteeringValueTextView;
+	private float _trimSpeed;
+	private float _trimSteering;
+	private static float TRIM_STEP = 0.1f; // increase trim settings by TRIM_STEP per sec.
+	private Pressed _trimSpeedUp = new Pressed();
+	private Pressed _trimSpeedDown = new Pressed();
+	private Pressed _trimSteeringUp = new Pressed();
+	private Pressed _trimSteeringDown = new Pressed();
+	
+	@Override
+	public void onBackPressed() {
+		if (_controlsSettingsControlsView.getVisibility() == View.VISIBLE) {
+			super.onBackPressed();
+		} else {
+			stopAllThreads();
+			hideAllViews();
+			_controlsSettingsControlsView.setVisibility(View.VISIBLE);
+		}
+	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,23 +93,70 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		
 		setContentView(R.layout.activity_play_game);
 		
-		// get all views
-		_chooseControlsView = findViewById(R.id.choose_controls);
+		/* get all views */
+		// controls
+		_controlsSettingsControlsView = findViewById(R.id.controls_settings);
 		_standardControlsView = findViewById(R.id.standard_controls);
 		_motionSensorControlsView = findViewById(R.id.motion_sensor_controls);
+		// settings
+		_trimSettingsView = findViewById(R.id.trim_settings_view);
+		
+		_views = new LinkedList<View>();
+		_views.add(_controlsSettingsControlsView);
+		_views.add(_standardControlsView);
+		_views.add(_motionSensorControlsView);
+		_views.add(_trimSettingsView);
 		
 		// get the 'motion sensor' image view.
 		// a circle and the current 'motion position' will be drawn onto this view.
 		_msCtrlImgView = (ImageView) findViewById(R.id.ms_ctrl_img_view);
 		
-		// set other views than 'chooseControlsView' invisible
+		// set other views than 'controlsSettingsControlsView' invisible
 		_standardControlsView.setVisibility(View.INVISIBLE);
 		_motionSensorControlsView.setVisibility(View.INVISIBLE);
+		_trimSettingsView.setVisibility(View.INVISIBLE);
+		
+		/* Settings */
+		final Button trimSettingsButton = (Button) findViewById(R.id.trim_settings);
+		trimSettingsButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Log.d("trim button", "clicked on trim button");
+				_trimSettingsView.setVisibility(View.VISIBLE);
+				
+				_standardControlsView.setVisibility(View.INVISIBLE);
+				_motionSensorControlsView.setVisibility(View.INVISIBLE);
+				_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
+				
+				startThread(ControlMode.SETTINGS_TRIM);
+			}
+		});
+		/* End of: Settings */
+		
+		final Button tsSpeedUpButton = (Button) findViewById(R.id.trim_settings_speed_up);
+		final Button tsSpeedDownButton = (Button) findViewById(R.id.trim_settings_speed_down);
+		final Button tsSteeringUpButton = (Button) findViewById(R.id.trim_settings_steering_up);
+		final Button tsSteeringDownButton = (Button) findViewById(R.id.trim_settings_steering_down);
+		tsSpeedUpButton.setOnTouchListener(new PressedTouchListener(_trimSpeedUp));
+		tsSpeedDownButton.setOnTouchListener(new PressedTouchListener(_trimSpeedDown));
+		tsSteeringUpButton.setOnTouchListener(new PressedTouchListener(_trimSteeringUp));
+		tsSteeringDownButton.setOnTouchListener(new PressedTouchListener(_trimSteeringDown));
+		_tsSpeedValueTextView = (TextView) findViewById(R.id.trim_settings_speed_value);
+		_tsSteeringValueTextView = (TextView) findViewById(R.id.trim_settings_steering_value);
+		
+		final Button tsSetTrimButton = (Button) findViewById(R.id.trim_settings_set_trim);
+		tsSetTrimButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				setTrim();
+			}
+		});
 		
 		// possible threads
 		_threads = new LinkedList<PlayGameActivity.ThreadControlMode>();
 		_threads.add(new ThreadControlMode(ControlMode.STANDARD, new StandardControlThread()));
 		_threads.add(new ThreadControlMode(ControlMode.SENSOR, new MotionSensorControlThread()));
+		_threads.add(new ThreadControlMode(ControlMode.SETTINGS_TRIM, new TrimSettingsThread()));
 		
 		/* ChooseControls */
 		
@@ -179,6 +249,56 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_systemUiHider.hide();
 	}
 	
+	private void hideAllViews() {
+		for (View view : _views) {
+			view.setVisibility(View.INVISIBLE);
+		}
+	}
+	
+	private void trimSpeedUp(float trimStep) {
+		_trimSpeed = Math.min(1.0f, _trimSpeed + trimStep);
+		setTrimValue(_tsSpeedValueTextView, _trimSpeed);
+	}
+	
+	private void trimSpeedDown(float trimStep) {
+		_trimSpeed = Math.max(-1.0f, _trimSpeed - trimStep);
+		setTrimValue(_tsSpeedValueTextView, _trimSpeed);
+	}
+	
+	private void trimSteeringUp(float trimStep) {
+		_trimSteering = Math.min(1.0f, _trimSteering + trimStep);
+		setTrimValue(_tsSteeringValueTextView, _trimSteering);
+	}
+	
+	private void trimSteeringDown(float trimStep) {
+		_trimSteering = Math.max(-1.0f, _trimSteering - trimStep);
+		setTrimValue(_tsSteeringValueTextView, _trimSteering);
+	}
+	
+	private void setTrim() {
+		_trimSpeed = 0.0f;
+		_trimSteering = 0.0f;
+		setTrimValue(_tsSpeedValueTextView, _trimSpeed);
+		setTrimValue(_tsSteeringValueTextView, _trimSteering);
+	}
+	
+	/**
+	 * Sets given float <code>value</code> to given <code>TextView</code>. It also takes care of the algebraic sign. If the the value is below 0, the value will
+	 * be preceded by a '-'; a '+' otherwise.
+	 * 
+	 * @param view
+	 * @param value
+	 */
+	private void setTrimValue(final TextView view, float value) {
+		final char[] v = String.format(" %s%.2f", ((value >= 0) ? "+" : ""), value).toCharArray();
+		view.post(new Runnable() {
+			@Override
+			public void run() {
+				view.setText(v, 0, v.length);
+			}
+		});
+	}
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -201,7 +321,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	}
 	
 	private void ready(ControlMode mode) {
-		new PlayerReadyAsyncTask(this, mode).execute(new NetworkParams());
+		// new PlayerReadyAsyncTask(this, mode).execute(new NetworkParams());
 	}
 	
 	@Override
@@ -209,14 +329,14 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_chosenControlMode = mode;
 		switch (mode) {
 			case STANDARD:
-				_chooseControlsView.setVisibility(View.INVISIBLE);
+				_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
 				_standardControlsView.setVisibility(View.VISIBLE);
 				_motionSensorControlsView.setVisibility(View.INVISIBLE);
 				
 				startThread(mode);
 				break;
 			case SENSOR:
-				_chooseControlsView.setVisibility(View.INVISIBLE);
+				_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
 				_standardControlsView.setVisibility(View.INVISIBLE);
 				_motionSensorControlsView.setVisibility(View.VISIBLE);
 				
@@ -243,11 +363,35 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
+	private class Pressed {
+		private boolean pressed;
+	}
+	
+	private class PressedTouchListener implements View.OnTouchListener {
+		
+		private volatile Pressed pressed;
+		
+		public PressedTouchListener(Pressed pressed) {
+			this.pressed = pressed;
+		}
+		
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			if (MotionEvent.ACTION_DOWN == event.getAction()) {
+				pressed.pressed = true;
+			}
+			if (MotionEvent.ACTION_UP == event.getAction()) {
+				pressed.pressed = false;
+			}
+			
+			return true;
+		}
+		
+	}
+	
 	/* Standard controls */
-	/* copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
 	
 	private static final float CONTROL_SENSITY = 1.f;
-	protected static final long MAX_CONTROL_WAIT = 10;
 	
 	private float _speed;
 	private float _direction;
@@ -264,8 +408,14 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	protected abstract class ControlThread implements Runnable {
 		
+		protected long _maxControlWait;
+		
 		protected volatile long _lastUpdate;
 		private volatile Thread _thread;
+		
+		public ControlThread() {
+			_maxControlWait = 10;
+		}
 		
 		public void start() {
 			_thread = new Thread(this);
@@ -287,7 +437,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				long now = System.currentTimeMillis();
 				// call the 'hook'
 				control();
-				long wait = MAX_CONTROL_WAIT - (System.currentTimeMillis() - _lastUpdate);
+				long wait = _maxControlWait - (System.currentTimeMillis() - _lastUpdate);
 				_lastUpdate = now;
 				if (wait > 0) {
 					try {
@@ -302,9 +452,48 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		public abstract void control();
 	}
 	
+	protected class TrimSettingsThread extends ControlThread {
+		
+		public TrimSettingsThread() {
+			super();
+			_maxControlWait = 10;
+		}
+		
+		@Override
+		protected void reset() {
+			_trimSpeedUp.pressed = false;
+			_trimSpeedDown.pressed = false;
+			_trimSteeringUp.pressed = false;
+			_trimSteeringDown.pressed = false;
+			_trimSpeed = 0.0f;
+			_trimSteering = 0.0f;
+		}
+		
+		@Override
+		public void control() {
+			float sensity = (((System.currentTimeMillis() - _lastUpdate) / 1000.f) * TRIM_STEP);
+			if (_trimSpeedUp.pressed) {
+				trimSpeedUp(sensity);
+			}
+			if (_trimSpeedDown.pressed) {
+				trimSpeedDown(sensity);
+			}
+			if (_trimSteeringUp.pressed) {
+				trimSteeringUp(sensity);
+			}
+			if (_trimSteeringDown.pressed) {
+				trimSteeringDown(sensity);
+			}
+			
+			ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_trimSpeed, _trimSteering);
+		}
+		
+	}
+	
 	protected class StandardControlThread extends ControlThread {
 		@Override
 		public void control() {
+			/* copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
 			float sensity = (((System.currentTimeMillis() - _lastUpdate) / 1000.f) * CONTROL_SENSITY);
 			if (_speedUp) {
 				_speed = Math.min(1.f, (_speed + sensity));
@@ -325,6 +514,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			} else if (_direction > 0) {
 				_direction = Math.max(0.f, (_direction - sensity));
 			}
+			/* end of: copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
 			
 			// note that this is sent continuously
 			ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_speed, _direction);
@@ -342,7 +532,6 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		
 	}
 	
-	/* end of: copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
 	/* end of: Standard controls */
 	
 	/* Motion sensor controls */
