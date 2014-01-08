@@ -73,4 +73,21 @@ public class CheckpointUtil {
 	public float getCheckpointRadius() {
 		return _checkpointRadius;
 	}
+	
+	/**
+	 * Uses Pythagorean Theorem to find shortest distance between two Positions.
+	 * 
+	 * @param posA
+	 * @param posB
+	 * @return the distance between the two Positions
+	 */
+	public float getDistance(Position posA, Position posB) {
+		
+		double x = (double) (Math.max(posA.getPosX(), posB.getPosX()) - Math.min(posA.getPosX(),
+				posB.getPosX()));
+		double y = (double) (Math.max(posA.getPosY(), posB.getPosY()) - Math.min(posA.getPosY(),
+				posB.getPosY()));
+		
+		return (float) Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+	}
 }
