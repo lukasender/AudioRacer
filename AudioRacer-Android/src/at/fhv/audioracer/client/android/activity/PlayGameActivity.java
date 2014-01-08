@@ -81,6 +81,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		
 		// set other views than 'chooseControlsView' invisible
 		_standardControlsView.setVisibility(View.INVISIBLE);
+		_motionSensorControlsView.setVisibility(View.INVISIBLE);
 		
 		// possible threads
 		_threads = new LinkedList<PlayGameActivity.ThreadControlMode>();
