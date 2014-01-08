@@ -90,4 +90,24 @@ public class CheckpointUtil {
 		
 		return (float) Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 	}
+	
+	/**
+	 * Rotates the Position counter-clockwise through given rotationAngle.
+	 * 
+	 * @param pos
+	 *            Position to rotate
+	 * @param rotationAngle
+	 *            angle to rotate in degrees
+	 * @return
+	 */
+	public Position rotatePosition(Position pos, float rotationAngle) {
+		return rotatePosition(pos, (double) rotationAngle);
+	}
+	
+	public Position rotatePosition(Position pos, double rotationAngle) {
+		double rotationAngleRad = Math.toRadians(rotationAngle);
+		double x = pos.getPosX() * Math.cos(rotationAngleRad) - pos.getPosY() * Math.sin(rotationAngleRad);
+		double y = pos.getPosX() * Math.sin(rotationAngleRad) + pos.getPosY() * Math.cos(rotationAngleRad);
+		return new Position((float) x, (float) y);
+	}
 }
