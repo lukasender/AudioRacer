@@ -294,6 +294,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	 * Send currently free cars to all Players.
 	 */
 	private void _broadcastFreeCars() {
+		_logger.debug("entered _broadcastFreeCars()");
 		Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
 		ArrayList<Byte> freeCars = new ArrayList<Byte>();
 		Entry<Byte, Car> entry = null;
@@ -318,6 +319,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		for (int i = 0; i < free.length; i++) {
 			free[i] = freeCars.get(i).byteValue();
 		}
+		_logger.debug("sending freeCarsMessage: {}", free.length);
 		freeCarsMessage.freeCars = free;
 		_playerServer.sendToAllTCP(freeCarsMessage);
 	}
