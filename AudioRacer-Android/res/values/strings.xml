@@ -15,6 +15,13 @@
     <string name="std_ctrl">Standard</string>
     <string name="ms_ctrl">Motion Sensor</string>
     
+    <string name="trim_settings">Trimm Settings</string>
+    <string name="trim_settings_speed_label">Speed</string>
+    <string name="trim_settings_speed_value"> +0,00</string>
+    <string name="trim_settings_steering_label">Steering</string>
+    <string name="trim_settings_steering_value"> +0,00</string>
+    <string name="trim_settings_set_trim">Set Trim</string>
+    
     <string name="ctrl_up">up</string>
     <string name="ctrl_down">down</string>
     <string name="ctrl_left">left</string>

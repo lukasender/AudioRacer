@@ -12,37 +12,209 @@
          TextureView, etc.
     -->
     
-    <LinearLayout 
-        android:id="@+id/choose_controls"
+    <!-- Buttons -->
+    
+    <LinearLayout
+        android:id="@+id/controls_settings"
 	    style="?buttonBarStyle"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
 	    android:layout_gravity="center"
 	    android:background="@color/black_overlay"
+	    android:orientation="vertical"
+	    tools:ignore="UselessParent" >
+	    
+        <!-- Buttons: Choose Controls Buttons -->
+        
+	    <LinearLayout 
+	        android:id="@+id/choose_controls"
+		    style="?buttonBarStyle"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_gravity="center"
+		    android:background="@color/black_overlay"
+		    android:orientation="horizontal"
+		    tools:ignore="UselessParent" >
+		    
+	        <Button 
+	        	android:id="@+id/std_ctrl"
+	            style="?buttonBarButtonStyle"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center"
+		        android:layout_weight="1"
+		        android:text="@string/std_ctrl" />
+	        
+	        <Button 
+	        	android:id="@+id/ms_ctrl"
+	            style="?buttonBarButtonStyle"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center"
+		        android:layout_weight="1"
+		        android:text="@string/ms_ctrl" />
+	        
+	    </LinearLayout>
+	    
+	    <!-- End of: Buttons: Choose Controls Buttons -->
+	    
+	    <!-- Buttons: Settings Buttons -->
+	    
+	    <LinearLayout 
+	        android:id="@+id/settings"
+		    style="?buttonBarStyle"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_gravity="center"
+		    android:background="@color/black_overlay"
+		    android:orientation="horizontal"
+		    tools:ignore="UselessParent" >
+		    
+	        <Button 
+	        	android:id="@+id/trim_settings"
+	            style="?buttonBarButtonStyle"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center"
+		        android:layout_weight="1"
+		        android:text="@string/trim_settings" />
+	        
+		</LinearLayout>
+		
+	    <!-- End of: Buttons: Settings Buttons -->
+	    
+    </LinearLayout>
+    
+    <!-- Buttons -->
+
+	<!-- Views -->
+	<!-- Views: Settings -->
+	<!-- Views: Settings: Trim -->
+	
+	<LinearLayout
+	    android:id="@+id/trim_settings_view"
+	    style="?buttonBarStyle"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_gravity="center"
+	    android:background="@color/black_overlay"
 	    android:orientation="horizontal"
 	    tools:ignore="UselessParent" >
 	    
-        <Button 
-        	android:id="@+id/std_ctrl"
-            style="?buttonBarButtonStyle"
+        <!-- Views: Settings: Trim: Speed -->
+        <LinearLayout
+            style="?buttonBarStyle"
 	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_gravity="center"
-	        android:layout_weight="1"
-	        android:text="@string/std_ctrl" />
+	    	android:layout_height="wrap_content"
+	    	android:layout_gravity="center"
+	    	android:layout_weight="0.4"
+	        android:orientation="vertical"
+            >
+            
+            <Button 
+	        	android:id="@+id/trim_settings_speed_up"
+	            style="?buttonBarButtonStyle"
+		        android:layout_width="wrap_content"
+		        android:layout_height="match_parent"
+		        android:layout_gravity="center"
+		        android:layout_weight="1"
+		        android:text="@string/ctrl_up" />
+            
+            <LinearLayout
+	            style="?buttonBarStyle"
+		        android:layout_width="wrap_content"
+		    	android:layout_height="wrap_content"
+		    	android:layout_gravity="center"
+		    	android:layout_weight="1"
+		        android:orientation="horizontal"
+	            >
+	            <TextView 
+	                android:id="@+id/trim_settings_speed_label"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/trim_settings_speed_label" />
+	            <TextView 
+	                android:id="@+id/trim_settings_speed_value"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/trim_settings_speed_value" />
+	        </LinearLayout>
+            
+            <Button 
+	        	android:id="@+id/trim_settings_speed_down"
+	            style="?buttonBarButtonStyle"
+		        android:layout_width="match_parent"
+		        android:layout_height="match_parent"
+		        android:layout_gravity="center"
+		        android:layout_weight="1"
+		        android:text="@string/ctrl_down" />
+            
+        </LinearLayout>
+        <!-- End of: Views: Settings: Trim: Speed -->
+        <!-- Views: Settings: Trim: Steering -->
+        <LinearLayout
+            style="?buttonBarStyle"
+	        android:layout_width="wrap_content"
+	    	android:layout_height="wrap_content"
+	    	android:layout_gravity="center"
+	    	android:layout_weight="0.4"
+	        android:orientation="vertical"
+            >
+            
+            <Button 
+	        	android:id="@+id/trim_settings_steering_up"
+	            style="?buttonBarButtonStyle"
+		        android:layout_width="wrap_content"
+		        android:layout_height="match_parent"
+		        android:layout_gravity="center"
+		        android:layout_weight="1"
+		        android:text="@string/ctrl_up" />
+            
+            <LinearLayout
+	            style="?buttonBarStyle"
+		        android:layout_width="wrap_content"
+		    	android:layout_height="wrap_content"
+		    	android:layout_gravity="center"
+		    	android:layout_weight="1"
+		        android:orientation="horizontal"
+	            >
+	            <TextView 
+	                android:id="@+id/trim_settings_steering_label"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/trim_settings_steering_label" />
+	            <TextView 
+	                android:id="@+id/trim_settings_steering_value"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/trim_settings_steering_value" />
+	        </LinearLayout>
+            
+            <Button 
+	        	android:id="@+id/trim_settings_steering_down"
+	            style="?buttonBarButtonStyle"
+		        android:layout_width="wrap_content"
+		        android:layout_height="match_parent"
+		        android:layout_gravity="center"
+		        android:layout_weight="1"
+		        android:text="@string/ctrl_down" />
+            
+        </LinearLayout>
+        <!-- End of: Views: Settings: Trim: Steering -->
         
         <Button 
-        	android:id="@+id/ms_ctrl"
+        	android:id="@+id/trim_settings_set_trim"
             style="?buttonBarButtonStyle"
 	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+	        android:layout_height="match_parent"
 	        android:layout_gravity="center"
-	        android:layout_weight="1"
-	        android:text="@string/ms_ctrl" />
-        
-    </LinearLayout>
+	        android:layout_weight="0.2"
+	        android:text="@string/trim_settings_set_trim" />
+	        
+	</LinearLayout>
+	<!-- End of: Views: Settings -->
 
-    <!-- Standard controls -->
+    <!-- Views: Standard controls -->
     <LinearLayout
 	    android:id="@+id/standard_controls"
 	    style="?buttonBarStyle"
@@ -105,9 +277,8 @@
 		         android:text="@string/ctrl_right" />
 	    </LinearLayout>
 	</LinearLayout>
-	<!-- End of: Standard controls -->
-	
-	<!-- Motion sensor controls -->
+	<!-- End of: Views: Standard controls -->
+	<!-- Views: Motion sensor controls -->
 	<LinearLayout
 	    android:id="@+id/motion_sensor_controls"
 	    style="?buttonBarStyle"
@@ -125,6 +296,8 @@
 	        android:layout_gravity="center"
 	        />
 	</LinearLayout>
-	<!-- End of: Motion sensor controls -->
+	<!-- End of: Views: Motion sensor controls -->
+	
+	<!-- End of: Views -->
 
 </FrameLayout>

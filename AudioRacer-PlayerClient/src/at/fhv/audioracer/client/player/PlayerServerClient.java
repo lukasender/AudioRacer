@@ -140,4 +140,10 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 			}
 		}
 	}
+	
+	@Override
+	public void trim() {
+		PlayerMessage msg = new PlayerMessage(MessageId.TRIM);
+		_client.sendTCP(msg);
+	}
 }

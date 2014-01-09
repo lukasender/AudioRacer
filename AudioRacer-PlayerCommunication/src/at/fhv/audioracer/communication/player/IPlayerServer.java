@@ -22,4 +22,6 @@ public interface IPlayerServer {
 	public byte[] getCarImage(byte carId);
 	
 	public void setPlayerReady();
+	
+	public void trim();
 }

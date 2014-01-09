@@ -90,7 +90,10 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 	
 	@Override
 	public void addFreeCars(byte[] freeCarIds) {
-		Log.d(ACTIVITY_SERVICE, "called addCars()");
+		Log.d("addFreeCars", "called addCars()");
+		if (freeCarIds == null) {
+			Log.d("addFreeCars", "freeCars was null");
+		}
 		_cars.clear();
 		for (int id : freeCarIds) {
 			HashMap<String, String> carMap = new HashMap<String, String>();
