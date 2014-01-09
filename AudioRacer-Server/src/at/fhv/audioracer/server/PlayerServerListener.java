@@ -45,6 +45,9 @@ public class PlayerServerListener extends Listener {
 				case DISCONNECT:
 					_gameModerator.disconnectPlayer(playerConnection);
 					break;
+				case TRIM:
+					_gameModerator.trim(playerConnection);
+					break;
 				default:
 					_logger.warn("Message with id: {} not known!", message.messageId);
 			}

@@ -476,4 +476,18 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	public void setMap(at.fhv.audioracer.core.model.Map map) {
 		_map = map;
 	}
+	
+	public void trim(PlayerConnection playerConnection) {
+		if (_detectionFinished == false)
+			return;
+		
+		ICarClient c = CarClientManager.getInstance().get(
+				playerConnection.getPlayer().getCar().getCarClientId());
+		if (c != null) {
+			c.trim();
+		} else {
+			_logger.debug("ICarClient for carId: {} is null!", playerConnection.getPlayer()
+					.getCar().getCarId());
+		}
+	}
 }
