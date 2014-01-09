@@ -226,7 +226,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 					Velocity velocity = command.car.getVelocity();
 					if (velocity != null) {
 						buff = new byte[] { command.command, command.car.getCarClientId(),
-								velocity.speed, velocity.direction };
+								velocity.direction, velocity.speed };
 					}
 				} else {
 					buff = new byte[] { command.command,
