@@ -26,6 +26,9 @@ import android.widget.TextView;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
 import at.fhv.audioracer.client.android.controller.ClientManager;
+import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
+import at.fhv.audioracer.client.android.network.task.TrimSettingsAsyncTask;
+import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
 import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
 
@@ -280,6 +283,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_trimSteering = 0.0f;
 		setTrimValue(_tsSpeedValueTextView, _trimSpeed);
 		setTrimValue(_tsSteeringValueTextView, _trimSteering);
+		sendTrim();
 	}
 	
 	/**
@@ -321,7 +325,11 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	}
 	
 	private void ready(ControlMode mode) {
-		// new PlayerReadyAsyncTask(this, mode).execute(new NetworkParams());
+		new PlayerReadyAsyncTask(this, mode).execute(new NetworkParams());
+	}
+	
+	private void sendTrim() {
+		new TrimSettingsAsyncTask().execute(new NetworkParams());
 	}
 	
 	@Override
