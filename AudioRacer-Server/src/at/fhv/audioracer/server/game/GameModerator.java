@@ -18,6 +18,7 @@ import at.fhv.audioracer.communication.player.message.PlayerDisconnectedMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
+import at.fhv.audioracer.communication.player.message.UpdateCheckPointDirectionMessage;
 import at.fhv.audioracer.communication.player.message.UpdateGameStateMessage;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
@@ -184,13 +185,14 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		// "updateCar called for carId: {} game started: {} posX: {} posY: {} direction: {}",
 		// new Object[] { carId, _gameRunning, posX, posY, direction });
 		Car car = _carList.get(carId);
+		Position currentPosition = new Position(posX, posY);
 		if (_gameRunning) {
 			
-			// handle checkpoint reached first
 			Position nextCheckpointPosition = _checkpoints.get(car.getCarId()).peekFirst();
 			if (nextCheckpointPosition != null) {
-				if (_checkpointUtil.checkpointMatch(new Position(posX, posY),
-						nextCheckpointPosition)) {
+				
+				// handle checkpoint reached first
+				if (_checkpointUtil.checkpointMatch(currentPosition, nextCheckpointPosition)) {
 					
 					if (_map != null) {
 						int cpNum = ((_checkpointStartCount - _checkpoints.get(car.getCarId())
@@ -217,6 +219,24 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					_logger.info("Player: {} coins left: {}", car.getPlayer().getName(),
 							updateGameStateMsg.coinsLeft);
 					_playerServer.sendToAllTCP(updateGameStateMsg);
+				}
+				
+				// handle distance and direction to next checkpoint
+				nextCheckpointPosition = _checkpoints.get(car.getCarId()).peekFirst();
+				if (nextCheckpointPosition != null) {
+					float transform = -car.getDirection().getDirection();
+					Position carPosTransformed = _checkpointUtil.rotatePosition(currentPosition,
+							transform);
+					Position cpTransformed = _checkpointUtil.rotatePosition(nextCheckpointPosition,
+							transform);
+					
+					UpdateCheckPointDirectionMessage updateCheckpointDirMsg = new UpdateCheckPointDirectionMessage();
+					updateCheckpointDirMsg.posX = cpTransformed.getPosX()
+							- carPosTransformed.getPosX();
+					updateCheckpointDirMsg.posY = carPosTransformed.getPosY()
+							- cpTransformed.getPosY();
+					// _logger.debug("UpdateCheckpoint direction x: {} y: {}",
+					// updateCheckpointDirMsg.posX, updateCheckpointDirMsg.posY);
 				}
 			}
 			
@@ -348,7 +368,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					if (i == 0) {
 						previousCheckpoint = car.getPosition();
 					} else {
-						previousCheckpoint = _checkpoints.get(car.getCarId()).getFirst();
+						previousCheckpoint = _checkpoints.get(car.getCarId()).getLast();
 					}
 					_logger.debug("generate checkpoint number: {} for carId: {}", i, car.getCarId());
 					Position nextP = _checkpointUtil.generateNextCheckpoint(previousCheckpoint);
