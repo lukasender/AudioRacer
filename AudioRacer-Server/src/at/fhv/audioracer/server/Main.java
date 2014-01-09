@@ -28,9 +28,11 @@ public class Main {
 		PlayerServer playerServer = PlayerServer.getInstance();
 		PlayerServerListener playerServerListener = null;
 		Server cameraServer = null;
-		GameModerator gameModerator = GameModerator.getInstance();
 		
 		try {
+			// comment in next line for "test run"
+			// SerialInterface sI = new SerialInterface("COM8");
+			GameModerator gameModerator = GameModerator.getInstance();
 			playerServerListener = new PlayerServerListener(gameModerator);
 			playerServer.addListener(playerServerListener);
 			

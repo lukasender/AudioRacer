@@ -3,11 +3,10 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-WorldCommunication"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Server"/>
-	<classpathentry kind="lib" path="/AudioRacer/libs/jssc.jar" sourcepath="/AudioRacer/libs/jssc-2.6.0-src.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Core"/>
+	<classpathentry exported="true" kind="lib" path="/AudioRacer/libs/jssc.jar" sourcepath="/AudioRacer/libs/jssc-2.6.0-src.jar"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/log4j-1.2.17.jar" sourcepath="/AudioRacer/libs/log4j-1.2.17-sources.jar"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/slf4j-api-1.7.5.jar" sourcepath="/AudioRacer/libs/slf4j-api-1.7.5-sources.jar"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/slf4j-log4j12-1.7.5.jar" sourcepath="/AudioRacer/libs/slf4j-log4j12-1.7.5-sources.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Core"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

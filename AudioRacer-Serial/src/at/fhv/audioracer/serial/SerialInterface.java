@@ -16,8 +16,8 @@ import jssc.SerialPortList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.fhv.audioracer.communication.world.CarClientManager;
 import at.fhv.audioracer.serial.CarClient.Velocity;
-import at.fhv.audioracer.server.CarClientManager;
 
 public class SerialInterface implements SerialPortEventListener, ICarClientListener {
 	private static class Command {

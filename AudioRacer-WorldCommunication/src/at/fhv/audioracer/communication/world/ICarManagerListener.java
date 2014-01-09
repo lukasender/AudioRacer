@@ -1,6 +1,5 @@
-package at.fhv.audioracer.server.model;
+package at.fhv.audioracer.communication.world;
 
-import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.util.IListener;
 
 public interface ICarManagerListener extends IListener {

@@ -1,4 +1,4 @@
-package at.fhv.audioracer.server;
+package at.fhv.audioracer.communication.world;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,10 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.fhv.audioracer.communication.world.ICarClient;
-import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.core.util.ListenerList;
-import at.fhv.audioracer.server.model.ICarManagerListener;
 
 public class CarClientManager implements ICarClientManager {
 	

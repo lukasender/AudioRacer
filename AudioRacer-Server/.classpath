@@ -11,5 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Core"/>
 	<classpathentry kind="lib" path="/AudioRacer/libs/kryonet-debug-2.21-all.jar" sourcepath="/AudioRacer/libs/kryonet-2.21-src.zip"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Ui"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AudioRacer-Serial"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

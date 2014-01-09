@@ -11,6 +11,7 @@ import javax.naming.OperationNotSupportedException;
 
 import org.apache.log4j.Logger;
 
+import at.fhv.audioracer.communication.world.CarClientManager;
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarClientManager;
 import at.fhv.audioracer.communication.world.message.CameraMessage;
@@ -22,7 +23,6 @@ import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
-import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.simulator.world.impl.CarClient;
 import at.fhv.audioracer.simulator.world.impl.CarClientListener;
 import at.fhv.audioracer.simulator.world.impl.exception.NoCarsAddedException;
@@ -101,6 +101,7 @@ public class SimulationController {
 		ICarClient carClient = new CarClient();
 		((CarClient) carClient).setCar(car); // this only needs to be done in the simulation
 		
+		// comment out next line for "test run"
 		_carClientManager.connect(carClient);
 		_carClients.add(carClient);
 		

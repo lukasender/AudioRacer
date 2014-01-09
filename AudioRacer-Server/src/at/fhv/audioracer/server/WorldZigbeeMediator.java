@@ -8,10 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.fhv.audioracer.communication.world.ICarClient;
+import at.fhv.audioracer.communication.world.ICarManagerListener;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.util.ListenerList;
-import at.fhv.audioracer.server.model.ICarManagerListener;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 
 public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerListener {

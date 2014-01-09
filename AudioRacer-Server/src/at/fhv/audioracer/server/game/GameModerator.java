@@ -20,17 +20,17 @@ import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessa
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
 import at.fhv.audioracer.communication.player.message.UpdateCheckPointDirectionMessage;
 import at.fhv.audioracer.communication.player.message.UpdateGameStateMessage;
+import at.fhv.audioracer.communication.world.CarClientManager;
 import at.fhv.audioracer.communication.world.ICarClient;
+import at.fhv.audioracer.communication.world.ICarManagerListener;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Checkpoint;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
-import at.fhv.audioracer.server.CarClientManager;
 import at.fhv.audioracer.server.PlayerConnection;
 import at.fhv.audioracer.server.PlayerServer;
 import at.fhv.audioracer.server.WorldZigbeeMediator;
-import at.fhv.audioracer.server.model.ICarManagerListener;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 
 public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectionCountChanged {
@@ -130,6 +130,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 						_map.addCar(newCar);
 					}
 					newCar.getCarListenerList().add(_worldZigbeeRunnable);
+					// comment in next 2 lines for "test run"
+					// byte cId = 0;
+					// newCar.setCarClientId(cId);
 				} else {
 					_logger.warn("Car with id: {} allready known!", newCar.getCarId());
 				}
@@ -170,6 +173,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				// camera detection of cars finished, connect ZigBee within a background thread and let
 				// this method return instantly so kryonet listener can continue to do its work
 				if (_worldZigbeeThread.isAlive() == false) {
+					// comment out next line for "test run"
 					_worldZigbeeThread.start();
 				}
 				_checkPreconditionsAndStartGameIfAllFine();
