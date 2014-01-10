@@ -70,7 +70,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 	}
 	
 	@Override
-	public void onCarPositionChanged(Car car) {
+	public void onCarPositionChanged(Car<?> car) {
 		int count = 0;
 		byte carId = car.getCarId();
 		if (_updateCarInvocationCount.containsKey(carId) == false) {

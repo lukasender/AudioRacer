@@ -17,6 +17,7 @@ import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.game.GameModerator;
+import at.fhv.audioracer.server.model.Player;
 
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.FrameworkMessage;
@@ -63,9 +64,9 @@ public class CameraServerListener extends Listener {
 					
 					if (carImage != null) {
 						
-						Car car = new Car(carDetectedMsg.carId, new Position(carDetectedMsg.posX,
-								carDetectedMsg.posY), new Direction(carDetectedMsg.direction),
-								carImage);
+						Car<Player> car = new Car<Player>(carDetectedMsg.carId, new Position(
+								carDetectedMsg.posX, carDetectedMsg.posY), new Direction(
+								carDetectedMsg.direction), carImage);
 						_moderator.carDetected(car);
 					}
 					

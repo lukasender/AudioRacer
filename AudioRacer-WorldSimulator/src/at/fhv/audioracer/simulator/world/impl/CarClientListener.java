@@ -10,7 +10,7 @@ import com.esotericsoftware.kryonet.Client;
 public class CarClientListener implements ICarListener {
 	
 	@Override
-	public void onCarPositionChanged(Car car) {
+	public void onCarPositionChanged(Car<?> car) {
 		Client camera = SimulationController.getInstance().getCamera();
 		UpdateCarMessage msg = new UpdateCarMessage();
 		msg.carId = car.getCarId();

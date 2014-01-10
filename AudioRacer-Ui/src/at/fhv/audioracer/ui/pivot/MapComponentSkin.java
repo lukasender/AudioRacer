@@ -66,7 +66,7 @@ public class MapComponentSkin extends ComponentSkin {
 		// + " scaleWidth: " + scaleWidth + " scaleHeight: " + scaleHeigth + " mapWidth: "
 		// + mapWidth + " mapHeight: " + mapHeight);
 		
-		for (Car car : _component.getMap().getCars()) {
+		for (Car<?> car : _component.getMap().getCars()) {
 			AffineTransform xform = new AffineTransform();
 			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY
 					+ (car.getPosition().getPosY() * scale));

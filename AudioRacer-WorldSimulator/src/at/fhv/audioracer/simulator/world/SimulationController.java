@@ -21,6 +21,7 @@ import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.model.Map;
+import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.simulator.world.impl.CarClient;
@@ -91,7 +92,7 @@ public class SimulationController {
 	public void addCar() throws IOException {
 		// add car to map
 		BufferedImage image = ImageIO.read(MapComponent.class.getResource("car-red.png"));
-		Car car = new Car(_carId, _lastCarPos, new Direction(90), image);
+		Car<Player> car = new Car<Player>(_carId, _lastCarPos, new Direction(90), image);
 		translateLastCarPosX(TRANSLATE_BY);
 		getMap().addCar(car);
 		
@@ -167,7 +168,7 @@ public class SimulationController {
 		return configMap;
 	}
 	
-	private CarDetectedMessage createCarDetectedMessage(Car car, byte[] image) {
+	private CarDetectedMessage createCarDetectedMessage(Car<Player> car, byte[] image) {
 		CarDetectedMessage carDetectedMessage = new CarDetectedMessage();
 		carDetectedMessage.carId = car.getCarId();
 		carDetectedMessage.posX = car.getPosition().getPosX();

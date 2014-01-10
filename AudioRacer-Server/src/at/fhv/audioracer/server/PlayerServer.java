@@ -3,7 +3,7 @@ package at.fhv.audioracer.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.fhv.audioracer.core.model.Player;
+import at.fhv.audioracer.server.model.Player;
 
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
@@ -29,10 +29,10 @@ public class PlayerServer extends Server {
 		
 		_logger.debug("new player connection incoming");
 		
-		// a connection for each player
-		// we do not use RemoteObjects anymore
-		// attach the player to his connection
-		PlayerConnection connection = new PlayerConnection(new Player());
+		Player player = new Player();
+		PlayerConnection connection = new PlayerConnection();
+		player.setPlayerConnection(connection);
+		connection.setPlayer(player);
 		return connection;
 	}
 }

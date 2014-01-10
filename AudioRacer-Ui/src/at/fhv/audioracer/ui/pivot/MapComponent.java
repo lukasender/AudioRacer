@@ -50,19 +50,19 @@ public class MapComponent extends Component implements IMapListener, ICarListene
 	}
 	
 	@Override
-	public void onCarAdded(Car addedCar) {
+	public void onCarAdded(Car<?> addedCar) {
 		addedCar.getCarListenerList().add(this);
 		repaint();
 	}
 	
 	@Override
-	public void onCarRemoved(Car removedCar) {
+	public void onCarRemoved(Car<?> removedCar) {
 		removedCar.getCarListenerList().remove(this);
 		repaint();
 	}
 	
 	@Override
-	public void onCarPositionChanged(Car car) {
+	public void onCarPositionChanged(Car<?> car) {
 		repaint();
 	}
 	

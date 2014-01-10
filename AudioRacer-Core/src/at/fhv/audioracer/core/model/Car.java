@@ -6,14 +6,14 @@ import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.ListenerList;
 import at.fhv.audioracer.core.util.Position;
 
-public class Car {
+public class Car<T> {
 
 	public static byte CAR_CLIENT_NOT_ASSIGNED_ID = -1;
 
 	private static class CarListenerList extends ListenerList<ICarListener>
 			implements ICarListener {
 		@Override
-		public void onCarPositionChanged(Car car) {
+		public void onCarPositionChanged(Car<?> car) {
 			for (ICarListener listener : listeners()) {
 				listener.onCarPositionChanged(car);
 			}
@@ -30,7 +30,7 @@ public class Car {
 	 */
 	private Direction _direction;
 
-	private Player _player;
+	private T _player;
 
 	private final BufferedImage _image;
 
@@ -80,11 +80,11 @@ public class Car {
 		return _direction;
 	}
 
-	public Player getPlayer() {
+	public T getPlayer() {
 		return _player;
 	}
 
-	public void setPlayer(Player player) {
+	public void setPlayer(T player) {
 		_player = player;
 	}
 

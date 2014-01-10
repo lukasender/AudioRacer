@@ -30,8 +30,8 @@ public class Player {
 	/**
 	 * car associated with player
 	 */
-	private Car _car;
-	
+	private Car<?> _car;
+
 	public String getName() {
 		return _name;
 	}
@@ -47,12 +47,12 @@ public class Player {
 	public void setReady(boolean isReady) {
 		this._isReady = isReady;
 	}
-	
-	public Car getCar() {
+
+	public Car<?> getCar() {
 		return _car;
 	}
-	
-	public void setCar(Car car) {
+
+	public void setCar(Car<?> car) {
 		this._car = car;
 	}
 	

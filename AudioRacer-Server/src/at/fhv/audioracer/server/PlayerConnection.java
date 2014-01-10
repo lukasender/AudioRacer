@@ -1,13 +1,13 @@
 package at.fhv.audioracer.server;
 
-import at.fhv.audioracer.core.model.Player;
+import at.fhv.audioracer.server.model.Player;
 
 import com.esotericsoftware.kryonet.Connection;
 
 public class PlayerConnection extends Connection {
 	Player _player;
 	
-	public PlayerConnection(Player player) {
+	public void setPlayer(Player player) {
 		_player = player;
 	}
 	

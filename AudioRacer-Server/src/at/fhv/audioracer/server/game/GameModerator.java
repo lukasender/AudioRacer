@@ -25,13 +25,13 @@ import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarManagerListener;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Checkpoint;
-import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.server.PlayerConnection;
 import at.fhv.audioracer.server.PlayerServer;
 import at.fhv.audioracer.server.WorldZigbeeMediator;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
+import at.fhv.audioracer.server.model.Player;
 
 public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectionCountChanged {
 	
@@ -44,7 +44,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	private HashMap<Integer, Player> _playerList = new HashMap<Integer, Player>();
 	private int _plrId = 0;
 	
-	private Map<Byte, Car> _carList = Collections.synchronizedMap(new HashMap<Byte, Car>());
+	private Map<Byte, Car<Player>> _carList = Collections
+			.synchronizedMap(new HashMap<Byte, Car<Player>>());
 	private Map<Byte, ArrayDeque<Position>> _checkpoints = Collections
 			.synchronizedMap(new HashMap<Byte, ArrayDeque<Position>>());
 	
@@ -113,7 +114,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	 * @param newCar
 	 *            the detected car
 	 */
-	public void carDetected(Car newCar) {
+	public void carDetected(Car<Player> newCar) {
 		
 		synchronized (_lockObject) {
 			if (_gameRunning || _detectionFinished) {
@@ -188,7 +189,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		// _logger.debug(
 		// "updateCar called for carId: {} game started: {} posX: {} posY: {} direction: {}",
 		// new Object[] { carId, _gameRunning, posX, posY, direction });
-		Car car = _carList.get(carId);
+		Car<Player> car = _carList.get(carId);
 		Position currentPosition = new Position(posX, posY);
 		if (_gameRunning) {
 			
@@ -263,7 +264,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					_logger.warn("selectCar not allowed while game is running!");
 				} else {
 					if (_carList.containsKey(carId) && _carList.get(carId).getPlayer() == null) {
-						Car carToSelect = _carList.get(carId);
+						Car<Player> carToSelect = _carList.get(carId);
 						carToSelect.setPlayer(playerConnection.getPlayer());
 						playerConnection.getPlayer().setCar(carToSelect);
 						selectResponse.successfull = true;
@@ -299,10 +300,10 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	 */
 	private void _broadcastFreeCars() {
 		_logger.debug("entered _broadcastFreeCars()");
-		Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
+		Iterator<Entry<Byte, Car<Player>>> it = _carList.entrySet().iterator();
 		ArrayList<Byte> freeCars = new ArrayList<Byte>();
-		Entry<Byte, Car> entry = null;
-		Car car = null;
+		Entry<Byte, Car<Player>> entry = null;
+		Car<Player> car = null;
 		try {
 			while (it.hasNext()) {
 				entry = it.next();
@@ -335,10 +336,12 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			// check all cars available have a player connected (=selectCar)
 			// and this players are all in ready state (=setPlayerReady)
 			// at this state we have at least one Car in _carList
-			Iterator<Entry<Byte, Car>> it = _carList.entrySet().iterator();
-			Entry<Byte, Car> entry = null;
-			Car car = null;
-			Car cars[] = new Car[_carList.size()];
+			Iterator<Entry<Byte, Car<Player>>> it = _carList.entrySet().iterator();
+			Entry<Byte, Car<Player>> entry = null;
+			Car<Player> car = null;
+			
+			@SuppressWarnings("unchecked")
+			Car<Player> cars[] = new Car[_carList.size()];
 			int carsCount = -1;
 			try {
 				while (it.hasNext()) {
@@ -415,7 +418,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		synchronized (_lockObject) {
 			if (playerConnection.getPlayer().getCar() != null) {
 				// decouple car and player instance
-				Car car = playerConnection.getPlayer().getCar();
+				Car<?> car = playerConnection.getPlayer().getCar();
 				playerConnection.getPlayer().setCar(null);
 				car.setPlayer(null);
 				playerHasBeenDecoubled = true;

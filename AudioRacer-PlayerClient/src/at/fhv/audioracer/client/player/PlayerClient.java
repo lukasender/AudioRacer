@@ -306,6 +306,10 @@ public class PlayerClient extends Listener implements IPlayerClient {
 				case UPDATE_FREE_CARS:
 					updateFreeCars(((FreeCarsMessage) message).freeCars);
 					break;
+				default:
+					System.out.println("Message with id: " + message.messageId
+							+ " not known in PlayerClient!");
+					break;
 			}
 		}
 	}

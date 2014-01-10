@@ -1,18 +1,14 @@
 package at.fhv.audioracer.simulator.world.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.core.model.Car;
+import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
 
 public class CarClient implements ICarClient {
 	
-	private static Logger _logger = LoggerFactory.getLogger(CarClient.class);
-	
-	private Car _car = null;
+	private Car<Player> _car = null;
 	
 	/**
 	 * 
@@ -21,7 +17,7 @@ public class CarClient implements ICarClient {
 	
 	private static final float SPEED_FACTOR = 1;
 	
-	public void setCar(Car car) {
+	public void setCar(Car<Player> car) {
 		if (car == null) {
 			throw new IllegalArgumentException("Car must not be null");
 		}

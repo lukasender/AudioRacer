@@ -19,14 +19,14 @@ public class Map {
 		}
 
 		@Override
-		public void onCarAdded(Car addedCar) {
+		public void onCarAdded(Car<?> addedCar) {
 			for (IMapListener listener : listeners()) {
 				listener.onCarAdded(addedCar);
 			}
 		}
 
 		@Override
-		public void onCarRemoved(Car removedCar) {
+		public void onCarRemoved(Car<?> removedCar) {
 			for (IMapListener listener : listeners()) {
 				listener.onCarRemoved(removedCar);
 				;
@@ -45,7 +45,7 @@ public class Map {
 	private int _sizeX;
 	private int _sizeY;
 
-	private java.util.Map<Byte, Car> _cars;
+	private java.util.Map<Byte, Car<?>> _cars;
 	private ArrayList<Checkpoint> _checkpoints;
 
 	private MapListenerList _listenerList;
@@ -54,7 +54,7 @@ public class Map {
 		_sizeX = sizeX;
 		_sizeY = sizeY;
 
-		_cars = new HashMap<Byte, Car>();
+		_cars = new HashMap<Byte, Car<?>>();
 		_checkpoints = new ArrayList<Checkpoint>();
 
 		_listenerList = new MapListenerList();
@@ -82,7 +82,7 @@ public class Map {
 		}
 	}
 
-	public void addCar(Car car) {
+	public void addCar(Car<?> car) {
 		if (car == null) {
 			throw new IllegalArgumentException("Car must not be null.");
 		}
@@ -95,8 +95,8 @@ public class Map {
 		_listenerList.onCarAdded(car);
 	}
 
-	public Car removeCar(int cameraId) {
-		Car car = _cars.remove(cameraId);
+	public Car<?> removeCar(int cameraId) {
+		Car<?> car = _cars.remove(cameraId);
 		if (car != null) {
 			_listenerList.onCarRemoved(car);
 		}
@@ -117,7 +117,7 @@ public class Map {
 		}
 	}
 
-	public Collection<Car> getCars() {
+	public Collection<Car<?>> getCars() {
 		return Collections.unmodifiableCollection(_cars.values());
 	}
 
