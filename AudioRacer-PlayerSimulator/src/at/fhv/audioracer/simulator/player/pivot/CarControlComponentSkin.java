@@ -96,7 +96,7 @@ public class CarControlComponentSkin extends ComponentSkin {
 			xform.translate(arrowCenterX, arrowCenterY);
 			xform.scale(scale, scale);
 			xform.translate(-_arrow.getWidth() / 2, -_arrow.getHeight() / 2);
-			xform.rotate(next.getPosX(), next.getPosY() * -1, _arrow.getWidth() / 2,
+			xform.rotate(next.getPosX() * -1, next.getPosY() * -1, _arrow.getWidth() / 2,
 					_arrow.getHeight() / 2);
 			graphics.drawImage(_arrow, xform, null);
 		}

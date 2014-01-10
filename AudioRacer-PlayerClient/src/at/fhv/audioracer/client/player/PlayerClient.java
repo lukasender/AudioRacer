@@ -8,6 +8,7 @@ import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
+import at.fhv.audioracer.communication.player.message.UpdateCheckPointDirectionMessage;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.ListenerList;
 import at.fhv.audioracer.core.util.Position;
@@ -199,7 +200,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	
 	@Override
 	public void updateCheckpointDirection(float directionX, float directionY) {
-		
+		_nextCheckpoint = new Position(directionX, directionY);
 		_listenerList.onUpdateCheckpointDirection();
 		
 	}
@@ -306,9 +307,12 @@ public class PlayerClient extends Listener implements IPlayerClient {
 				case UPDATE_FREE_CARS:
 					updateFreeCars(((FreeCarsMessage) message).freeCars);
 					break;
+				case UPDATE_CHECKPOINT_DIRECTION:
+					UpdateCheckPointDirectionMessage updateDirection = (UpdateCheckPointDirectionMessage) message;
+					updateCheckpointDirection(updateDirection.posX, updateDirection.posY);
 				default:
-					System.out.println("Message with id: " + message.messageId
-							+ " not known in PlayerClient!");
+					// System.out.println("Message with id: " + message.messageId
+					// + " not known in PlayerClient!");
 					break;
 			}
 		}

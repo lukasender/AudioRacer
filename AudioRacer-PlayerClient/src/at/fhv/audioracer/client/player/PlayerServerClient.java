@@ -138,8 +138,8 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 					}
 					break;
 				default:
-					System.out.println("Message with message id : " + message.messageId
-							+ " not known in PlayerServerClient!");
+					// System.out.println("Message with message id : " + message.messageId
+					// + " not known in PlayerServerClient!");
 					break;
 			}
 		}

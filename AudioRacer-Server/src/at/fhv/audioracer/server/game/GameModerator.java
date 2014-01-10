@@ -236,12 +236,15 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 							transform);
 					
 					UpdateCheckPointDirectionMessage updateCheckpointDirMsg = new UpdateCheckPointDirectionMessage();
-					updateCheckpointDirMsg.posX = cpTransformed.getPosX()
+					updateCheckpointDirMsg.posY = cpTransformed.getPosX()
 							- carPosTransformed.getPosX();
-					updateCheckpointDirMsg.posY = carPosTransformed.getPosY()
+					updateCheckpointDirMsg.posX = carPosTransformed.getPosY()
 							- cpTransformed.getPosY();
-					// _logger.debug("UpdateCheckpoint direction x: {} y: {}",
-					// updateCheckpointDirMsg.posX, updateCheckpointDirMsg.posY);
+					
+					// _logger.debug("UpdateCheckpoint direction x: {} y: {} transform: {}",
+					// updateCheckpointDirMsg.posX, updateCheckpointDirMsg.posY, transform);
+					car.getPlayer().getPlayerConnection().sendUDP(updateCheckpointDirMsg);
+					
 				}
 			}
 			

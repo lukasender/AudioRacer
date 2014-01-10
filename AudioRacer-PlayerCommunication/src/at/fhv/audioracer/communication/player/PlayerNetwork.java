@@ -8,6 +8,7 @@ import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
+import at.fhv.audioracer.communication.player.message.UpdateCheckPointDirectionMessage;
 import at.fhv.audioracer.communication.player.message.UpdateGameStateMessage;
 import at.fhv.audioracer.communication.player.message.UpdateVelocityMessage;
 
@@ -38,6 +39,7 @@ public class PlayerNetwork {
 		kryo.register(StartGameMessage.class);
 		kryo.register(PlayerMessage.class);
 		kryo.register(UpdateGameStateMessage.class);
+		kryo.register(UpdateCheckPointDirectionMessage.class);
 		
 		kryo.register(byte[].class);
 	}
