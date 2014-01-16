@@ -28,6 +28,10 @@ public class PlayerServerListener extends Listener {
 			switch (message.messageId) {
 				case UPDATE_VELOCITY:
 					UpdateVelocityMessage updateVelocityMsg = (UpdateVelocityMessage) message;
+					
+					if (!playerConnection.isValidUpdateVelocityMessage(updateVelocityMsg.seqNr))
+						break;
+					
 					_gameModerator.updateVelocity(playerConnection, updateVelocityMsg.speed,
 							updateVelocityMsg.direction);
 					break;
