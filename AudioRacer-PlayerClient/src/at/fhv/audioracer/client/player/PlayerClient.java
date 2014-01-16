@@ -9,6 +9,7 @@ import at.fhv.audioracer.communication.player.PlayerNetwork;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.UpdateCheckPointDirectionMessage;
+import at.fhv.audioracer.communication.player.message.UpdateGameStateMessage;
 import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.ListenerList;
 import at.fhv.audioracer.core.util.Position;
@@ -310,6 +311,13 @@ public class PlayerClient extends Listener implements IPlayerClient {
 				case UPDATE_CHECKPOINT_DIRECTION:
 					UpdateCheckPointDirectionMessage updateDirection = (UpdateCheckPointDirectionMessage) message;
 					updateCheckpointDirection(updateDirection.posX, updateDirection.posY);
+					break;
+				case UPDATE_GAME_STATE:
+					UpdateGameStateMessage updateGS = (UpdateGameStateMessage) message;
+					System.out.println("GameState update received for id: " + updateGS.carId
+							+ " coins left: " + updateGS.coinsLeft + " current time: "
+							+ updateGS.time);
+					break;
 				default:
 					// System.out.println("Message with id: " + message.messageId
 					// + " not known in PlayerClient!");
