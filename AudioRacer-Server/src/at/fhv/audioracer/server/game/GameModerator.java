@@ -193,41 +193,38 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		Position currentPosition = new Position(posX, posY);
 		if (_gameRunning) {
 			
-			Position nextCheckpointPosition = _checkpoints.get(car.getCarId()).peekFirst();
+			Position nextCheckpointPosition = _checkpoints.get(carId).peekFirst();
 			if (nextCheckpointPosition != null) {
 				
 				// handle checkpoint reached first
 				if (_checkpointUtil.checkpointMatch(currentPosition, nextCheckpointPosition)) {
 					
 					if (_map != null) {
-						int cpNum = ((_checkpointStartCount - _checkpoints.get(car.getCarId())
-								.size()) + 1);
-						Checkpoint reachedCP = new Checkpoint(car.getCarId(),
-								nextCheckpointPosition, _checkpointUtil.getCheckpointRadius(),
-								cpNum);
+						int cpNum = ((_checkpointStartCount - _checkpoints.get(carId).size()) + 1);
+						Checkpoint reachedCP = new Checkpoint(carId, nextCheckpointPosition,
+								_checkpointUtil.getCheckpointRadius(), cpNum);
 						
 						_logger.info(
 								"Checkpoint nr: {} car-id: {} pos: {} reached. Moderate and remove.",
-								new Object[] { cpNum, car.getCarId(),
-										nextCheckpointPosition.getPosX(),
+								new Object[] { cpNum, carId, nextCheckpointPosition.getPosX(),
 										nextCheckpointPosition.getPosY() });
 						_map.removeCheckpoint(reachedCP);
 					}
 					
 					long currentTime = System.currentTimeMillis();
 					int timeSinceGameStart = (int) (currentTime - _gameStartTimeInMillis);
-					_checkpoints.get(car.getCarId()).pollFirst();
+					_checkpoints.get(carId).pollFirst();
 					UpdateGameStateMessage updateGameStateMsg = new UpdateGameStateMessage();
-					updateGameStateMsg.carId = car.getCarId();
+					updateGameStateMsg.carId = carId;
 					updateGameStateMsg.time = timeSinceGameStart;
-					updateGameStateMsg.coinsLeft = _checkpoints.get(car.getCarId()).size();
+					updateGameStateMsg.coinsLeft = _checkpoints.get(carId).size();
 					_logger.info("Player: {} coins left: {}", car.getPlayer().getName(),
 							updateGameStateMsg.coinsLeft);
 					_playerServer.sendToAllTCP(updateGameStateMsg);
 				}
 				
 				// handle distance and direction to next checkpoint
-				nextCheckpointPosition = _checkpoints.get(car.getCarId()).peekFirst();
+				nextCheckpointPosition = _checkpoints.get(carId).peekFirst();
 				if (nextCheckpointPosition != null) {
 					float transform = -car.getDirection().getDirection();
 					Position carPosTransformed = _checkpointUtil.rotatePosition(currentPosition,
