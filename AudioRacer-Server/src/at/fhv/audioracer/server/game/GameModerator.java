@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
 import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
 import at.fhv.audioracer.communication.player.message.PlayerDisconnectedMessage;
+import at.fhv.audioracer.communication.player.message.PlayerMessage;
+import at.fhv.audioracer.communication.player.message.PlayerMessage.MessageId;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
@@ -40,6 +42,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	private PlayerServer _playerServer;
 	private CheckpointUtil _checkpointUtil = new CheckpointUtil();
 	private int _checkpointStartCount = 5;
+	private int _playersInGameCount = 0;
 	
 	private HashMap<Integer, Player> _playerList = new HashMap<Integer, Player>();
 	private int _plrId = 0;
@@ -242,6 +245,21 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					// updateCheckpointDirMsg.posX, updateCheckpointDirMsg.posY, transform);
 					car.getPlayer().getPlayerConnection().sendUDP(updateCheckpointDirMsg);
 					
+				} else {
+					boolean gameOver = false;
+					synchronized (_lockObject) {
+						_playersInGameCount--;
+						_logger.info(
+								"Player {} finished game. No checkpoints left. Currently {} player(s) in game.",
+								car.getPlayer().getName(), _playersInGameCount);
+						if (_playersInGameCount == 0) {
+							gameOver = true;
+						}
+					}
+					if (gameOver) {
+						PlayerMessage endMsg = new PlayerMessage(MessageId.GAME_END);
+						_playerServer.sendToAllTCP(endMsg);
+					}
 				}
 			}
 			
@@ -483,6 +501,10 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				playerConnection.getPlayer().setCar(null);
 				car.setPlayer(null);
 				playerHasBeenDecoubled = true;
+				_playersInGameCount--;
+				_logger.info(
+						"Player {} disconnected from car with id: {}. Currently {} player(s) in game.",
+						playerConnection.getPlayer().getName(), car.getCarId(), _playersInGameCount);
 			}
 		}
 		if (playerHasBeenDecoubled) {
@@ -498,9 +520,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		synchronized (_lockObject) {
 			Player player = playerConnection.getPlayer();
 			player.setReady(true);
-			
-			_logger.debug("Player {} with id {} in ready state.", player.getName(),
-					player.getPlayerId());
+			_playersInGameCount++;
+			_logger.debug("Player {} with id {} in ready state. Currently {} player(s) in game.",
+					player.getName(), player.getPlayerId(), _playersInGameCount);
 			
 			_checkPreconditionsAndStartGameIfAllFine();
 		}

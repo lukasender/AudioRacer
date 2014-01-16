@@ -4,7 +4,8 @@ public class PlayerMessage {
 	
 	// @formatter:off
 	public enum MessageId {
-		DISCONNECT, 
+		DISCONNECT,
+		GAME_END,
 		GAME_START,
 		GET_CAR_IMG_REQUEST,
 		GET_CAR_IMG_RESPONSE,
