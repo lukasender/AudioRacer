@@ -51,10 +51,10 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		SENSOR, SETTINGS_TRIM, ;
 	}
 	
-	protected boolean _speedUp;
-	protected boolean _speedDown;
-	protected boolean _steerLeft;
-	protected boolean _steerRight;
+	protected PressedButton _speedUp = new PressedButton();
+	protected PressedButton _speedDown = new PressedButton();
+	protected PressedButton _steerLeft = new PressedButton();
+	protected PressedButton _steerRight = new PressedButton();
 	
 	private View _controlsSettingsControlsView;
 	private View _standardControlsView;
@@ -74,10 +74,10 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private float _trimSpeed;
 	private float _trimSteering;
 	private static float TRIM_STEP = 0.1f; // increase trim settings by TRIM_STEP per sec.
-	private Pressed _trimSpeedUp = new Pressed();
-	private Pressed _trimSpeedDown = new Pressed();
-	private Pressed _trimSteeringUp = new Pressed();
-	private Pressed _trimSteeringDown = new Pressed();
+	private PressedButton _trimSpeedUp = new PressedButton();
+	private PressedButton _trimSpeedDown = new PressedButton();
+	private PressedButton _trimSteeringUp = new PressedButton();
+	private PressedButton _trimSteeringDown = new PressedButton();
 	
 	@Override
 	public void onBackPressed() {
@@ -184,58 +184,10 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		final Button downButton = (Button) findViewById(R.id.std_ctrl_down);
 		final Button leftButton = (Button) findViewById(R.id.std_ctrl_left);
 		final Button rightButton = (Button) findViewById(R.id.std_ctrl_right);
-		upButton.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if (MotionEvent.ACTION_DOWN == event.getAction()) {
-					_speedUp = true;
-				}
-				if (MotionEvent.ACTION_UP == event.getAction()) {
-					_speedUp = false;
-				}
-				Log.d("control", "speedUp " + _speedUp);
-				return true;
-			}
-		});
-		downButton.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if (MotionEvent.ACTION_DOWN == event.getAction()) {
-					_speedDown = true;
-				}
-				if (MotionEvent.ACTION_UP == event.getAction()) {
-					_speedDown = false;
-				}
-				Log.d("control", "speedDown " + _speedDown);
-				return true;
-			}
-		});
-		leftButton.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if (MotionEvent.ACTION_DOWN == event.getAction()) {
-					_steerLeft = true;
-				}
-				if (MotionEvent.ACTION_UP == event.getAction()) {
-					_steerLeft = false;
-				}
-				Log.d("control", "steerLeft " + _steerLeft);
-				return true;
-			}
-		});
-		rightButton.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if (MotionEvent.ACTION_DOWN == event.getAction()) {
-					_steerRight = true;
-				}
-				if (MotionEvent.ACTION_UP == event.getAction()) {
-					_steerRight = false;
-				}
-				Log.d("control", "steerRight " + _steerRight);
-				return true;
-			}
-		});
+		upButton.setOnTouchListener(new PressedTouchListener(_speedUp));
+		downButton.setOnTouchListener(new PressedTouchListener(_speedDown));
+		leftButton.setOnTouchListener(new PressedTouchListener(_steerLeft));
+		rightButton.setOnTouchListener(new PressedTouchListener(_steerRight));
 		
 		/* End of: ChooseControls */
 		
@@ -371,15 +323,16 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
-	private class Pressed {
+	private class PressedButton {
 		private boolean pressed;
 	}
 	
 	private class PressedTouchListener implements View.OnTouchListener {
 		
-		private volatile Pressed pressed;
+		private volatile PressedButton pressed;
 		
-		public PressedTouchListener(Pressed pressed) {
+		public PressedTouchListener(PressedButton pressed) {
+			super();
 			this.pressed = pressed;
 		}
 		
@@ -502,20 +455,20 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		@Override
 		public void control() {
 			/* copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
-			float sensity = (((System.currentTimeMillis() - _lastUpdate) / 1000.f) * CONTROL_SENSITY);
-			if (_speedUp) {
+			float sensity = (((System.currentTimeMillis() - _lastUpdate) / 250.f) * CONTROL_SENSITY);
+			if (_speedUp.pressed) {
 				_speed = Math.min(1.f, (_speed + sensity));
-			} else if (_speedDown) {
-				_speed = Math.max(-1.f, (_speed - sensity));
+			} else if (_speedDown.pressed) {
+				_speed = Math.max(-1.f, (_speed - sensity / 2.0f));
 			} else if (_speed < 0) {
 				_speed = Math.min(0.f, (_speed + sensity));
 			} else if (_speed > 0) {
 				_speed = Math.max(0.f, (_speed - sensity));
 			}
 			
-			if (_steerLeft) {
+			if (_steerLeft.pressed) {
 				_direction = Math.max(-1.f, (_direction - sensity));
-			} else if (_steerRight) {
+			} else if (_steerRight.pressed) {
 				_direction = Math.min(1.f, (_direction + sensity));
 			} else if (_direction < 0) {
 				_direction = Math.min(0.f, (_direction + sensity));
@@ -530,10 +483,10 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		
 		@Override
 		protected void reset() {
-			_speedUp = false;
-			_speedDown = false;
-			_steerLeft = false;
-			_steerRight = false;
+			_speedUp.pressed = false;
+			_speedDown.pressed = false;
+			_steerLeft.pressed = false;
+			_steerRight.pressed = false;
 			_speed = 0.0f;
 			_direction = 0.0f;
 		}
