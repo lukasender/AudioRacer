@@ -324,6 +324,9 @@ public class PlayerClient extends Listener implements IPlayerClient {
 					System.out.println("Other player conneted with name: "
 							+ connectedMsg.playerName);
 					break;
+				case GAME_END:
+					System.out.println("Game over.");
+					break;
 				default:
 					// System.out.println("Message with id: " + message.messageId
 					// + " not known in PlayerClient!");
