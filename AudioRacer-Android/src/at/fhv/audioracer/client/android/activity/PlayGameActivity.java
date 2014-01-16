@@ -455,11 +455,11 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		@Override
 		public void control() {
 			/* copied from AudioRacer-PlayerSimulator: package at.fhv.audioracer.simulator.player.pivot.CarControlComponent */
-			float sensity = (((System.currentTimeMillis() - _lastUpdate) / 1000.f) * CONTROL_SENSITY);
-			if (_speedUp) {
+			float sensity = (((System.currentTimeMillis() - _lastUpdate) / 250.f) * CONTROL_SENSITY);
+			if (_speedUp.pressed) {
 				_speed = Math.min(1.f, (_speed + sensity));
-			} else if (_speedDown) {
-				_speed = Math.max(-1.f, (_speed - sensity));
+			} else if (_speedDown.pressed) {
+				_speed = Math.max(-1.f, (_speed - sensity / 2.0f));
 			} else if (_speed < 0) {
 				_speed = Math.min(0.f, (_speed + sensity));
 			} else if (_speed > 0) {
