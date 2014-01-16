@@ -287,6 +287,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		
 		_playerServer.sendToTCP(playerConnection.getID(), selectResponse);
 		
+		// tell new player about all other players currently connected to cars
+		_sendCurrentPlayersConnectedToPassedConnection(playerConnection);
+		
 		if (selectResponse.successfull) {
 			
 			PlayerConnectedMessage plrConnectedMsg = new PlayerConnectedMessage();
@@ -296,6 +299,34 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			
 			_broadcastFreeCars();
 		}
+	}
+	
+	private void _sendCurrentPlayersConnectedToPassedConnection(PlayerConnection toThisConnection) {
+		ArrayList<Integer> allreadySentPlrIds = new ArrayList<>();
+		Iterator<Entry<Integer, Player>> it = _playerList.entrySet().iterator();
+		Entry<Integer, Player> entry = null;
+		Player plr = null;
+		int plrId = -1;
+		PlayerConnectedMessage connectedMsg = new PlayerConnectedMessage();
+		while (true)
+			try {
+				while (it.hasNext()) {
+					entry = it.next();
+					plr = entry.getValue();
+					plrId = plr.getPlayerId();
+					if (plr.equals(toThisConnection.getPlayer()) == false
+							&& allreadySentPlrIds.contains(plrId) == false && plr.getCar() != null) {
+						connectedMsg.id = plrId;
+						connectedMsg.playerName = plr.getName();
+						_playerServer.sendToTCP(toThisConnection.getID(), connectedMsg);
+					}
+				}
+				break;
+			} catch (ConcurrentModificationException e) {
+				_logger.info(
+						"ConcurrentModificationException caught in sendCurrentPlayersToConnection!",
+						e);
+			}
 	}
 	
 	/**
