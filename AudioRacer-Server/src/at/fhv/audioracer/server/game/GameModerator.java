@@ -332,6 +332,33 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		_playerServer.sendToAllTCP(freeCarsMessage);
 	}
 	
+	/**
+	 * Send GameStates of all Players to all Players
+	 */
+	private void _broadcastCurrentGameStates() {
+		Iterator<Entry<Byte, ArrayDeque<Position>>> it = _checkpoints.entrySet().iterator();
+		Entry<Byte, ArrayDeque<Position>> entry = null;
+		ArrayDeque<Position> queue = null;
+		Byte carId = null;
+		int coinsLeft = -1;
+		UpdateGameStateMessage msg = new UpdateGameStateMessage();
+		try {
+			while (it.hasNext()) {
+				entry = it.next();
+				queue = entry.getValue();
+				carId = entry.getKey();
+				coinsLeft = queue.size();
+				msg.carId = carId;
+				msg.coinsLeft = coinsLeft;
+				msg.time = 0;
+				_playerServer.sendToAllTCP(msg);
+			}
+		} catch (ConcurrentModificationException e) {
+			_logger.warn("ConcurrentModificationException caught in broadcastCurrentGameStates!", e);
+		}
+		
+	}
+	
 	private void _checkPreconditionsAndStartGameIfAllFine() {
 		
 		if (_gameRunning == false && _mapConfigured && _detectionFinished) {
@@ -403,6 +430,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			if (_worldZigbeeThread.isAlive()) {
 				_worldZigbeeThread.interrupt();
 			}
+			
+			// broadcast initial game state
+			_broadcastCurrentGameStates();
 			
 			// TODO: good idea to send in synchronized block?
 			StartGameMessage startGameMsg = new StartGameMessage();
