@@ -9,7 +9,10 @@ public class UpdateVelocityMessage extends PlayerMessage {
 	
 	public UpdateVelocityMessage() {
 		super(MessageId.UPDATE_VELOCITY);
-		seqNr = _seqNr++;
+		if (++_seqNr < 0) {
+			_seqNr = 0;
+		}
+		seqNr = _seqNr;
 	}
 	
 }
