@@ -1,6 +1,7 @@
 package at.fhv.audioracer.client.player;
 
 import at.fhv.audioracer.core.util.IListener;
+import at.fhv.audioracer.core.util.Position;
 
 public interface IPlayerClientListener extends IListener {
 	public static class Adapter implements IPlayerClientListener {
@@ -10,7 +11,7 @@ public interface IPlayerClientListener extends IListener {
 		}
 		
 		@Override
-		public void onUpdateCheckpointDirection() {
+		public void onUpdateCheckpointDirection(Position position) {
 			// no-op.
 		}
 		
@@ -37,7 +38,7 @@ public interface IPlayerClientListener extends IListener {
 	
 	void onUpdateGameState(int playerId);
 	
-	void onUpdateCheckpointDirection();
+	void onUpdateCheckpointDirection(Position position);
 	
 	void onUpdateFreeCars();
 	

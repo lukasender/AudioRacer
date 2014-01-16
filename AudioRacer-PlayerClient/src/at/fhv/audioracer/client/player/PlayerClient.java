@@ -34,10 +34,10 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		}
 		
 		@Override
-		public void onUpdateCheckpointDirection() {
+		public void onUpdateCheckpointDirection(Position position) {
 			
 			for (IPlayerClientListener listener : listeners()) {
-				listener.onUpdateCheckpointDirection();
+				listener.onUpdateCheckpointDirection(position);
 			}
 			
 		}
@@ -203,7 +203,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	@Override
 	public void updateCheckpointDirection(float directionX, float directionY) {
 		_nextCheckpoint = new Position(directionX, directionY);
-		_listenerList.onUpdateCheckpointDirection();
+		_listenerList.onUpdateCheckpointDirection(getNextCheckpoint());
 		
 	}
 	
