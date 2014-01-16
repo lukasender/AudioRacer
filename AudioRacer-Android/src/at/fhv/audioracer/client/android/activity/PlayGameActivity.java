@@ -25,12 +25,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
+import at.fhv.audioracer.client.android.aui.SoundPlayer2D;
 import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
 import at.fhv.audioracer.client.android.network.task.TrimSettingsAsyncTask;
 import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
 import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
+import at.fhv.audioracer.client.player.IPlayerClientListener;
+import at.fhv.audioracer.core.util.Position;
 
 /**
  * This is the main activity to play the game.<br>
@@ -367,24 +370,44 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
-	protected abstract class ControlThread implements Runnable {
+	protected static abstract class ControlThread implements Runnable {
 		
 		protected long _maxControlWait;
 		
 		protected volatile long _lastUpdate;
 		private volatile Thread _thread;
 		
+		private SoundPlayer2D _soundPlayer;
+		
+		private IPlayerClientListener _listener;
+		
+		// We should probably get this from the server.
+		protected static double MAX_DISTANCE = 100;
+		protected static double SCALE_OF_VELOCITY = 1;
+		
 		public ControlThread() {
 			_maxControlWait = 10;
+			_soundPlayer = new SoundPlayer2D(MAX_DISTANCE, SCALE_OF_VELOCITY);
+			
+			_listener = new IPlayerClientListener.Adapter() {
+				@Override
+				public void onUpdateCheckpointDirection(Position position) {
+					_soundPlayer.setPosition(position);
+				}
+			};
+			
+			ClientManager.getInstance().getPlayerClient().getListenerList().add(_listener);
 		}
 		
 		public void start() {
 			_thread = new Thread(this);
 			_thread.start();
+			_soundPlayer.play();
 		}
 		
 		public void stop() {
 			_thread = null;
+			_soundPlayer.stop();
 			reset();
 		}
 		
@@ -411,6 +434,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 		
 		public abstract void control();
+		
 	}
 	
 	protected class TrimSettingsThread extends ControlThread {
