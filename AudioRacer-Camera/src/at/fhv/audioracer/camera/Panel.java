@@ -92,7 +92,7 @@ public class Panel extends JPanel {
 		VideoCapture capture = new VideoCapture(0);
 		
 		trackingObjectExample(webcam_image, capture, frame, panel);
-		findTriangleExample(webcam_image, capture, frame, panel);
+		// findTriangleExample(webcam_image, capture, frame, panel);
 		
 	}
 	
