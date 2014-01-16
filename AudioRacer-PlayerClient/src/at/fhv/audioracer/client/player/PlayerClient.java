@@ -7,6 +7,7 @@ import at.fhv.audioracer.communication.player.IPlayerClient;
 import at.fhv.audioracer.communication.player.IPlayerServer;
 import at.fhv.audioracer.communication.player.PlayerNetwork;
 import at.fhv.audioracer.communication.player.message.FreeCarsMessage;
+import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.UpdateCheckPointDirectionMessage;
 import at.fhv.audioracer.communication.player.message.UpdateGameStateMessage;
@@ -283,7 +284,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		_client.addListener(serverClient);
 		_client.addListener(this);
 		
-		_client.connect(1000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
+		_client.connect(5000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
 				PlayerNetwork.PLAYER_SERVICE_PORT);
 		_connected = true;
 		
@@ -317,6 +318,11 @@ public class PlayerClient extends Listener implements IPlayerClient {
 					System.out.println("GameState update received for id: " + updateGS.carId
 							+ " coins left: " + updateGS.coinsLeft + " current time: "
 							+ updateGS.time);
+					break;
+				case PLAYER_CONNECTED:
+					PlayerConnectedMessage connectedMsg = (PlayerConnectedMessage) message;
+					System.out.println("Other player conneted with name: "
+							+ connectedMsg.playerName);
 					break;
 				default:
 					// System.out.println("Message with id: " + message.messageId
