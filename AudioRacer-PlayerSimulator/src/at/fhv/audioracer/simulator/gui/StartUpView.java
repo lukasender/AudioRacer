@@ -18,6 +18,7 @@ import javax.swing.event.ListSelectionListener;
 import at.fhv.audioracer.client.player.IPlayerClientListener;
 import at.fhv.audioracer.client.player.PlayerClient;
 import at.fhv.audioracer.core.model.Player;
+import at.fhv.audioracer.core.util.Position;
 
 @SuppressWarnings("serial")
 public class StartUpView extends JFrame {
@@ -101,7 +102,7 @@ public class StartUpView extends JFrame {
 			}
 			
 			@Override
-			public void onUpdateCheckpointDirection() {
+			public void onUpdateCheckpointDirection(Position pos) {
 				// TODO Auto-generated method stub
 				
 			}
