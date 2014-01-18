@@ -63,6 +63,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	private boolean _mapConfigured = false;
 	private boolean _detectionFinished = false;
 	
+	// next types used for handling different kinds of possible network-problems
+	private ArrayList<Byte> _awaitingCarClientReconnectList = new ArrayList<>();
+	
 	private at.fhv.audioracer.core.model.Map _map = null;
 	private static GameModerator _gameModerator = null;
 	
@@ -530,12 +533,12 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	
 	@Override
 	public void onCarClientConnect(ICarClient carClient) {
-		// TODO: if game has paused while running, return to game if all connections established again
+		_awaitingCarClientReconnectList.remove(carClient.getCarClientId());
 	}
 	
 	@Override
 	public void onCarClientDisconnect(ICarClient carClient) {
-		// TODO: if game is running, remember carClientID(s) and pause game
+		_awaitingCarClientReconnectList.add(carClient.getCarClientId());
 	}
 	
 	@Override
@@ -548,6 +551,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	public void updateVelocity(PlayerConnection playerConnection, float speed, float direction) {
 		if (_detectionFinished == false)
 			return; // suppress user interaction until camera finished car detection
+			
+		if (_awaitingCarClientReconnectList.size() > 0)
+			return; // suppress user interaction until all Cars have a ZigBee-Conection available
 			
 		ICarClient c = CarClientManager.getInstance().get(
 				playerConnection.getPlayer().getCar().getCarClientId());
