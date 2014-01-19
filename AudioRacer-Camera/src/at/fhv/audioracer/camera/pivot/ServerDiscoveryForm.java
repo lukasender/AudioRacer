@@ -1,4 +1,4 @@
-package at.fhv.audioracer.simulator.player.pivot;
+package at.fhv.audioracer.camera.pivot;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,10 +17,10 @@ import org.apache.pivot.wtk.ListViewSelectionListener;
 import org.apache.pivot.wtk.PushButton;
 
 import at.fhv.audioracer.client.player.IServerDiscoverListener;
-import at.fhv.audioracer.client.player.PlayerClient;
 import at.fhv.audioracer.client.player.ServerDiscover;
 import at.fhv.audioracer.ui.util.pivot.PivotThreadProxy;
 
+// TODO: move ServerDiscovery + Listener in another project than PlayerClient and remove PlayerClient from Buil Path from Camera!
 public class ServerDiscoveryForm extends Form implements Bindable, IServerDiscoverListener {
 	
 	@BXML
@@ -52,11 +52,9 @@ public class ServerDiscoveryForm extends Form implements Bindable, IServerDiscov
 			
 			@Override
 			public void buttonPressed(Button button) {
-				PlayerClient client = PlayerSimulatorWindow.getInstance().getPlayerClient();
 				try {
-					client.startClient(PlayerSimulatorWindow.getInstance().getPlayerName(),
-							(String) _listView.getSelectedItem());
-					PlayerSimulatorWindow.getInstance().setContent(CarSelectForm.class);
+					CameraApplication.getInstance().connect((String) _listView.getSelectedItem());
+					CameraWindow.getInstance().setContent(CameraSplitPane.class);
 					_serverDiscover.stopDiscover();
 				} catch (IOException e) {
 					throw new RuntimeException(e);

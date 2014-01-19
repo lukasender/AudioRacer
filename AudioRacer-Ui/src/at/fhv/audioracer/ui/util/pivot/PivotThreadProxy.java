@@ -1,4 +1,4 @@
-package at.fhv.audioracer.simulator.player.pivot.util;
+package at.fhv.audioracer.ui.util.pivot;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;

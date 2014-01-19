@@ -1,0 +1,8 @@
+<camera:CameraWindow title="AudioRacer - Camera" maximized="true"
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:camera="at.fhv.audioracer.camera.pivot">
+
+	<FillPane bxml:id="_fillPane" styles="{padding: 3}">
+		<bxml:include src="ServerDiscoveryForm.bxml" />
+	</FillPane>
+</camera:CameraWindow>

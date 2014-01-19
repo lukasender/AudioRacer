@@ -17,7 +17,9 @@ public class MapComponent extends Component implements IMapListener, ICarListene
 	private Map _map;
 	
 	public MapComponent() {
-		setSkin(new MapComponentSkin(this));
+		if (getClass() == MapComponent.class) {
+			setSkin(new MapComponentSkin(this));
+		}
 	}
 	
 	public Map getMap() {
