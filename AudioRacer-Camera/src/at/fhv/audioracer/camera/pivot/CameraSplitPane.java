@@ -115,10 +115,14 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
+				if (!_cameraMapComponent.gameAreaSelected()) {
+					Alert.alert("No game area selected!", getWindow());
+					return;
+				}
+				
 				_gameAreaSelectedButton.setEnabled(false);
 				_allCarsDetectedButton.setEnabled(true);
 				
-				_cameraMapComponent.gameAreaSelected();
 			}
 		});
 		
@@ -126,8 +130,13 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
+				if (_cameraMapComponent.getMap().getCars().size() == 0) {
+					Alert.alert("At least one car must be detected!", getWindow());
+					return;
+				}
+				
 				_allCarsDetectedButton.setEnabled(false);
-				// TODO: inform server
+				CameraApplication.getInstance().allCarsDected();
 			}
 		});
 	}

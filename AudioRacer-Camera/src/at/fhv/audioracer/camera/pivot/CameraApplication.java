@@ -11,11 +11,18 @@ import org.apache.pivot.wtk.Window;
 
 import at.fhv.audioracer.camera.OpenCVCamera;
 import at.fhv.audioracer.communication.world.WorldNetwork;
+import at.fhv.audioracer.communication.world.message.CameraMessage;
+import at.fhv.audioracer.communication.world.message.CameraMessage.MessageId;
+import at.fhv.audioracer.communication.world.message.CarDetectedMessage;
 import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
+import at.fhv.audioracer.communication.world.message.UpdateCarMessage;
+import at.fhv.audioracer.core.model.Car;
+import at.fhv.audioracer.core.model.ICarListener;
+import at.fhv.audioracer.core.model.IMapListener;
 
 import com.esotericsoftware.kryonet.Client;
 
-public class CameraApplication implements Application {
+public class CameraApplication implements Application, IMapListener, ICarListener {
 	
 	private static CameraApplication _instance;
 	
@@ -46,8 +53,50 @@ public class CameraApplication implements Application {
 		_cameraClient.sendTCP(msg);
 	}
 	
+	public void allCarsDected() {
+		_cameraClient.sendTCP(new CameraMessage(MessageId.DETECTION_FINISHED));
+	}
+	
 	public void setCamera(OpenCVCamera camera) {
 		_camera = camera;
+	}
+	
+	@Override
+	public void onMapSizeChanged() {
+		// no-op.
+	}
+	
+	@Override
+	public void onCarAdded(Car<?> addedCar) {
+		addedCar.getCarListenerList().add(this);
+		
+		CarDetectedMessage msg = new CarDetectedMessage();
+		msg.carId = addedCar.getCarId();
+		msg.posX = addedCar.getPosition().getPosX();
+		msg.posY = addedCar.getPosition().getPosY();
+		msg.direction = addedCar.getDirection().getDirection();
+		msg.image = null; // TODO: implement
+		_cameraClient.sendTCP(msg);
+	}
+	
+	@Override
+	public void onCarRemoved(Car<?> removedCar) {
+		// TODO: does a car ever get removed?
+	}
+	
+	@Override
+	public void onCheckpointChange() {
+		// no-op.
+	}
+	
+	@Override
+	public void onCarPositionChanged(Car<?> car) {
+		UpdateCarMessage msg = new UpdateCarMessage();
+		msg.carId = car.getCarId();
+		msg.direction = car.getDirection().getDirection();
+		msg.posX = car.getPosition().getPosX();
+		msg.posY = car.getPosition().getPosY();
+		_cameraClient.sendTCP(msg); // TODO: why not UDP?
 	}
 	
 	@Override

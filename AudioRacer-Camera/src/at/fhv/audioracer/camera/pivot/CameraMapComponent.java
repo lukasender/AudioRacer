@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+import javax.naming.OperationNotSupportedException;
+
 import org.apache.pivot.wtk.Mouse;
 import org.apache.pivot.wtk.Mouse.Button;
 import org.apache.pivot.wtk.Mouse.ScrollType;
@@ -232,11 +234,27 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		_camera.rotate();
 	}
 	
-	public void gameAreaSelected() {
-		Map map = new Map(Math.abs(_gameAreaX1 - _gameAreaX2), Math.abs(_gameAreaY1 - _gameAreaY2));
+	public boolean gameAreaSelected() {
+		int width = Math.abs(_gameAreaX1 - _gameAreaX2);
+		int height = Math.abs(_gameAreaY1 - _gameAreaY2);
+		
+		if (width == 0 || height == 0) {
+			return false;
+		}
+		
+		Map map = new Map(width, height);
+		map.getMapListenerList().add(CameraApplication.getInstance());
 		CameraApplication.getInstance().configureMap(map);
 		_selecting = false;
 		_camera.setMap(map, Math.min(_gameAreaX1, _gameAreaX2), Math.min(_gameAreaY1, _gameAreaY2));
+		
+		try {
+			setMap(map);
+		} catch (OperationNotSupportedException e) {
+			// this function can be called just once
+		}
+		
+		return true;
 	}
 	
 	private int getRealImageCoordinateX(int x) {
