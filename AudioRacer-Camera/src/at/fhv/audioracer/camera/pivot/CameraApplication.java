@@ -11,6 +11,7 @@ import org.apache.pivot.wtk.Window;
 
 import at.fhv.audioracer.camera.OpenCVCamera;
 import at.fhv.audioracer.communication.world.WorldNetwork;
+import at.fhv.audioracer.communication.world.message.ConfigureMapMessage;
 
 import com.esotericsoftware.kryonet.Client;
 
@@ -36,6 +37,13 @@ public class CameraApplication implements Application {
 	
 	public void connect(String host) throws IOException {
 		_cameraClient.connect(1000, host, WorldNetwork.CAMERA_SERVICE_PORT);
+	}
+	
+	public void configureMap(at.fhv.audioracer.core.model.Map map) {
+		ConfigureMapMessage msg = new ConfigureMapMessage();
+		msg.sizeX = map.getSizeX();
+		msg.sizeY = map.getSizeY();
+		_cameraClient.sendTCP(msg);
 	}
 	
 	public void setCamera(OpenCVCamera camera) {

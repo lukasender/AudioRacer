@@ -6,6 +6,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
+import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
@@ -55,6 +56,8 @@ public class OpenCVCamera implements Runnable {
 		_zoom = zoom;
 		
 		_capture = new VideoCapture();
+		_capture.set(Highgui.CV_CAP_PROP_FRAME_WIDTH, 640);
+		_capture.set(Highgui.CV_CAP_PROP_FRAME_HEIGHT, 480);
 		
 		_patternSize = new Size(7, 7);
 	}
@@ -91,7 +94,7 @@ public class OpenCVCamera implements Runnable {
 		}
 	}
 	
-	public void setMap(Map map) {
+	public void setMap(Map map, int offsetX, int offsetY) {
 		// from here you are allowed to detect cars.
 	}
 	

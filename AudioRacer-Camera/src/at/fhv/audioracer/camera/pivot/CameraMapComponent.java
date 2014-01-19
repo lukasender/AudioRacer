@@ -1,5 +1,7 @@
 package at.fhv.audioracer.camera.pivot;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 import org.apache.pivot.wtk.Mouse;
@@ -11,6 +13,7 @@ import org.opencv.core.MatOfPoint2f;
 
 import at.fhv.audioracer.camera.OpenCVCamera;
 import at.fhv.audioracer.camera.OpenCVCameraListener;
+import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.ui.pivot.MapComponent;
 
@@ -25,10 +28,21 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	private int _positionY;
 	
 	private Position _lastMousePosition; // TODO: use a position which uses integers as values
-	private Position _firstCorner;
-	private Position _secondCorner;
 	
 	private boolean _selecting;
+	
+	private boolean _cameraImagePosCalculated;
+	private int _cameraImagePosX;
+	private int _cameraImagePosY;
+	private int _cameraImageWidth;
+	private int _cameraImageHeight;
+	private float _cameraImageWidthScale;
+	private float _cameraImageHeightScale;
+	
+	private int _gameAreaX1;
+	private int _gameAreaX2;
+	private int _gameAreaY1;
+	private int _gameAreaY2;
 	
 	public CameraMapComponent() {
 		setSkin(new CameraMapComponentSkin(this));
@@ -57,8 +71,30 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 			
 			BufferedImage img = matToBufferedImage(frame);
 			frame.release();
+			if (!_cameraImagePosCalculated) {
+				refreshCameraImagePos(img.getWidth(), img.getHeight());
+			}
+			if (_selecting) {
+				drawGameArea(img);
+			}
 			return img;
 		}
+	}
+	
+	public int getCameraImagePosX() {
+		return _cameraImagePosX;
+	}
+	
+	public int getCameraImagePosY() {
+		return _cameraImagePosY;
+	}
+	
+	public int getCameraImageWidth() {
+		return _cameraImageWidth;
+	}
+	
+	public int getCameraImageHeight() {
+		return _cameraImageHeight;
 	}
 	
 	public boolean isDrawCheesboard() {
@@ -69,12 +105,29 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		_drawCheesboard = drawCheesboard;
 	}
 	
-	public Position getFirstCorner() {
-		return _firstCorner;
-	}
-	
-	public Position getSecondCorner() {
-		return _secondCorner;
+	private void refreshCameraImagePos(int cameraWidth, int cameraHeight) {
+		int height = getHeight();
+		int width = getWidth();
+		
+		float oversizeX = (float) cameraWidth / (float) width;
+		float oversizeY = (float) cameraHeight / (float) height;
+		
+		if (oversizeX > oversizeY) {
+			_cameraImageWidth = width;
+			_cameraImageHeight = (int) (((float) width / (float) cameraWidth) * (float) cameraHeight);
+			_cameraImagePosX = 0;
+			_cameraImagePosY = (height - _cameraImageHeight) / 2;
+		} else {
+			_cameraImageWidth = (int) (((float) height / (float) cameraHeight) * (float) cameraWidth);
+			_cameraImageHeight = height;
+			_cameraImagePosX = (width - _cameraImageWidth) / 2;
+			_cameraImagePosY = 0;
+		}
+		
+		_cameraImageWidthScale = (float) cameraWidth / (float) _cameraImageWidth;
+		_cameraImageHeightScale = (float) cameraHeight / (float) _cameraImageHeight;
+		
+		_cameraImagePosCalculated = true;
 	}
 	
 	public void selectCamera(int id) {
@@ -106,13 +159,22 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	}
 	
 	@Override
+	protected void layout() {
+		_cameraImagePosCalculated = false;
+		
+		super.layout();
+	}
+	
+	@Override
 	protected boolean mouseDown(Button button, int xArgument, int yArgument) {
 		if (_positioning && button == Button.LEFT) {
 			_lastMousePosition = new Position(xArgument, yArgument);
 			return true;
 		} else if (_selecting && button == Button.LEFT) {
-			_firstCorner = new Position(xArgument, yArgument);
-			_secondCorner = _firstCorner;
+			_gameAreaX1 = getRealImageCoordinateX(xArgument);
+			_gameAreaY1 = getRealIamgeCoordinateY(yArgument);
+			_gameAreaX2 = _gameAreaX1;
+			_gameAreaY2 = _gameAreaY1;
 			return true;
 		} else {
 			return super.mouseDown(button, xArgument, yArgument);
@@ -135,7 +197,8 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 			
 			return true;
 		} else if (_selecting && Mouse.isPressed(Button.LEFT)) {
-			_secondCorner = new Position(xArgument, yArgument);
+			_gameAreaX2 = getRealImageCoordinateX(xArgument);
+			_gameAreaY2 = getRealIamgeCoordinateY(yArgument);
 			return true;
 		} else {
 			return super.mouseMove(xArgument, yArgument);
@@ -167,6 +230,32 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	
 	public void rotate() {
 		_camera.rotate();
+	}
+	
+	public void gameAreaSelected() {
+		Map map = new Map(Math.abs(_gameAreaX1 - _gameAreaX2), Math.abs(_gameAreaY1 - _gameAreaY2));
+		CameraApplication.getInstance().configureMap(map);
+		_selecting = false;
+		_camera.setMap(map, Math.min(_gameAreaX1, _gameAreaX2), Math.min(_gameAreaY1, _gameAreaY2));
+	}
+	
+	private int getRealImageCoordinateX(int x) {
+		return (int) ((x - _cameraImagePosX) * _cameraImageWidthScale);
+	}
+	
+	private int getRealIamgeCoordinateY(int y) {
+		return (int) ((y - _cameraImagePosY) * _cameraImageHeightScale);
+	}
+	
+	private void drawGameArea(BufferedImage img) {
+		int x = Math.min(_gameAreaX1, _gameAreaX2);
+		int y = Math.min(_gameAreaY1, _gameAreaY2);
+		int width = Math.abs(_gameAreaX1 - _gameAreaX2);
+		int height = Math.abs(_gameAreaY1 - _gameAreaY2);
+		
+		Graphics g = img.getGraphics();
+		g.setColor(Color.RED);
+		g.drawRect(x, y, width, height);
 	}
 	
 	/**

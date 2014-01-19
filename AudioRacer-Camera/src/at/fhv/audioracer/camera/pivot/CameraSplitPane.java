@@ -118,7 +118,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				_gameAreaSelectedButton.setEnabled(false);
 				_allCarsDetectedButton.setEnabled(true);
 				
-				// TODO: inform map component / server
+				_cameraMapComponent.gameAreaSelected();
 			}
 		});
 		
