@@ -46,8 +46,11 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	private int _gameAreaY1;
 	private int _gameAreaY2;
 	
+	private final CameraMapComponentSkin _skin;
+	
 	public CameraMapComponent() {
-		setSkin(new CameraMapComponentSkin(this));
+		_skin = new CameraMapComponentSkin(this);
+		setSkin(_skin);
 		
 		_positionX = 0;
 		_positionY = 0;
@@ -246,8 +249,12 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		map.getMapListenerList().add(CameraApplication.getInstance());
 		CameraApplication.getInstance().configureMap(map);
 		_selecting = false;
-		_camera.setMap(map, Math.min(_gameAreaX1, _gameAreaX2), Math.min(_gameAreaY1, _gameAreaY2));
 		
+		int offsetX = Math.min(_gameAreaX1, _gameAreaX2);
+		int offsetY = Math.min(_gameAreaY1, _gameAreaY2);
+		_camera.setMap(map, offsetX, offsetY);
+		
+		_skin.setMapOffset(offsetX, offsetY);
 		try {
 			setMap(map);
 		} catch (OperationNotSupportedException e) {
