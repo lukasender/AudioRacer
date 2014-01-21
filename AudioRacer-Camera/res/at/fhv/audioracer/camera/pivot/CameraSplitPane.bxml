@@ -1,0 +1,40 @@
+<camera:CameraSplitPane
+	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
+	xmlns:content="org.apache.pivot.wtk.content"
+	xmlns:camera="at.fhv.audioracer.camera.pivot"
+	splitRatio="0.70">
+	
+	<left>
+		<Border bxml:id="border" title="Camera">
+			<camera:CameraMapComponent bxml:id="_cameraMapComponent" />
+		</Border>
+	</left>
+	<right>
+		<Border title="Configure" styles="{padding:3}">
+			<Form>
+				<Form.Section heading="Step 1 - Select camera">
+					<Spinner bxml:id="_cameraIdSpinner" selectedIndex="0" Form.label="Camera">
+						<spinnerData>
+			                <content:NumericSpinnerData lowerBound="0" increment="1" />
+			            </spinnerData>
+            		</Spinner>
+					<PushButton bxml:id="_cameraSelectedButton" buttonData="Camera selected" />
+				</Form.Section>
+				<Form.Section heading="Step 1 - Position">
+					<PushButton bxml:id="_startPositioningButton" buttonData="Start positioning" />
+					<PushButton bxml:id="_rotateButton" buttonData="Rotate" />
+					<PushButton bxml:id="_startCalibrationButton" buttonData="Start calibration" />
+				</Form.Section>
+				<Form.Section heading="Step 2 - Calibration">
+					<PushButton bxml:id="_calibrationFinishedButton" buttonData="Calibration finished" />
+				</Form.Section>
+				<Form.Section heading="Step 3 - Select game area">
+					<PushButton bxml:id="_gameAreaSelectedButton" buttonData="Game area selected" />
+				</Form.Section>
+				<Form.Section heading="Step 4 - Car detection">
+					<PushButton bxml:id="_allCarsDetectedButton" buttonData="All cars detected" />
+				</Form.Section>
+			</Form>
+		</Border>
+	</right>
+</camera:CameraSplitPane>
