@@ -18,6 +18,9 @@ public class OpenCVCamera {
 		
 	}
 	
+	private boolean inPositioning = false; // --> statepattern startToPositioning
+	private boolean inCalibration = false; // --> statepattern PositioningToCalibration
+	
 	private OpenCVCameraListenerList _listenerList;
 	
 	public OpenCVCamera() {
@@ -40,8 +43,12 @@ public class OpenCVCamera {
 		
 	}
 	
-	public void beginPositioning() {
-		
+	/**
+	 * 
+	 * @return whether chess board was recognized
+	 */
+	public boolean beginPositioning() {
+		return false;
 	}
 	
 	public void setPosition(int x, int y) {
@@ -49,10 +56,6 @@ public class OpenCVCamera {
 	}
 	
 	public void setZoom(int zoom) {
-		
-	}
-	
-	public void endPositioning() {
 		
 	}
 	
