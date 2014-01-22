@@ -307,6 +307,8 @@ public class PlayerClient extends Listener implements IPlayerClient {
 			PlayerMessage message = (PlayerMessage) object;
 			switch (message.messageId) {
 				case UPDATE_FREE_CARS:
+					System.out.println("Received UPDAT_FREE_CARS: "
+							+ ((FreeCarsMessage) message).freeCars.length);
 					updateFreeCars(((FreeCarsMessage) message).freeCars);
 					break;
 				case UPDATE_CHECKPOINT_DIRECTION:
@@ -334,5 +336,4 @@ public class PlayerClient extends Listener implements IPlayerClient {
 			}
 		}
 	}
-	
 }

@@ -112,13 +112,19 @@ public class SoundPlayer2D {
 					genTone();
 					
 					Vector unitVector = _position.norm();
-					float cos = unitVector.getValues()[0] / unitVector.getValues()[1];
-					// // if cos 1 then left 0.5 - 1/2 = 0 right 0.5+1/2 =1
-					// // if cos 0.7 (45°) than left 0.5 - 0.35 = 0.15 right 0.5 + 0.35 = 0.85
+					Log.d("audioracer", "UnitVector: " + unitVector.getValues()[0] + " / " + unitVector.getValues()[1]);
+					Vector zero = new Vector(new float[] { 1, 0 });
+					float cos = _position.multiplication(zero) / _position.getLength();
+					// cos 1 --> 90° left
+					// cos 0 --> 0° in front
+					// cos -1 --> 90° right
 					float directionVolumeFactor = cos / 2;
-					float distanceVolumeFactor = _position.getLength() / (float) _maxDistance;
-					_audioTrack.setStereoVolume((1f - directionVolumeFactor) * (1 - distanceVolumeFactor), (1f + directionVolumeFactor)
-							* (1 - distanceVolumeFactor));
+					float distanceVolumeFactor = Math.max(0f, _position.getLength() / (float) _maxDistance);
+					Log.d("audioracer", "DirectoinVolumeFactor: " + directionVolumeFactor);
+					
+					float leftVolume = (0.5f + directionVolumeFactor) * (1 - distanceVolumeFactor);
+					float rightVolume = (0.5f - directionVolumeFactor) * (1 - distanceVolumeFactor);
+					_audioTrack.setStereoVolume(leftVolume, rightVolume);
 					
 					int samplesToWrite = (int) (sampleRate * duration) + 1;
 					int samplesPerPeriod = generatedSnd.length / 2; // generating 2 periods, one for each channel

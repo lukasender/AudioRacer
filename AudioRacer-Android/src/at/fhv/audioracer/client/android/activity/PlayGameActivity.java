@@ -382,7 +382,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		private IPlayerClientListener _listener;
 		
 		// We should probably get this from the server.
-		protected static double MAX_DISTANCE = 100;
+		protected static double MAX_DISTANCE = 150;
 		protected static double SCALE_OF_VELOCITY = 1;
 		
 		public ControlThread() {
