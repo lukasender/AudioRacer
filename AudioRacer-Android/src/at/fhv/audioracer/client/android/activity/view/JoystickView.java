@@ -26,6 +26,12 @@ public class JoystickView extends View {
 		_direction = 0f;
 	}
 	
+	public void reset() {
+		_speed = 0f;
+		_direction = 0f;
+		invalidate();
+	}
+	
 	public float getSpeed() {
 		return _speed;
 	}
