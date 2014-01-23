@@ -618,8 +618,6 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		
 		// TODO: avoid that everybody can do this
 		
-		// TODO: simulator update position doesn't work anymore after reconnect
-		
 		_logger.debug("network reconnect for player id: {} stop timeout first.", playerId);
 		_playerTimeoutScheduler.stopTimeout(playerId);
 		Player oldPlrToCopy = _playerList.get(playerId);
@@ -629,6 +627,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		playerConnection.setPlayer(new Player(oldPlrToCopy));
 		Player copied = playerConnection.getPlayer();
 		copied.setPlayerConnection(playerConnection);
+		Car<Player> oldCar = _carList.get(copied.getCar().getCarId());
+		oldCar.setPlayer(copied);
+		
 		_playerList.put(playerId, copied);
 		
 		_logger.debug("Player info copied: {}", copied);
