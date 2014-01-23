@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
+import at.fhv.audioracer.client.android.activity.view.JoystickView;
 import at.fhv.audioracer.client.android.aui.SoundPlayer2D;
 import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
@@ -49,9 +50,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private SystemUiHider _systemUiHider;
 	
 	public static enum ControlMode {
-		STANDARD,
-		// JOYSTICK,
-		SENSOR, SETTINGS_TRIM, ;
+		STANDARD, SENSOR, SETTINGS_TRIM, JOYSTICK, ;
 	}
 	
 	protected PressedButton _speedUp = new PressedButton();
@@ -62,6 +61,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private View _controlsSettingsControlsView;
 	private View _standardControlsView;
 	private View _motionSensorControlsView;
+	private JoystickView _joystickControlsView;
 	private View _trimSettingsView;
 	
 	private ImageView _msCtrlImgView;
@@ -104,6 +104,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_controlsSettingsControlsView = findViewById(R.id.controls_settings);
 		_standardControlsView = findViewById(R.id.standard_controls);
 		_motionSensorControlsView = findViewById(R.id.motion_sensor_controls);
+		_joystickControlsView = (JoystickView) findViewById(R.id.joystick_controls);
 		// settings
 		_trimSettingsView = findViewById(R.id.trim_settings_view);
 		
@@ -111,6 +112,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_views.add(_controlsSettingsControlsView);
 		_views.add(_standardControlsView);
 		_views.add(_motionSensorControlsView);
+		_views.add(_joystickControlsView);
 		_views.add(_trimSettingsView);
 		
 		// get the 'motion sensor' image view.
@@ -120,6 +122,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		// set other views than 'controlsSettingsControlsView' invisible
 		_standardControlsView.setVisibility(View.INVISIBLE);
 		_motionSensorControlsView.setVisibility(View.INVISIBLE);
+		_joystickControlsView.setVisibility(View.INVISIBLE);
 		_trimSettingsView.setVisibility(View.INVISIBLE);
 		
 		/* Settings */
@@ -132,6 +135,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				
 				_standardControlsView.setVisibility(View.INVISIBLE);
 				_motionSensorControlsView.setVisibility(View.INVISIBLE);
+				_joystickControlsView.setVisibility(View.INVISIBLE);
 				_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
 				
 				startThread(ControlMode.SETTINGS_TRIM);
@@ -163,6 +167,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_threads.add(new ThreadControlMode(ControlMode.STANDARD, new StandardControlThread()));
 		_threads.add(new ThreadControlMode(ControlMode.SENSOR, new MotionSensorControlThread()));
 		_threads.add(new ThreadControlMode(ControlMode.SETTINGS_TRIM, new TrimSettingsThread()));
+		_threads.add(new ThreadControlMode(ControlMode.JOYSTICK, new JoystickControlThread()));
 		
 		/* ChooseControls */
 		
@@ -180,6 +185,14 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			@Override
 			public void onClick(View v) {
 				ready(ControlMode.SENSOR);
+			}
+		});
+		// Choose 'Joystick controls'
+		final Button joystickCtrlButton = (Button) findViewById(R.id.joystick_ctrl);
+		joystickCtrlButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				ready(ControlMode.JOYSTICK);
 			}
 		});
 		
@@ -295,6 +308,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
 				_standardControlsView.setVisibility(View.VISIBLE);
 				_motionSensorControlsView.setVisibility(View.INVISIBLE);
+				_joystickControlsView.setVisibility(View.INVISIBLE);
 				
 				startThread(mode);
 				break;
@@ -302,6 +316,15 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
 				_standardControlsView.setVisibility(View.INVISIBLE);
 				_motionSensorControlsView.setVisibility(View.VISIBLE);
+				_joystickControlsView.setVisibility(View.INVISIBLE);
+				
+				startThread(mode);
+				break;
+			case JOYSTICK:
+				_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
+				_standardControlsView.setVisibility(View.INVISIBLE);
+				_motionSensorControlsView.setVisibility(View.INVISIBLE);
+				_joystickControlsView.setVisibility(View.VISIBLE);
 				
 				startThread(mode);
 				break;
@@ -622,6 +645,24 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			});
 		}
 	}
+	
 	/* end of: Motion sensor controls */
 	
+	protected class JoystickControlThread extends ControlThread {
+		
+		@Override
+		protected void reset() {
+			// no-op.
+		}
+		
+		@Override
+		public void control() {
+			_speed = _joystickControlsView.getSpeed();
+			_direction = _joystickControlsView.getDirection();
+			
+			// note that this is sent continuously
+			ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_speed, _direction);
+		}
+		
+	}
 }
