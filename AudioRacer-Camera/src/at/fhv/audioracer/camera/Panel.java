@@ -2,12 +2,17 @@ package at.fhv.audioracer.camera;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -91,9 +96,152 @@ public class Panel extends JPanel {
 		
 		VideoCapture capture = new VideoCapture(0);
 		
-		trackingObjectExample(webcam_image, capture, frame, panel);
-		// findTriangleExample(webcam_image, capture, frame, panel);
+		// trackingObjectExample(webcam_image, capture, frame, panel);
+		findTriangleExample(webcam_image, capture, frame, panel);
 		
+	}
+	
+	public static Mat chessboard(Mat m) {
+		
+		Size patternSize = new Size(7, 7);
+		MatOfPoint2f corners = new MatOfPoint2f();
+		boolean r = Calib3d.findChessboardCorners(m, patternSize, corners);
+		
+		if (!r) {
+			System.out.println("oO");
+			return m;
+		}
+		
+		// Calib3d.drawChessboardCorners(m, patternSize, corners, r);
+		
+		Mat tl = corners.row(0);
+		Mat tr = corners.row((int) (patternSize.area() - patternSize.width));
+		Mat br = corners.row((int) (patternSize.area() - 1));
+		Mat bl = corners.row((int) (patternSize.width - 1));
+		
+		MatOfPoint2f xField = new MatOfPoint2f();
+		// xField.create(4, 1, CvType.CV_32FC2);
+		xField.push_back(tl);
+		xField.push_back(tr);
+		xField.push_back(br);
+		xField.push_back(bl);
+		
+		// Point centerM = new Point(m.size().width / 2, m.size().height / 2);
+		Point centerM = new Point(590, 430);
+		
+		MatOfPoint2f xImage = new MatOfPoint2f();
+		// xImage.create(4, 1, CvType.CV_32FC2);
+		xImage.push_back(new MatOfPoint2f(new Point(centerM.x + 0, centerM.y + 0)));
+		xImage.push_back(new MatOfPoint2f(new Point(centerM.x + 500, centerM.y + 0)));
+		xImage.push_back(new MatOfPoint2f(new Point(centerM.x + 500, centerM.y + 500)));
+		xImage.push_back(new MatOfPoint2f(new Point(centerM.x + 0, centerM.y + 500)));
+		
+		Point centerField = new Point();
+		for (int i = 0; i < xField.size().height; i++) {
+			centerField.x += xField.get(i, 0)[0];
+			centerField.y += xField.get(i, 0)[1];
+		}
+		
+		centerField.x *= 1.0 / xField.size().height;
+		centerField.y *= 1.0 / xField.size().height;
+		
+		Point distance = new Point(centerM.x - centerField.x, centerM.y - centerField.y);
+		
+		for (int i = 0; i < xField.size().height; i++) {
+			// xField.put(i, 0, xField.get(i, 0)[0] + distance.x, xField.get(i, 0)[1] - distance.y);
+		}
+		
+		System.out.println();
+		System.out.println(xField.dump());
+		System.out.println(xImage.dump());
+		
+		Mat h = Calib3d.findHomography(xField, xImage);
+		// h = Imgproc.getPerspectiveTransform(xField, xImage);
+		System.out.println(h.dump());
+		
+		Mat warped = new Mat();
+		
+		Imgproc.warpPerspective(m, warped, h, new Size(640, 480));
+		
+		System.out.println(m.depth());
+		// Core.perspectiveTransform(m, warped, h);
+		
+		// System.out.println(r);
+		// System.out.println(corners.dump());
+		
+		return warped;
+	}
+	
+	private static void findTriangleExample(Mat webcam_image, VideoCapture capture, JFrame frame,
+			Panel panel) {
+		BufferedImage temp;
+		if (capture.isOpened()) {
+			long deltaTime = 0;
+			long lastFrame = 0;
+			long currentTime = System.currentTimeMillis();
+			
+			while (true) {
+				currentTime = System.currentTimeMillis();
+				deltaTime = currentTime - lastFrame;
+				lastFrame = currentTime;
+				System.out.print("FPS: " + (1000 / deltaTime));
+				
+				// try {
+				// Thread.sleep(20); // 1000/40=25fps
+				// } catch (InterruptedException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
+				capture.read(webcam_image);
+				if (!webcam_image.empty()) {
+					webcam_image = chessboard(webcam_image);
+					
+					// convert to grayscale
+					Mat imgGrayScale = new Mat(webcam_image.size(), Core.DEPTH_MASK_8U, new Scalar(
+							3));
+					// webcam_image.convertTo(webcam_image, -1, 1.0, 100);
+					Imgproc.cvtColor(webcam_image, imgGrayScale, Imgproc.COLOR_BGR2GRAY);
+					Imgproc.threshold(imgGrayScale, imgGrayScale, 184, 255, Imgproc.THRESH_BINARY);
+					
+					// find contours
+					List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+					Imgproc.findContours(imgGrayScale, contours, new Mat(), Imgproc.RETR_LIST,
+							Imgproc.CHAIN_APPROX_SIMPLE);
+					
+					System.out.print("Found Contours: " + contours.size());
+					int triangles = 0;
+					for (MatOfPoint contour : contours) {
+						
+						MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
+						Imgproc.approxPolyDP(contour2f, contour2f,
+								Imgproc.arcLength(contour2f, true) * 0.1, true);
+						
+						// find triangles and mark them with blue lines
+						if (contour2f.total() == 3) {
+							triangles++;
+							Point[] points = contour2f.toArray();
+							Scalar color = new Scalar(255, 0, 0);
+							
+							for (int i = 0; i < 2; i++) {
+								Core.line(webcam_image, points[i], points[i + 1], color);
+							}
+							Core.line(webcam_image, points[2], points[0], color);
+						}
+						
+					}
+					
+					System.out.println("Triangles: " + triangles);
+					
+					// display processed webcam_image
+					frame.setSize(imgGrayScale.width() + 40, imgGrayScale.height() + 60);
+					temp = matToBufferedImage(webcam_image);
+					panel.setimage(temp);
+					panel.repaint();
+				} else {
+					System.out.println(" --(!) No captured frame -- Break!");
+				}
+			}
+		}
 	}
 	
 	private static void trackingObjectExample(Mat webcam_image, VideoCapture capture, JFrame frame,

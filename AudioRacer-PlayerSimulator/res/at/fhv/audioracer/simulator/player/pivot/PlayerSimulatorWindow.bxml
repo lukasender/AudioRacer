@@ -1,4 +1,4 @@
-<ps:PlayerSimulatorWindow title="AudioRacer - Player simualtor" maximized="true"
+<ps:PlayerSimulatorWindow title="AudioRacer - Player simulator" maximized="true"
 	xmlns:bxml="http://pivot.apache.org/bxml" xmlns="org.apache.pivot.wtk"
 	xmlns:ps="at.fhv.audioracer.simulator.player.pivot">
 

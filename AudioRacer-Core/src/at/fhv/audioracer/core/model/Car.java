@@ -109,4 +109,9 @@ public class Car<T> {
 	public void setCarClientId(byte carClientId) {
 		_carClientId = carClientId;
 	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(_carId);
+	}
 }

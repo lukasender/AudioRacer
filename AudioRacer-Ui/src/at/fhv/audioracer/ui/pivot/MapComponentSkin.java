@@ -35,6 +35,22 @@ public class MapComponentSkin extends ComponentSkin {
 		return 0;
 	}
 	
+	protected int getMapX(int mapSizeX, float scale) {
+		return (int) ((getWidth() - (mapSizeX * scale)) * 0.5);
+	}
+	
+	protected int getMapY(int mapSizeY, float scale) {
+		return (int) ((getHeight() - (mapSizeY * scale)) * 0.5);
+	}
+	
+	protected int getTotalWidth(int mapSizeX) {
+		return ((_component.getBorderSize() * 2) + mapSizeX);
+	}
+	
+	protected int getTotalHeight(int mapSizeY) {
+		return ((_component.getBorderSize() * 2) + mapSizeY);
+	}
+	
 	@Override
 	public void paint(Graphics2D graphics) {
 		Map map = _component.getMap();
@@ -45,18 +61,13 @@ public class MapComponentSkin extends ComponentSkin {
 		int mapSizeX = map.getSizeX();
 		int mapSizeY = map.getSizeY();
 		
-		int width = getWidth();
-		int height = getHeight();
+		float scaleWidth = (float) getWidth() / (float) getTotalWidth(mapSizeX);
+		float scaleHeight = (float) getHeight() / (float) getTotalHeight(mapSizeY);
 		
-		int border = _component.getBorderSize();
+		float scale = Math.min(scaleWidth, scaleHeight);
 		
-		float scaleWidth = (float) width / (float) ((border * 2) + mapSizeX);
-		float scaleHeigth = (float) height / (float) ((border * 2) + mapSizeY);
-		
-		float scale = Math.min(scaleWidth, scaleHeigth);
-		
-		int mapX = (int) ((width - (mapSizeX * scale)) * 0.5);
-		int mapY = (int) ((height - (mapSizeY * scale)) * 0.5);
+		int mapX = getMapX(mapSizeX, scale);
+		int mapY = getMapY(mapSizeY, scale);
 		int mapWidth = (int) Math.floor(mapSizeX * scale);
 		int mapHeight = (int) Math.floor(mapSizeY * scale);
 		graphics.drawRect(mapX, mapY, mapWidth, mapHeight);

@@ -1,15 +1,16 @@
 package at.fhv.audioracer.core.util;
 
 /**
- * This class represents a 2D vector every method coudl also be implemented for an nD-Vector
+ * This class represents a 2D vector every method coudl also be implemented for
+ * an nD-Vector
  * 
  * @author Stephan 12.02.2012
  */
 public class Vector {
-	
+
 	protected float[] _values;
 	private int _dimension;
-	
+
 	public Vector(float[] values) {
 		_dimension = values.length;
 		_values = new float[_dimension];
@@ -17,7 +18,7 @@ public class Vector {
 			_values[i] = values[i];
 		}
 	}
-	
+
 	public Vector add(Vector vector) {
 		if (getDimension() != vector.getDimension()) {
 			throw new IllegalArgumentException("Dimension mismatch.");
@@ -28,7 +29,7 @@ public class Vector {
 		}
 		return new Vector(temp);
 	}
-	
+
 	public Vector subtract(Vector vector) {
 		if (getDimension() != vector.getDimension()) {
 			throw new IllegalArgumentException("Dimension mismatch.");
@@ -39,16 +40,28 @@ public class Vector {
 		}
 		return new Vector(temp);
 	}
-	
+
 	public Vector scalarMultiplication(float scalar) {
 		float[] temp = new float[getDimension()];
 		for (int i = 0; i < getDimension(); i++) {
 			temp[i] = getValues()[i] * scalar;
 		}
 		return new Vector(temp);
-		
+
 	}
-	
+
+	public float multiplication(Vector vector) {
+		if (getDimension() != vector.getDimension()) {
+			throw new IllegalArgumentException("Dimension mismatch.");
+		}
+
+		float temp = 0;
+		for (int i = 0; i < getDimension(); i++) {
+			temp += getValues()[i] * vector.getValues()[i];
+		}
+		return temp;
+	}
+
 	public float getLength() {
 		float temp = 0;
 		for (float value : getValues()) {
@@ -56,15 +69,15 @@ public class Vector {
 		}
 		return (float) Math.sqrt(temp);
 	}
-	
+
 	public Vector norm() {
 		return this.scalarMultiplication(1 / getLength());
 	}
-	
+
 	public float[] getValues() {
 		return _values;
 	}
-	
+
 	/**
 	 * @return the _dimension
 	 */

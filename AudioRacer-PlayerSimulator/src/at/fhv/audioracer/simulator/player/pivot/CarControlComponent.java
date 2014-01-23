@@ -1,5 +1,7 @@
 package at.fhv.audioracer.simulator.player.pivot;
 
+import java.io.IOException;
+
 import org.apache.pivot.wtk.Application.UnprocessedKeyHandler;
 import org.apache.pivot.wtk.ApplicationContext;
 import org.apache.pivot.wtk.Component;
@@ -50,6 +52,18 @@ public class CarControlComponent extends Component implements Runnable {
 						break;
 					case KeyCode.D:
 						_steerRight = true;
+						break;
+					case KeyCode.E:
+						PlayerSimulatorWindow.getInstance().getPlayerClient().stopClient();
+						break;
+					case KeyCode.R:
+						try {
+							PlayerSimulatorWindow.getInstance().getPlayerClient().startClient();
+						} catch (IOException e) {
+							System.out.println("IOException caught in CarControlComponent: "
+									+ e.getMessage());
+							// throw new RuntimeException(e);
+						}
 						break;
 				}
 			}
