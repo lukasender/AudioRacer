@@ -1,15 +1,21 @@
 package at.fhv.audioracer.camera;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
+import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Map;
 import at.fhv.audioracer.core.util.ListenerList;
 
@@ -25,8 +31,8 @@ public class OpenCVCamera implements Runnable {
 		}
 	}
 	
-	private boolean inPositioning = false; // --> statepattern startToPositioning
-	private boolean inCalibration = false; // --> statepattern PositioningToCalibration
+	private boolean _detectCars = false;
+	private boolean _drawTriangels = true;
 	
 	private OpenCVCameraListenerList _listenerList;
 	
@@ -46,6 +52,7 @@ public class OpenCVCamera implements Runnable {
 	private MatOfPoint2f _cheesboardCorners;
 	private Mat _homography;
 	private Mat _positioningFrame;
+	private Point _offsetPoint;
 	
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -89,6 +96,10 @@ public class OpenCVCamera implements Runnable {
 			frame = null;
 		}
 		
+		if (_detectCars && frame != null) {
+			findCars(frame);
+		}
+		
 		_frame = frame;
 		_listenerList.onNewFrame();
 		
@@ -99,6 +110,111 @@ public class OpenCVCamera implements Runnable {
 	
 	public void setMap(Map map, int offsetX, int offsetY) {
 		// from here you are allowed to detect cars.
+		// TODO do something with parameters
+		
+		_detectCars = true;
+		_offsetPoint = new Point(offsetX, offsetY);
+	}
+	
+	private void findCars(Mat frame) {
+		// there is a faster way with caching processed images
+		List<MatOfPoint> triangles = findPolygons(frame, 3);
+		List<MatOfPoint> rectangles = findPolygons(frame, 4);
+		List<MatOfPoint> candidates = new ArrayList<MatOfPoint>();
+		for (MatOfPoint triangle : triangles) {
+			double triangleArea = Imgproc.contourArea(triangle);
+			if (_drawTriangels) {
+				Point[] points = triangle.toArray();
+				Scalar color = new Scalar(0, 0, 255);
+				
+				for (int i = 0; i < 2; i++) {
+					Core.line(frame, points[i], points[i + 1], color);
+				}
+				Core.line(frame, points[2], points[0], color);
+			}
+			for (MatOfPoint rectangle : rectangles) {
+				if (Imgproc.contourArea(rectangle) > triangleArea) {
+					// check if triangle is within rectangel
+					Point[] points = triangle.toArray();
+					boolean inside = true;
+					for (int i = 0; i < 3; i++) {
+						if (0 > Imgproc.pointPolygonTest(new MatOfPoint2f(rectangle.toArray()),
+								points[i], false)) {
+							inside = false;
+							break;
+						}
+					}
+					
+					// triangle is within a bigger rectangle
+					if (inside) {
+						candidates.add(triangle);
+					}
+				}
+			}
+		}
+		// TODO delete test code for drawing candidates
+		Core.fillPoly(frame, candidates, new Scalar(0, 0, 255));
+		
+		java.util.Map<Car, MatOfPoint> cars = mapCandidatesToCars(candidates);
+		
+		calcCarDirection(cars);
+		
+	}
+	
+	private void calcCarDirection(java.util.Map<Car, MatOfPoint> cars) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private java.util.Map<Car, MatOfPoint> mapCandidatesToCars(List<MatOfPoint> candidates) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	/**
+	 * finds polygons with same number of corners defined
+	 * 
+	 * @param frame
+	 *            image to find polygons
+	 * @param corners
+	 *            number of corners
+	 * @return List of found polygons
+	 */
+	private List<MatOfPoint> findPolygons(Mat frame, int corners) {
+		
+		Mat imgGrayScale = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
+		
+		Imgproc.cvtColor(frame, imgGrayScale, Imgproc.COLOR_BGR2GRAY);
+		Imgproc.threshold(imgGrayScale, imgGrayScale, 184, 255, Imgproc.THRESH_BINARY);
+		
+		// find contours
+		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+		List<MatOfPoint> polygons = new ArrayList<MatOfPoint>();
+		
+		// find only black objects
+		// Mat imgHSV = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
+		// Imgproc.cvtColor(frame, imgHSV, Imgproc.COLOR_BGR2HSV);
+		
+		// Mat imgTreshold = new Mat(imgHSV.size(), Core.DEPTH_MASK_8U, new Scalar(1));
+		// Core.inRange(imgHSV, new Scalar(0, 50, 200), new Scalar(179, 0, 255), imgTreshold);
+		
+		// Imgproc.GaussianBlur(imgTreshold, imgTreshold, new Size(5, 5), 5, 5);
+		
+		Imgproc.findContours(imgGrayScale, contours, new Mat(), Imgproc.RETR_LIST,
+				Imgproc.CHAIN_APPROX_SIMPLE);
+		
+		for (MatOfPoint contour : contours) {
+			
+			MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
+			Imgproc.approxPolyDP(contour2f, contour2f, Imgproc.arcLength(contour2f, true) * 0.1,
+					true);
+			
+			// find triangles and mark them with blue lines
+			if (contour2f.total() == corners) {
+				polygons.add(contour);
+			}
+		}
+		return polygons;
 	}
 	
 	public void openCamera(int device) {
@@ -119,7 +235,7 @@ public class OpenCVCamera implements Runnable {
 		_workerThread = new Thread(this, "Camera capture");
 		_workerThread.setDaemon(true);
 		_workerThread.start();
-
+		
 	}
 	
 	public boolean beginPositioning() {
@@ -190,7 +306,6 @@ public class OpenCVCamera implements Runnable {
 	}
 	
 	public void endCalibration() {
-		
 	}
 	
 	@Override
