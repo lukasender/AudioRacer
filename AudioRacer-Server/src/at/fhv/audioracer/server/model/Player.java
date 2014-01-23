@@ -10,6 +10,22 @@ public class Player extends at.fhv.audioracer.core.model.Player {
 		super();
 	}
 	
+	/**
+	 * Copy constructor
+	 * 
+	 * @param toCopy
+	 *            Player containing values to copy to this instance
+	 */
+	public Player(Player toCopy) {
+		super();
+		_playerId = toCopy.getPlayerId();
+		_car = toCopy.getCar();
+		_coinsLeft = toCopy.getCoinsLeft();
+		_name = toCopy.getName();
+		_time = toCopy.getTime();
+		_isReady = toCopy.isReady();
+	}
+	
 	public void setPlayerConnection(PlayerConnection playerConnection) {
 		_playerConnection = playerConnection;
 	}

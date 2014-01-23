@@ -8,6 +8,8 @@ public interface IPlayerServer {
 	 */
 	public int setPlayerName(String playerName);
 	
+	public boolean reconnect(int playerId);
+	
 	public void disconnect();
 	
 	public void updateVelocity(float speed, float direction);

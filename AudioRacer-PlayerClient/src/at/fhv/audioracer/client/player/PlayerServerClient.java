@@ -5,11 +5,14 @@ import at.fhv.audioracer.communication.player.message.CarImageRequestMessage;
 import at.fhv.audioracer.communication.player.message.CarImageResponseMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage.MessageId;
+import at.fhv.audioracer.communication.player.message.ReconnectRequestMessage;
+import at.fhv.audioracer.communication.player.message.ReconnectRequestResponse;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.UpdateVelocityMessage;
+import at.fhv.audioracer.core.model.Player;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
@@ -21,7 +24,8 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	
 	private Client _client;
 	
-	private int _playerIdResponse = -1;
+	private int _playerIdResponse = Player.INVALID_PLAYER_ID;
+	private boolean _reconnectSuccess = false;
 	private boolean _selectCarResponse;
 	private byte[] _carImageResponse = null;
 	
@@ -37,21 +41,40 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	
 	@Override
 	public int setPlayerName(String playerName) {
+		if (_playerIdResponse != Player.INVALID_PLAYER_ID)
+			return _playerIdResponse;
+		
 		SetPlayerNameRequestMessage setNameMsg = new SetPlayerNameRequestMessage();
 		setNameMsg.playerName = playerName;
 		_client.sendTCP(setNameMsg);
-		
-		_playerIdResponse = -1;
 		
 		try {
 			synchronized (_lock) {
 				_lock.wait(); // could be improved
 			}
 		} catch (InterruptedException e) {
-			return -1;
+			System.out.println("InterruptException caught in setPlayerName!");
+			_playerIdResponse = Player.INVALID_PLAYER_ID;
 		}
 		
 		return _playerIdResponse;
+	}
+	
+	@Override
+	public boolean reconnect(int playerId) {
+		
+		_reconnectSuccess = false;
+		ReconnectRequestMessage reconnectReqMsg = new ReconnectRequestMessage();
+		reconnectReqMsg.playerId = _playerIdResponse;
+		_client.sendTCP(reconnectReqMsg);
+		try {
+			synchronized (_lock) {
+				_lock.wait();
+			}
+		} catch (InterruptedException e) {
+			return false;
+		}
+		return _reconnectSuccess;
 	}
 	
 	@Override
@@ -135,6 +158,14 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 					_carImageResponse = carImageResponseMessage.image;
 					synchronized (_lock) {
 						_lock.notifyAll(); // could be improved
+					}
+					break;
+				case RECONNECT_RESPONSE:
+					ReconnectRequestResponse reconnectRespMsg = (ReconnectRequestResponse) message;
+					_reconnectSuccess = reconnectRespMsg.reconnectSuccess;
+					System.out.println("Reconnect response: " + _reconnectSuccess);
+					synchronized (_lock) {
+						_lock.notifyAll();
 					}
 					break;
 				default:

@@ -159,6 +159,13 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		_listenerList = new PlayerClientListenerList();
 		_connected = false;
 		
+		_client = new Client();
+		_client.start();
+		PlayerServerClient serverClient = new PlayerServerClient(_client);
+		PlayerNetwork.register(_client);
+		_client.addListener(serverClient);
+		_client.addListener(this);
+		setPlayerServer(serverClient);
 	}
 	
 	@Override
@@ -273,23 +280,23 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		return _listenerList;
 	}
 	
+	public void startClient() throws IOException {
+		startClient(getPlayer().getName(), getServerUrl());
+	}
+	
 	public void startClient(String playerName, String host) throws IOException {
-		_client = new Client();
-		_client.start();
-		
-		PlayerServerClient serverClient = new PlayerServerClient(_client);
-		
-		PlayerNetwork.register(_client);
-		
-		_client.addListener(serverClient);
-		_client.addListener(this);
-		
-		_client.connect(5000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
-				PlayerNetwork.PLAYER_SERVICE_PORT);
-		_connected = true;
-		
-		setPlayerServer(serverClient);
-		getPlayer().setPlayerId(getPlayerServer().setPlayerName(playerName));
+		if (!_client.isConnected()) {
+			_client.connect(5000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
+					PlayerNetwork.PLAYER_SERVICE_PORT);
+			_connected = true;
+			if (_player.getPlayerId() == Player.INVALID_PLAYER_ID) {
+				_player.setPlayerId(getPlayerServer().setPlayerName(playerName));
+			} else {
+				// player already has a valid id, reconnect
+				System.out.println("reconnect with player-id: " + _player.getPlayerId());
+				_playerServer.reconnect(getPlayer().getPlayerId());
+			}
+		}
 	}
 	
 	public void stopClient() {
@@ -335,5 +342,15 @@ public class PlayerClient extends Listener implements IPlayerClient {
 					break;
 			}
 		}
+	}
+	
+	private String _serverUrl = null;
+	
+	public void setServerUrl(String serverUrl) {
+		_serverUrl = serverUrl;
+	}
+	
+	public String getServerUrl() {
+		return _serverUrl;
 	}
 }

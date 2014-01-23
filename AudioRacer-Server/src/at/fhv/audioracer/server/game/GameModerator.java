@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import at.fhv.audioracer.communication.player.message.PlayerConnectedMessage;
 import at.fhv.audioracer.communication.player.message.PlayerDisconnectedMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
 import at.fhv.audioracer.communication.player.message.PlayerMessage.MessageId;
+import at.fhv.audioracer.communication.player.message.ReconnectRequestResponse;
 import at.fhv.audioracer.communication.player.message.SelectCarResponseMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameResponseMessage;
 import at.fhv.audioracer.communication.player.message.StartGameMessage;
@@ -29,13 +32,16 @@ import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Checkpoint;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
+import at.fhv.audioracer.network.reconnect.IPlayerTimeoutEvent;
+import at.fhv.audioracer.network.reconnect.PlayerTimeoutScheduler;
 import at.fhv.audioracer.server.PlayerConnection;
 import at.fhv.audioracer.server.PlayerServer;
 import at.fhv.audioracer.server.WorldZigbeeMediator;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 import at.fhv.audioracer.server.model.Player;
 
-public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectionCountChanged {
+public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectionCountChanged,
+		IPlayerTimeoutEvent {
 	
 	private static Logger _logger = LoggerFactory.getLogger(GameModerator.class);
 	// TODO: player server is not threat safe at all
@@ -64,7 +70,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	private boolean _detectionFinished = false;
 	
 	// next types used for handling different kinds of possible network-problems
-	private ArrayList<Byte> _awaitingCarClientReconnectList = new ArrayList<>();
+	private Set<Byte> _awaitingCarClientReconnectSet = Collections
+			.synchronizedSet(new HashSet<Byte>());
+	private PlayerTimeoutScheduler _playerTimeoutScheduler = new PlayerTimeoutScheduler(2);
 	
 	private at.fhv.audioracer.core.model.Map _map = null;
 	private static GameModerator _gameModerator = null;
@@ -74,6 +82,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		CarClientManager.getInstance().getCarClientListenerList().add(this);
 		_worldZigbeeThread = new Thread(_worldZigbeeRunnable);
 		CarClientManager.getInstance().getCarClientListenerList().add(_worldZigbeeRunnable);
+		_playerTimeoutScheduler.registerEvent(this);
 	}
 	
 	public static GameModerator getInstance() {
@@ -495,7 +504,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	 * @param playerConnection
 	 *            Socket connection of player who send request of type PlayerMessage with PlayerMessage.MessageId = DISCONNECT
 	 */
-	public void disconnectPlayer(PlayerConnection playerConnection) {
+	public void carPlayerDisconnect(PlayerConnection playerConnection) {
 		boolean playerHasBeenDecoubled = false;
 		synchronized (_lockObject) {
 			if (playerConnection.getPlayer().getCar() != null) {
@@ -533,12 +542,12 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	
 	@Override
 	public void onCarClientConnect(ICarClient carClient) {
-		_awaitingCarClientReconnectList.remove(carClient.getCarClientId());
+		_awaitingCarClientReconnectSet.remove(carClient.getCarClientId());
 	}
 	
 	@Override
 	public void onCarClientDisconnect(ICarClient carClient) {
-		_awaitingCarClientReconnectList.add(carClient.getCarClientId());
+		_awaitingCarClientReconnectSet.add(carClient.getCarClientId());
 	}
 	
 	@Override
@@ -549,19 +558,36 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	}
 	
 	public void updateVelocity(PlayerConnection playerConnection, float speed, float direction) {
-		if (_detectionFinished == false)
-			return; // suppress user interaction until camera finished car detection
+		if (_detectionFinished == false) {
+			return; // suppress all user interactions until camera finished car detection
+		}
+		
+		// if at least one Car has no ZigBee-Connection available
+		// suppress all user interactions during a game is in progress
+		if (_awaitingCarClientReconnectSet.size() > 0 && _gameRunning == true) {
+			return;
+		}
+		
+		// if at least one Player connected to a Car currently in reconnection state
+		// suppress all user interactions during a game is in progress
+		if (_playerTimeoutScheduler.getPlayersToTimeout() > 0 && _gameRunning == true) {
+			return;
+		}
+		
+		ICarClient c = null;
+		try {
+			c = CarClientManager.getInstance().get(
+					playerConnection.getPlayer().getCar().getCarClientId());
 			
-		if (_awaitingCarClientReconnectList.size() > 0)
-			return; // suppress user interaction until all Cars have a ZigBee-Conection available
-			
-		ICarClient c = CarClientManager.getInstance().get(
-				playerConnection.getPlayer().getCar().getCarClientId());
+		} catch (NullPointerException e) {
+			// Car can be null after network reconnect, and player has not sent it's player id yet
+			// e.g. simulator sends repeatedly updateVelocity
+		}
 		if (c != null) {
 			c.updateVelocity(speed, direction);
 		} else {
-			_logger.warn("ICarClient for carId: {} is null!", playerConnection.getPlayer().getCar()
-					.getCarId());
+			// _logger.warn("ICarClient for player with id: {} is null!", playerConnection.getPlayer()
+			// .getPlayerId());
 		}
 	}
 	
@@ -581,5 +607,55 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			_logger.debug("ICarClient for carId: {} is null!", playerConnection.getPlayer()
 					.getCar().getCarId());
 		}
+	}
+	
+	/**
+	 * Called from player on network reconnect.
+	 * 
+	 * @param playerId
+	 */
+	public void networkPlayerReconnect(PlayerConnection playerConnection, int playerId) {
+		
+		// TODO: avoid that everybody can do this
+		
+		// TODO: simulator update position doesn't work anymore after reconnect
+		
+		_logger.debug("network reconnect for player id: {} stop timeout first.", playerId);
+		_playerTimeoutScheduler.stopTimeout(playerId);
+		Player oldPlrToCopy = _playerList.get(playerId);
+		if (oldPlrToCopy == null) {
+			_logger.warn("old Player for id: {} ist null!", playerId);
+		}
+		playerConnection.setPlayer(new Player(oldPlrToCopy));
+		Player copied = playerConnection.getPlayer();
+		copied.setPlayerConnection(playerConnection);
+		_playerList.put(playerId, copied);
+		
+		_logger.debug("Player info copied: {}", copied);
+		
+		ReconnectRequestResponse resp = new ReconnectRequestResponse();
+		resp.reconnectSuccess = true;
+		_playerServer.sendToTCP(playerConnection.getID(), resp);
+	}
+	
+	/**
+	 * Called from player on network reconnect.
+	 * 
+	 * @param playerId
+	 */
+	public void networkPlayerDisconnect(int playerId) {
+		synchronized (_lockObject) {
+			Player p = _playerList.get(playerId);
+			if (p != null) {
+				if (p.getCar() != null) {
+					_playerTimeoutScheduler.startTimeout(playerId);
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void playerTimeout(int playerId) {
+		carPlayerDisconnect(_playerList.get(playerId).getPlayerConnection());
 	}
 }
