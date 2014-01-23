@@ -54,8 +54,13 @@ public class ServerDiscoveryForm extends Form implements Bindable, IServerDiscov
 			public void buttonPressed(Button button) {
 				PlayerClient client = PlayerSimulatorWindow.getInstance().getPlayerClient();
 				try {
+					String serverUrl = (String) _listView.getSelectedItem();
 					client.startClient(PlayerSimulatorWindow.getInstance().getPlayerName(),
-							(String) _listView.getSelectedItem());
+							serverUrl);
+					
+					client.setServerUrl(serverUrl);
+					client.getPlayer().setName(PlayerSimulatorWindow.getInstance().getPlayerName());
+					
 					PlayerSimulatorWindow.getInstance().setContent(CarSelectForm.class);
 					_serverDiscover.stopDiscover();
 				} catch (IOException e) {

@@ -55,7 +55,7 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 		_playerClientListener = new IPlayerClientListener.Adapter() {
 			@Override
 			public void onUpdateFreeCars() {
-				Log.d(ACTIVITY_SERVICE, "called onUpdateFreeCars()");
+				Log.d(ACTIVITY_SERVICE, "called onUpdateFreeCars(); # of free cars:" + _playerClient.getFreeCarIds().length);
 				
 				final FreeCarsAsyncTask task = new FreeCarsAsyncTask(SelectCarActivity.this);
 				task.execute(new NetworkParams());
@@ -63,6 +63,7 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 			
 		};
 		_playerClient.getListenerList().add(_playerClientListener);
+		addFreeCars(_playerClient.getFreeCarIds());
 		
 		ListView carsListView = (ListView) findViewById(android.R.id.list);
 		carsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -91,18 +92,20 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 	@Override
 	public void addFreeCars(byte[] freeCarIds) {
 		Log.d("addFreeCars", "called addCars()");
+		_cars.clear();
 		if (freeCarIds == null) {
 			Log.d("addFreeCars", "freeCars was null");
+		} else {
+			Log.d("addFreeCars", "now there are " + freeCarIds.length + " cars free");
+			for (int id : freeCarIds) {
+				HashMap<String, String> carMap = new HashMap<String, String>();
+				carMap.put(CarInfo.NAME, "Car " + id);
+				carMap.put(CarInfo.ID, "" + id);
+				_cars.add(carMap);
+				Log.d(ACTIVITY_SERVICE, "Added car with id '" + id + "'");
+			}
 		}
-		_cars.clear();
-		for (int id : freeCarIds) {
-			HashMap<String, String> carMap = new HashMap<String, String>();
-			carMap.put(CarInfo.NAME, "Car " + id);
-			carMap.put(CarInfo.ID, "" + id);
-			_cars.add(carMap);
-			_carsListAdapter.notifyDataSetChanged();
-			Log.d(ACTIVITY_SERVICE, "Added car with id '" + id + "'");
-		}
+		_carsListAdapter.notifyDataSetChanged();
 	}
 	
 	@Override

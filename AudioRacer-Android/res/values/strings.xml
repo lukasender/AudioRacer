@@ -26,5 +26,6 @@
     <string name="ctrl_down">down</string>
     <string name="ctrl_left">left</string>
     <string name="ctrl_right">right</string>
+    <string name="joystick_ctrl">Joysticks</string>
 
 </resources>

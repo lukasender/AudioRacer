@@ -4,9 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.fhv.audioracer.communication.player.message.PlayerMessage;
+import at.fhv.audioracer.communication.player.message.ReconnectRequestMessage;
 import at.fhv.audioracer.communication.player.message.SelectCarRequestMessage;
 import at.fhv.audioracer.communication.player.message.SetPlayerNameRequestMessage;
 import at.fhv.audioracer.communication.player.message.UpdateVelocityMessage;
+import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.server.game.GameModerator;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -35,6 +37,11 @@ public class PlayerServerListener extends Listener {
 					_gameModerator.updateVelocity(playerConnection, updateVelocityMsg.speed,
 							updateVelocityMsg.direction);
 					break;
+				case RECONNECT_REQUEST:
+					ReconnectRequestMessage reconnectReqMsg = (ReconnectRequestMessage) message;
+					_gameModerator.networkPlayerReconnect(playerConnection,
+							reconnectReqMsg.playerId);
+					break;
 				case SET_PLAYER_NAME_REQUEST:
 					SetPlayerNameRequestMessage setNameReqMsg = (SetPlayerNameRequestMessage) message;
 					_gameModerator.setPlayerName(playerConnection, setNameReqMsg.playerName);
@@ -47,7 +54,7 @@ public class PlayerServerListener extends Listener {
 					_gameModerator.setPlayerReady(playerConnection);
 					break;
 				case DISCONNECT:
-					_gameModerator.disconnectPlayer(playerConnection);
+					_gameModerator.carPlayerDisconnect(playerConnection);
 					break;
 				case TRIM:
 					_gameModerator.trim(playerConnection);
@@ -60,7 +67,13 @@ public class PlayerServerListener extends Listener {
 	
 	public void disconnected(Connection connection) {
 		PlayerConnection playerConnection = (PlayerConnection) connection;
+		
 		_logger.debug("player connection for player with id: {} has been closed.", playerConnection
 				.getPlayer().getPlayerId());
+		
+		if (playerConnection.getPlayer().getPlayerId() == Player.INVALID_PLAYER_ID)
+			return;
+		
+		_gameModerator.networkPlayerDisconnect(playerConnection.getPlayer().getPlayerId());
 	}
 }

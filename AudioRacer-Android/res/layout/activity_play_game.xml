@@ -53,6 +53,14 @@
 		        android:layout_gravity="center"
 		        android:layout_weight="1"
 		        android:text="@string/ms_ctrl" />
+
+	        <Button
+	            android:id="@+id/joystick_ctrl"
+	            style="?buttonBarButtonStyle"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="1"
+	            android:text="@string/joystick_ctrl" />
 	        
 	    </LinearLayout>
 	    
@@ -298,6 +306,19 @@
 	</LinearLayout>
 	<!-- End of: Views: Motion sensor controls -->
 	
+	<!-- Views: Game stats list -->
+	<ListView 
+	   	android:id="@+id/game_stats_list_view"
+	   	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content">
+	</ListView>
+	<!-- End of: View: Game stats list -->
+	
 	<!-- End of: Views -->
+
+	<at.fhv.audioracer.client.android.activity.view.JoystickView
+	    android:id="@+id/joystick_controls"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" />
 
 </FrameLayout>
