@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
@@ -53,6 +54,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private View _motionSensorControlsView;
 	private View _trimSettingsView;
 	
+	private ListView _gameStatsListView;
+	
 	private ImageView _msCtrlImgView;
 	
 	private List<ThreadControlMode> _threads;
@@ -94,12 +97,15 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_motionSensorControlsView = findViewById(R.id.motion_sensor_controls);
 		// settings
 		_trimSettingsView = findViewById(R.id.trim_settings_view);
+		// game stats
+		_gameStatsListView = (ListView) findViewById(R.id.game_stats_list_view);
 		
 		_views = new LinkedList<View>();
 		_views.add(_controlsSettingsControlsView);
 		_views.add(_standardControlsView);
 		_views.add(_motionSensorControlsView);
 		_views.add(_trimSettingsView);
+		_views.add(_gameStatsListView);
 		
 		// get the 'motion sensor' image view.
 		// a circle and the current 'motion position' will be drawn onto this view.
