@@ -18,6 +18,9 @@ import at.fhv.audioracer.client.android.activity.thread.MotionSensorControlThrea
 import at.fhv.audioracer.client.android.activity.thread.StandardControlThread;
 import at.fhv.audioracer.client.android.activity.thread.TrimSettingsControlThread;
 import at.fhv.audioracer.client.android.activity.thread.util.ThreadControlMode;
+import at.fhv.audioracer.client.android.activity.util.GameStats;
+import at.fhv.audioracer.client.android.activity.util.GameStatsEntry;
+import at.fhv.audioracer.client.android.activity.util.GameStatsListItemArrayAdapter;
 import at.fhv.audioracer.client.android.activity.util.PressedButton;
 import at.fhv.audioracer.client.android.activity.util.PressedTouchListener;
 import at.fhv.audioracer.client.android.activity.view.JoystickView;
@@ -74,6 +77,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private PressedButton _trimSteeringUp = new PressedButton();
 	private PressedButton _trimSteeringDown = new PressedButton();
 	
+	private GameStats _gameStats;
+	
 	@Override
 	public void onBackPressed() {
 		if (_controlsSettingsControlsView.getVisibility() == View.VISIBLE) {
@@ -101,6 +106,31 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_trimSettingsView = findViewById(R.id.trim_settings_view);
 		// game stats
 		_gameStatsListView = (ListView) findViewById(R.id.game_stats_list_view);
+		
+		_gameStats = new GameStats();
+		GameStatsEntry e1 = new GameStatsEntry();
+		e1.playerName = "foo";
+		e1.time = "00:00";
+		e1.coinsLeft = "3";
+		GameStatsEntry e2 = new GameStatsEntry();
+		e2.playerName = "bar";
+		e2.time = "00:00";
+		e2.coinsLeft = "5";
+		GameStatsEntry e3 = new GameStatsEntry();
+		e3.playerName = "baz";
+		e3.time = "00:00";
+		e3.coinsLeft = "2";
+		GameStatsEntry e4 = new GameStatsEntry();
+		e4.playerName = "foo";
+		e4.time = "00:11";
+		e4.coinsLeft = "3";
+		_gameStats.addGameStats(e1);
+		_gameStats.addGameStats(e2);
+		_gameStats.addGameStats(e3);
+		_gameStats.addGameStats(e4);
+		
+		GameStatsListItemArrayAdapter adapter = new GameStatsListItemArrayAdapter(this, _gameStats.getEntriesSorted());
+		_gameStatsListView.setAdapter(adapter);
 		
 		_views = new LinkedList<View>();
 		_views.add(_controlsSettingsControlsView);
@@ -273,6 +303,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		if (_chosenControlMode != null) {
 			setControlMode(_chosenControlMode);
 		}
+		_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
+		_gameStatsListView.setVisibility(View.VISIBLE);
 	}
 	
 	@Override
