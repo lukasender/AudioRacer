@@ -13,7 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
-import at.fhv.audioracer.client.android.activity.thread.ControlThread;
+import at.fhv.audioracer.client.android.activity.thread.JoystickControlThread;
 import at.fhv.audioracer.client.android.activity.thread.MotionSensorControlThread;
 import at.fhv.audioracer.client.android.activity.thread.StandardControlThread;
 import at.fhv.audioracer.client.android.activity.thread.TrimSettingsControlThread;
@@ -21,7 +21,6 @@ import at.fhv.audioracer.client.android.activity.thread.util.ThreadControlMode;
 import at.fhv.audioracer.client.android.activity.util.PressedButton;
 import at.fhv.audioracer.client.android.activity.util.PressedTouchListener;
 import at.fhv.audioracer.client.android.activity.view.JoystickView;
-import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
 import at.fhv.audioracer.client.android.network.task.TrimSettingsAsyncTask;
 import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
@@ -164,7 +163,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_threads.add(new ThreadControlMode(ControlMode.SENSOR, new MotionSensorControlThread(this, _msCtrlImgView)));
 		_threads.add(new ThreadControlMode(ControlMode.SETTINGS_TRIM, new TrimSettingsControlThread(this, _trimSpeedUp, _trimSpeedDown, _trimSteeringUp,
 				_trimSteeringDown)));
-		_threads.add(new ThreadControlMode(ControlMode.JOYSTICK, new JoystickControlThread()));
+		_threads.add(new ThreadControlMode(ControlMode.JOYSTICK, new JoystickControlThread(_joystickControlsView)));
 		/* ChooseControls */
 		
 		// Choose 'Standard controls'
@@ -345,26 +344,4 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
-	/* Standard controls */
-	
-	private float _speed;
-	private float _direction;
-	
-	protected class JoystickControlThread extends ControlThread {
-		
-		@Override
-		protected void reset() {
-			// no-op.
-		}
-		
-		@Override
-		public void control() {
-			_speed = _joystickControlsView.getSpeed();
-			_direction = _joystickControlsView.getDirection();
-			
-			// note that this is sent continuously
-			ClientManager.getInstance().getPlayerClient().getPlayerServer().updateVelocity(_speed, _direction);
-		}
-		
-	}
 }
