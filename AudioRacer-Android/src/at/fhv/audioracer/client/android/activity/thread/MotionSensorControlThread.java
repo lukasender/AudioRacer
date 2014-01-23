@@ -39,6 +39,9 @@ public class MotionSensorControlThread extends ControlThread {
 	private ImageView _msCtrlImgView;
 	
 	public MotionSensorControlThread(PlayGameActivity activity, ImageView msCtrlImgView) {
+		_activity = activity;
+		_msCtrlImgView = msCtrlImgView;
+		
 		int cxy = getMinScreenDimension();
 		_bmp = Bitmap.createBitmap(cxy, cxy, Bitmap.Config.ARGB_8888);
 		_cv = new Canvas(_bmp);
@@ -52,9 +55,6 @@ public class MotionSensorControlThread extends ControlThread {
 		_pPaint = new Paint();
 		_pPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 		_pPaint.setColor(Color.BLUE);
-		
-		_activity = activity;
-		_msCtrlImgView = msCtrlImgView;
 	}
 	
 	private int getMinScreenDimension() {
