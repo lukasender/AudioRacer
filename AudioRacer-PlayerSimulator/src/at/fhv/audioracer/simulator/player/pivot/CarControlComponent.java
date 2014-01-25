@@ -19,6 +19,7 @@ public class CarControlComponent extends Component implements Runnable {
 	
 	private volatile boolean _running;
 	protected boolean _speedUp;
+	protected boolean _speedUpSteadily = false;
 	protected boolean _speedDown;
 	protected boolean _steerLeft;
 	protected boolean _steerRight;
@@ -43,6 +44,10 @@ public class CarControlComponent extends Component implements Runnable {
 				switch (keyCode) {
 					case KeyCode.W:
 						_speedUp = true;
+						break;
+					case KeyCode.Z:
+						_speedUpSteadily = !_speedUpSteadily;
+						System.out.println("Speed up: " + _speedUpSteadily);
 						break;
 					case KeyCode.S:
 						_speedDown = true;
@@ -128,8 +133,13 @@ public class CarControlComponent extends Component implements Runnable {
 		long lastUpdate = System.currentTimeMillis();
 		while (_running) {
 			long now = System.currentTimeMillis();
-			float sensity = (((now - lastUpdate) / 1000.f) * CONTROL_SENSITY);
-			if (_speedUp) {
+			float sensity;
+			if (_speedUpSteadily) {
+				sensity = 0.0001f;
+			} else {
+				sensity = (((now - lastUpdate) / 1000.f) * CONTROL_SENSITY);
+			}
+			if (_speedUp || _speedUpSteadily) {
 				_speed = Math.min(1.f, (_speed + sensity));
 			} else if (_speedDown) {
 				_speed = Math.max(-1.f, (_speed - sensity));
