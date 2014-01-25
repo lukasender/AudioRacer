@@ -241,6 +241,14 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				// handle distance and direction to next checkpoint
 				nextCheckpointPosition = _checkpoints.get(carId).peekFirst();
 				if (nextCheckpointPosition != null) {
+					
+					if (_map != null) {
+						int cpNum = ((_checkpointStartCount - _checkpoints.get(carId).size()) + 1);
+						Checkpoint nextCP = new Checkpoint(carId, nextCheckpointPosition,
+								_checkpointUtil.getCheckpointRadius(), cpNum);
+						_map.addCheckpoint(nextCP);
+					}
+					
 					float transform = -car.getDirection().getDirection();
 					Position carPosTransformed = _checkpointUtil.rotatePosition(currentPosition,
 							transform);
@@ -471,9 +479,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					}
 					_logger.debug("generate checkpoint number: {} for carId: {}", i, car.getCarId());
 					Position nextP = _checkpointUtil.generateNextCheckpoint(previousCheckpoint);
-					// nextP.setPosX(33.53742f);
-					// nextP.setPosY(35.255993f);
-					if (_map != null) {
+					
+					if (_map != null && i == 0) {
 						Checkpoint nextCP = new Checkpoint(car.getCarId(), nextP,
 								_checkpointUtil.getCheckpointRadius(), i + 1);
 						_map.addCheckpoint(nextCP);
@@ -520,9 +527,17 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				playerHasBeenDecoubled = true;
 				_playersInGameCount--;
 				
-				// TODO: if count == 0 we have to send game over
+				_logger.info(
+						"Player-id: {} decoupled successfully. Currently {} player(s) in game.",
+						playerConnection.getPlayer().getPlayerId(), _playersInGameCount);
 				
-				// _logger.info("Currently {} player(s) in game.", _playersInGameCount);
+				// during a game in progress and this was the last player in game we have to send
+				// game over message
+				if (_gameRunning == true && _playersInGameCount == 0) {
+					_logger.info("Game over, last player-car disconnected.");
+					PlayerMessage gameOverMsg = new PlayerMessage(MessageId.GAME_END);
+					_playerServer.sendToAllTCP(gameOverMsg);
+				}
 			}
 		}
 		if (playerHasBeenDecoubled) {
