@@ -55,10 +55,12 @@ public class Car<T> {
 
 	public Car(byte carId, Position position, Direction direction,
 			BufferedImage image) {
-		if (image == null) {
-			throw new IllegalArgumentException(
-					"An image ('BufferedImage') is required");
-		}
+
+		// TODO remove comment for null check of BufferdImage
+		// if (image == null) {
+		// throw new IllegalArgumentException(
+		// "An image ('BufferedImage') is required");
+		// }
 		_carId = carId;
 		_position = position;
 		_direction = direction;
