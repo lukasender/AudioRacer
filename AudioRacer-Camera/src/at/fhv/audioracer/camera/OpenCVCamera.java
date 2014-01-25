@@ -16,6 +16,7 @@ import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Map;
@@ -165,9 +166,6 @@ public class OpenCVCamera implements Runnable {
 	 * @return
 	 */
 	private boolean detectCar(Mat frame) {
-		if (_cameraCars == null) {
-			List<OpenCVCameraCar> _cameraCars = new ArrayList<OpenCVCameraCar>();
-		}
 		
 		if (_lowerBound == null || _upperBound == null) {
 			// TODO do something
@@ -179,20 +177,37 @@ public class OpenCVCamera implements Runnable {
 		// Imgproc.medianBlur(frame, frame, 5);
 		Imgproc.cvtColor(frame, imgHue, Imgproc.COLOR_BGR2HSV);
 		
-		List<MatOfPoint> triangles = findCarByColor(imgHue, _lowerBound, _upperBound);
+		List<MatOfPoint> polygons = findCarByColor(imgHue, _lowerBound, _upperBound);
+		imgHue.release();
 		
-		if (triangles.size() == 1) {
-			Point[] points = triangles.get(0).toArray();
-			Scalar color = new Scalar(0, 0, 255);
-			
-			for (int i = 0; i < 2; i++) {
-				Core.line(frame, points[i], points[i + 1], color);
-			}
-			Core.line(frame, points[2], points[0], color);
-			Core.fillPoly(frame, triangles, new Scalar(0, 0, 255));
-			return true;
+		Scalar color;
+		
+		if (_lowerBound.val[0] <= 70) {
+			color = new Scalar(0, 255, 255);
+		} else if (_lowerBound.val[0] >= 70 && _lowerBound.val[0] <= 130) {
+			color = new Scalar(255, 0, 0);
+		} else if (_lowerBound.val[0] >= 130) {
+			color = new Scalar(255, 0, 255);
+		} else {
+			color = new Scalar(0, 0, 0);
 		}
-		return false;
+		
+		Core.fillPoly(frame, polygons, color);
+		
+		for (MatOfPoint polygon : polygons) {
+			
+			Point center = new Point();
+			Moments moments = Imgproc.moments(polygon);
+			
+			center.x = moments.get_m10() / moments.get_m00();
+			center.y = moments.get_m01() / moments.get_m00();
+			
+			Core.circle(frame, center, 3, new Scalar(0, 0, 255), -1);
+		}
+		
+		return true;
+		
+		// return false;
 	}
 	
 	private List<MatOfPoint> findCarByColor(Mat hueFrame, Scalar lowerBound, Scalar upperBound) {
@@ -206,8 +221,11 @@ public class OpenCVCamera implements Runnable {
 		
 		_p.setImage(imgTreshHold);
 		
+		List<MatOfPoint> polygons = findPolygons(imgTreshHold, 3);
+		imgTreshHold.release();
+		
 		// return all triangles with defined color
-		return findPolygons(imgTreshHold, 3);
+		return polygons;
 		
 	}
 	
@@ -322,7 +340,7 @@ public class OpenCVCamera implements Runnable {
 				polygons.add(new MatOfPoint(contour2f.toArray()));
 			}
 		}
-		return polygons;
+		return contours;
 	}
 	
 	public void openCamera(int device) {
@@ -348,9 +366,6 @@ public class OpenCVCamera implements Runnable {
 	
 	public boolean beginPositioning() {
 		Mat m = getFrame();
-		
-		Mat imgBilat = getFrame();
-		Imgproc.bilateralFilter(imgBilat, m, 5, 1, 100);
 		
 		MatOfPoint2f corners = new MatOfPoint2f();
 		if (m != null && Calib3d.findChessboardCorners(m, getPatternSize(), corners)) {
@@ -428,6 +443,9 @@ public class OpenCVCamera implements Runnable {
 			while (_workerThread == Thread.currentThread() && _capture.isOpened()) {
 				Mat mat = new Mat();
 				_capture.read(mat);
+				Mat imgBilat = mat.clone();
+				Imgproc.bilateralFilter(imgBilat, mat, 5, 1, 100);
+				imgBilat.release();
 				if (!_positioning) {
 					Mat homography = _homography;
 					if (homography != null) {
@@ -473,5 +491,16 @@ public class OpenCVCamera implements Runnable {
 		_lowerBound = new Scalar(colorLower, saturationLower, valueLower);
 		_upperBound = new Scalar(colorUpper, saturationUpper, valueUpper);
 		
+	}
+	
+	public void nextCar() {
+		if (_cameraCars == null) {
+			List<OpenCVCameraCar> _cameraCars = new ArrayList<OpenCVCameraCar>();
+		}
+		
+		if (detectCar(getFrame())) {
+			OpenCVCameraCar car = new OpenCVCameraCar();
+			car.setHueRange(_lowerBound, _upperBound);
+		}
 	}
 }

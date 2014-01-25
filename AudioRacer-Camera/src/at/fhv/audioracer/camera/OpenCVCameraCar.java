@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.opencv.core.Scalar;
+
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
@@ -12,13 +14,10 @@ import at.fhv.audioracer.ui.pivot.MapComponent;
 public class OpenCVCameraCar {
 	
 	private Car<?> _car;
+	private Scalar _lowerBound;
+	private Scalar _upperBound;
 	
 	public OpenCVCameraCar() {
-	}
-	
-	public void setHueRange(int colorLower, int colorUpper, int saturationLower,
-			int saturationUpper, int valueLower, int valueUpper) {
-		
 	}
 	
 	/**
@@ -43,5 +42,12 @@ public class OpenCVCameraCar {
 	
 	public void updatePosition(Position position, Direction direction) {
 		_car.updatePosition(position, direction);
+	}
+	
+	public void setHueRange(Scalar lowerBound, Scalar upperBound) {
+		
+		_lowerBound = lowerBound.clone();
+		_upperBound = upperBound.clone();
+		
 	}
 }
