@@ -58,6 +58,7 @@ public class CarControlComponent extends Component implements Runnable {
 						break;
 					case KeyCode.R:
 						try {
+							System.out.println("Try to reconnect ...");
 							PlayerSimulatorWindow.getInstance().getPlayerClient().startClient();
 						} catch (IOException e) {
 							System.out.println("IOException caught in CarControlComponent: "

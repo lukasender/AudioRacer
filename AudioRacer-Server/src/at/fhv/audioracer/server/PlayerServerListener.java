@@ -68,12 +68,18 @@ public class PlayerServerListener extends Listener {
 	public void disconnected(Connection connection) {
 		PlayerConnection playerConnection = (PlayerConnection) connection;
 		
-		_logger.debug("player connection for player with id: {} has been closed.", playerConnection
-				.getPlayer().getPlayerId());
+		_logger.debug(
+				"player connection for player with id: {} has been closed. Connection-ID: {}",
+				playerConnection.getPlayer().getPlayerId(), playerConnection.getID());
 		
 		if (playerConnection.getPlayer().getPlayerId() == Player.INVALID_PLAYER_ID)
 			return;
 		
 		_gameModerator.networkPlayerDisconnect(playerConnection.getPlayer().getPlayerId());
+	}
+	
+	@Override
+	public void connected(Connection con) {
+		_logger.debug("New Connection-ID: {} --------------------------------------", con.getID());
 	}
 }
