@@ -1,5 +1,6 @@
 package at.fhv.audioracer.camera.pivot;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.apache.pivot.beans.BXML;
@@ -22,15 +23,21 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 	@BXML
 	private Spinner _cameraIdSpinner;
 	@BXML
-	PushButton _cameraSelectedButton;
+	private PushButton _cameraSelectedButton;
+	@BXML
+	private PushButton _calibrationStepButton;
+	@BXML
+	private PushButton _calibrationFinishedButton;
+	@BXML
+	private PushButton _loadCalibrationButton;
+	@BXML
+	private PushButton _storeCalibrationButton;
 	@BXML
 	private PushButton _startPositioningButton;
 	@BXML
 	private PushButton _rotateButton;
 	@BXML
-	private PushButton _startCalibrationButton;
-	@BXML
-	private PushButton _calibrationFinishedButton;
+	private PushButton _startSelectGameAreaButton;
 	@BXML
 	private PushButton _gameAreaSelectedButton;
 	@BXML
@@ -67,10 +74,14 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 	
 	@Override
 	public void initialize(Map<String, Object> namespace, URL location, Resources resources) {
+		_calibrationStepButton.setEnabled(false);
+		_calibrationFinishedButton.setEnabled(false);
+		_loadCalibrationButton.setEnabled(false);
+		_storeCalibrationButton.setEnabled(false);
+		
 		_startPositioningButton.setEnabled(false);
 		_rotateButton.setEnabled(false);
-		_startCalibrationButton.setEnabled(false);
-		_calibrationFinishedButton.setEnabled(false);
+		_startSelectGameAreaButton.setEnabled(false);
 		_gameAreaSelectedButton.setEnabled(false);
 		_allCarsDetectedButton.setEnabled(false);
 		
@@ -88,9 +99,73 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 			public void buttonPressed(Button button) {
 				_cameraIdSpinner.setEnabled(false);
 				_cameraSelectedButton.setEnabled(false);
-				_startPositioningButton.setEnabled(true);
+				_calibrationStepButton.setEnabled(true);
+				_calibrationFinishedButton.setEnabled(true);
+				_loadCalibrationButton.setEnabled(true);
 				
+				_cameraMapComponent.startCalibration();
 				_cameraMapComponent.setDrawCheesboard(true);
+			}
+		});
+		
+		_calibrationStepButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				if (!_cameraMapComponent.calibrationStep()) {
+					Alert.alert("Detection failed!", getWindow());
+				}
+			}
+		});
+		_calibrationFinishedButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				if (!_cameraMapComponent.endCalibration()) {
+					Alert.alert("Calibration failed!", getWindow());
+					return;
+				}
+				
+				_calibrationStepButton.setEnabled(false);
+				_calibrationFinishedButton.setEnabled(false);
+				_loadCalibrationButton.setEnabled(false);
+				_storeCalibrationButton.setEnabled(true);
+				_startPositioningButton.setEnabled(true);
+			}
+		});
+		_loadCalibrationButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				try {
+					if (!_cameraMapComponent.loadCalibration()) {
+						Alert.alert("Calibration loading failed!", getWindow());
+					} else {
+						_calibrationStepButton.setEnabled(false);
+						_calibrationFinishedButton.setEnabled(false);
+						_loadCalibrationButton.setEnabled(false);
+						_storeCalibrationButton.setEnabled(true);
+						_startPositioningButton.setEnabled(true);
+					}
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		_storeCalibrationButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				try {
+					_cameraMapComponent.storeCalibration();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		
@@ -107,7 +182,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				
 				_startPositioningButton.setEnabled(false);
 				_rotateButton.setEnabled(true);
-				_startCalibrationButton.setEnabled(true);
+				_startSelectGameAreaButton.setEnabled(true);
 			}
 		});
 		_rotateButton.getButtonPressListeners().add(new ButtonPressListener() {
@@ -117,26 +192,15 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				_cameraMapComponent.rotate();
 			}
 		});
-		_startCalibrationButton.getButtonPressListeners().add(new ButtonPressListener() {
+		_startSelectGameAreaButton.getButtonPressListeners().add(new ButtonPressListener() {
 			
 			@Override
 			public void buttonPressed(Button button) {
 				_rotateButton.setEnabled(false);
-				_startCalibrationButton.setEnabled(false);
-				_calibrationFinishedButton.setEnabled(true);
-				
-				_cameraMapComponent.startCalibration();
-			}
-		});
-		
-		_calibrationFinishedButton.getButtonPressListeners().add(new ButtonPressListener() {
-			
-			@Override
-			public void buttonPressed(Button button) {
-				_calibrationFinishedButton.setEnabled(false);
+				_startSelectGameAreaButton.setEnabled(false);
 				_gameAreaSelectedButton.setEnabled(true);
 				
-				_cameraMapComponent.endCalibration();
+				_cameraMapComponent.startSelectGameArea();
 			}
 		});
 		

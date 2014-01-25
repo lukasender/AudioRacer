@@ -20,18 +20,21 @@
             		</Spinner>
 					<PushButton bxml:id="_cameraSelectedButton" buttonData="Camera selected" />
 				</Form.Section>
-				<Form.Section heading="Step 1 - Position">
-					<PushButton bxml:id="_startPositioningButton" buttonData="Start positioning" />
-					<PushButton bxml:id="_rotateButton" buttonData="Rotate" />
-					<PushButton bxml:id="_startCalibrationButton" buttonData="Start calibration" />
-				</Form.Section>
 				<Form.Section heading="Step 2 - Calibration">
+					<PushButton bxml:id="_calibrationStepButton" buttonData="Calibration step" />
 					<PushButton bxml:id="_calibrationFinishedButton" buttonData="Calibration finished" />
+					<PushButton bxml:id="_loadCalibrationButton" buttonData="Load calibration" />
+					<PushButton bxml:id="_storeCalibrationButton" buttonData="Store calibration" />
 				</Form.Section>
-				<Form.Section heading="Step 3 - Select game area">
+				<Form.Section heading="Step 3 - Position">
+					<PushButton bxml:id="_startPositioningButton" buttonData="Start positioning" />
+					<PushButton bxml:id="_rotateButton" buttonData="Rotate 90° right" />
+					<PushButton bxml:id="_startSelectGameAreaButton" buttonData="Start select game area" />
+				</Form.Section>
+				<Form.Section heading="Step 4 - Select game area">
 					<PushButton bxml:id="_gameAreaSelectedButton" buttonData="Game area selected" />
 				</Form.Section>
-				<Form.Section heading="Step 4 - Car detection">
+				<Form.Section heading="Step 5 - Car detection">
 					<BoxPane Form.label="Color lower bound">
 						<Slider bxml:id="_colorLowerSlider" range="{start:0, end:179}" value="0" />
 						<Label bxml:id="_colorLowerLabel" />

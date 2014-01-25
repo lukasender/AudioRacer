@@ -1,16 +1,27 @@
 package at.fhv.audioracer.camera;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
+import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
@@ -53,6 +64,10 @@ public class OpenCVCamera implements Runnable {
 	private Mat _homography;
 	private Mat _positioningFrame;
 	private Point _offsetPoint;
+	
+	private List<Mat> _calibrationPoints;
+	private Mat _cameraMatrix;
+	private Mat _distCoeefs;
 	
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -238,6 +253,76 @@ public class OpenCVCamera implements Runnable {
 		
 	}
 	
+	public void startCalibration() {
+		_calibrationPoints = new LinkedList<>();
+	}
+	
+	public boolean calibrationStep() {
+		Mat frame = getFrame();
+		MatOfPoint2f pointBuf = new MatOfPoint2f();
+		boolean found = Calib3d.findChessboardCorners(frame, _patternSize, pointBuf,
+				Calib3d.CALIB_CB_ADAPTIVE_THRESH | Calib3d.CALIB_CB_NORMALIZE_IMAGE);
+		
+		if (found) {
+			Mat viewGray = new Mat();
+			Imgproc.cvtColor(frame, viewGray, Imgproc.COLOR_BGR2GRAY);
+			Imgproc.cornerSubPix(viewGray, pointBuf, new Size(11, 11), new Size(-1, -1),
+					new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 30, 0.1));
+			
+			_calibrationPoints.add(pointBuf);
+		}
+		frame.release();
+		
+		return found;
+	}
+	
+	public boolean endCalibration() {
+		if (!_calibrationPoints.isEmpty() && runCalibration()) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean runCalibration() {
+		Mat frame = getFrame();
+		
+		Mat cameraMatrix = Mat.eye(3, 3, CvType.CV_64F);
+		List<Mat> objectPoints = calcBoardCornerPositions();
+		Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
+		List<Mat> rvecs = new LinkedList<>();
+		List<Mat> tvecs = new LinkedList<>();
+		
+		double rms = Calib3d
+				.calibrateCamera(objectPoints, _calibrationPoints, frame.size(), cameraMatrix,
+						distCoeffs, rvecs, tvecs, Calib3d.CALIB_FIX_K4 | Calib3d.CALIB_FIX_K5);
+		
+		boolean ok = Core.checkRange(frame) && Core.checkRange(distCoeffs);
+		
+		if (ok) {
+			_cameraMatrix = cameraMatrix;
+			_distCoeefs = distCoeffs;
+		}
+		
+		frame.release();
+		
+		return ok;
+	}
+	
+	private List<Mat> calcBoardCornerPositions() {
+		MatOfPoint3f m = new MatOfPoint3f();
+		for (int i = 0; i < _patternSize.height; i++) {
+			for (int j = 0; j < _patternSize.width; j++) {
+				m.push_back(new MatOfPoint3f(new Point3(j, i, 0)));
+			}
+		}
+		
+		List<Mat> corners = new LinkedList<>();
+		for (int i = 0; i < _calibrationPoints.size(); i++) {
+			corners.add(m);
+		}
+		return corners;
+	}
+	
 	public boolean beginPositioning() {
 		Mat m = getFrame();
 		MatOfPoint2f corners = new MatOfPoint2f();
@@ -296,7 +381,7 @@ public class OpenCVCamera implements Runnable {
 		updateHomography();
 	}
 	
-	public void startCalibration() {
+	public void endPositioning() {
 		_positioning = false;
 		_positioningFrame.release();
 		_positioningFrame = null;
@@ -305,15 +390,22 @@ public class OpenCVCamera implements Runnable {
 		startWorkerThread();
 	}
 	
-	public void endCalibration() {
-	}
-	
 	@Override
 	public void run() {
 		try {
 			while (_workerThread == Thread.currentThread() && _capture.isOpened()) {
 				Mat mat = new Mat();
 				_capture.read(mat);
+				
+				Mat cameraMatrix = _cameraMatrix;
+				Mat distCoeffs = _distCoeefs;
+				if (cameraMatrix != null && distCoeffs != null) {
+					Mat dst = new Mat();
+					Imgproc.undistort(mat, dst, cameraMatrix, distCoeffs);
+					mat.release();
+					mat = dst;
+				}
+				
 				if (!_positioning) {
 					Mat homography = _homography;
 					if (homography != null) {
@@ -351,5 +443,60 @@ public class OpenCVCamera implements Runnable {
 		_cheesboardCorners = m;
 		
 		updateHomography();
+	}
+	
+	public void storeCalibration() throws IOException {
+		if (_cameraMatrix != null && _distCoeefs != null) {
+			FileOutputStream stream = new FileOutputStream("cameraMatrix.foo");
+			storeMatrix(new ObjectOutputStream(stream), _cameraMatrix);
+			stream = new FileOutputStream("distCoeefs.foo");
+			storeMatrix(new ObjectOutputStream(stream), _distCoeefs);
+		}
+	}
+	
+	private void storeMatrix(ObjectOutputStream stream, Mat m) throws IOException {
+		Size s = m.size();
+		stream.writeDouble(s.width);
+		stream.writeDouble(s.height);
+		stream.writeInt(m.type());
+		for (int i = 0; i < s.height; i++) {
+			for (int j = 0; j < s.width; j++) {
+				double[] value = m.get(i, j);
+				stream.writeObject(value);
+			}
+		}
+		stream.close();
+	}
+	
+	public boolean loadCalibration() throws ClassNotFoundException, IOException {
+		File cameraMatrixFile = new File("cameraMatrix.foo");
+		File distCoeefsFile = new File("distCoeefs.foo");
+		if (cameraMatrixFile.exists() && distCoeefsFile.exists()) {
+			FileInputStream stream = new FileInputStream(cameraMatrixFile);
+			Mat cameraMatrix = loadMatrix(new ObjectInputStream(stream));
+			stream = new FileInputStream(distCoeefsFile);
+			Mat distCoeefs = loadMatrix(new ObjectInputStream(stream));
+			
+			if (cameraMatrix != null && !cameraMatrix.empty() && distCoeefs != null
+					&& !distCoeefs.empty()) {
+				_cameraMatrix = cameraMatrix;
+				_distCoeefs = distCoeefs;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private Mat loadMatrix(ObjectInputStream stream) throws ClassNotFoundException, IOException {
+		Size s = new Size(stream.readDouble(), stream.readDouble());
+		Mat m = new Mat(s, stream.readInt());
+		for (int i = 0; i < s.height; i++) {
+			for (int j = 0; j < s.width; j++) {
+				double[] value = (double[]) stream.readObject();
+				m.put(i, j, value);
+			}
+		}
+		stream.close();
+		return m;
 	}
 }

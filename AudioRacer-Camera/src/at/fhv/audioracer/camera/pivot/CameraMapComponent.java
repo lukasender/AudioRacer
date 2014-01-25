@@ -3,6 +3,7 @@ package at.fhv.audioracer.camera.pivot;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -139,6 +140,15 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		_camera.openCamera(id);
 	}
 	
+	public void startCalibration() {
+		_positioning = false;
+		_camera.startCalibration();
+	}
+	
+	public boolean endCalibration() {
+		return _camera.endCalibration();
+	}
+	
 	public boolean startPositioning() {
 		if (_camera.beginPositioning()) {
 			_positioning = true;
@@ -148,13 +158,9 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		}
 	}
 	
-	public void startCalibration() {
+	public void startSelectGameArea() {
+		_camera.endPositioning();
 		_positioning = false;
-		_camera.startCalibration();
-	}
-	
-	public void endCalibration() {
-		_camera.endCalibration();
 		_selecting = true;
 	}
 	
@@ -323,5 +329,17 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 			int saturationUpper, int valueLower, int valueUpper) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public boolean calibrationStep() {
+		return _camera.calibrationStep();
+	}
+	
+	public void storeCalibration() throws IOException {
+		_camera.storeCalibration();
+	}
+	
+	public boolean loadCalibration() throws ClassNotFoundException, IOException {
+		return _camera.loadCalibration();
 	}
 }
