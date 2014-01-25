@@ -327,7 +327,8 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	
 	public void updateHueRange(int colorLower, int colorUpper, int saturationLower,
 			int saturationUpper, int valueLower, int valueUpper) {
-		// TODO Auto-generated method stub
+		_camera.updateHueRange(colorLower, colorUpper, saturationLower, saturationUpper,
+				valueLower, valueUpper);
 		
 	}
 	

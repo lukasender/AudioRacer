@@ -33,4 +33,12 @@ public class Player extends at.fhv.audioracer.core.model.Player {
 	public PlayerConnection getPlayerConnection() {
 		return _playerConnection;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder(super.toString());
+		b.append(" kryo-id: ");
+		b.append(_playerConnection.getID());
+		return b.toString();
+	}
 }

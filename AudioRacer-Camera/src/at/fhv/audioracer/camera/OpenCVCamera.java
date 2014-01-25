@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.JFrame;
+
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -25,6 +27,7 @@ import org.opencv.core.TermCriteria;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Map;
@@ -43,7 +46,7 @@ public class OpenCVCamera implements Runnable {
 	}
 	
 	private boolean _detectCars = false;
-	private boolean _drawTriangels = true;
+	private boolean _drawTriangels = false;
 	
 	private OpenCVCameraListenerList _listenerList;
 	
@@ -69,6 +72,13 @@ public class OpenCVCamera implements Runnable {
 	private Mat _cameraMatrix;
 	private Mat _distCoeefs;
 	
+	private Panel _p;
+	private long _lastFrame;
+	private Scalar _lowerBound;
+	private Scalar _upperBound;
+	private int _frameCounter;
+	List<OpenCVCameraCar> _cameraCars;
+	
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 	}
@@ -81,10 +91,19 @@ public class OpenCVCamera implements Runnable {
 		_zoom = zoom;
 		
 		_capture = new VideoCapture();
-		_capture.set(Highgui.CV_CAP_PROP_FRAME_WIDTH, 640);
-		_capture.set(Highgui.CV_CAP_PROP_FRAME_HEIGHT, 480);
+		_capture.set(Highgui.CV_CAP_PROP_FRAME_WIDTH, 1024);
+		_capture.set(Highgui.CV_CAP_PROP_FRAME_HEIGHT, 768);
 		
-		_patternSize = new Size(7, 7);
+		_patternSize = new Size(4, 6);
+		
+		JFrame frame = new JFrame("BasicPanel");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(400, 400);
+		_p = new Panel();
+		frame.setContentPane(_p);
+		frame.setVisible(true);
+		
+		_frameCounter = 0;
 	}
 	
 	public ListenerList<OpenCVCameraListener> getListenerList() {
@@ -107,12 +126,24 @@ public class OpenCVCamera implements Runnable {
 	private void setFrame(Mat frame) {
 		Mat m = _frame;
 		
+		long currentTime = System.currentTimeMillis();
+		long deltaTime = currentTime - _lastFrame;
+		_lastFrame = currentTime;
+		
+		// calc frames per second
+		if (_frameCounter == 20) {
+			_frameCounter = 1;
+			System.out.println("FPS: " + (1000 / deltaTime));
+		} else {
+			_frameCounter++;
+		}
+		
 		if (frame != null && frame.empty()) {
 			frame = null;
 		}
 		
 		if (_detectCars && frame != null) {
-			findCars(frame);
+			detectCar(frame);
 		}
 		
 		_frame = frame;
@@ -123,6 +154,14 @@ public class OpenCVCamera implements Runnable {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param map
+	 * @param offsetX
+	 *            origin of map on image
+	 * @param offsetY
+	 *            origin of map on image
+	 */
 	public void setMap(Map map, int offsetX, int offsetY) {
 		// from here you are allowed to detect cars.
 		// TODO do something with parameters
@@ -131,11 +170,97 @@ public class OpenCVCamera implements Runnable {
 		_offsetPoint = new Point(offsetX, offsetY);
 	}
 	
+	// finds every car defined in _cameraCars and updates position and direction
 	private void findCars(Mat frame) {
-		// there is a faster way with caching processed images
-		List<MatOfPoint> triangles = findPolygons(frame, 3);
-		List<MatOfPoint> rectangles = findPolygons(frame, 4);
+		// TODO implement
+	}
+	
+	/**
+	 * trys to detect one car specified with a huerange of trianglemarker
+	 * 
+	 * @return
+	 */
+	private boolean detectCar(Mat frame) {
+		
+		if (_lowerBound == null || _upperBound == null) {
+			// TODO do something
+			return false;
+		}
+		
+		// convert to hue
+		Mat imgHue = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
+		// Imgproc.medianBlur(frame, frame, 5);
+		Imgproc.cvtColor(frame, imgHue, Imgproc.COLOR_BGR2HSV);
+		
+		List<MatOfPoint> polygons = findCarByColor(imgHue, _lowerBound, _upperBound);
+		imgHue.release();
+		
+		Scalar color;
+		
+		if (_lowerBound.val[0] <= 70) {
+			color = new Scalar(0, 255, 255);
+		} else if (_lowerBound.val[0] >= 70 && _lowerBound.val[0] <= 130) {
+			color = new Scalar(255, 0, 0);
+		} else if (_lowerBound.val[0] >= 130) {
+			color = new Scalar(255, 0, 255);
+		} else {
+			color = new Scalar(0, 0, 0);
+		}
+		
+		Core.fillPoly(frame, polygons, color);
+		
+		for (MatOfPoint polygon : polygons) {
+			
+			Point center = new Point();
+			Moments moments = Imgproc.moments(polygon);
+			
+			center.x = moments.get_m10() / moments.get_m00();
+			center.y = moments.get_m01() / moments.get_m00();
+			
+			Core.circle(frame, center, 3, new Scalar(0, 0, 255), -1);
+		}
+		
+		return true;
+		
+		// return false;
+	}
+	
+	private List<MatOfPoint> findCarByColor(Mat hueFrame, Scalar lowerBound, Scalar upperBound) {
+		
+		Mat imgTreshHold = new Mat(hueFrame.size(), Core.DEPTH_MASK_8U, new Scalar(1));
+		Core.inRange(hueFrame, lowerBound, upperBound, imgTreshHold);
+		Imgproc.erode(imgTreshHold, imgTreshHold,
+				Imgproc.getStructuringElement(Imgproc.MORPH_ERODE, new Size(3, 3)));
+		Imgproc.dilate(imgTreshHold, imgTreshHold,
+				Imgproc.getStructuringElement(Imgproc.MORPH_DILATE, new Size(3, 3)));
+		
+		_p.setImage(imgTreshHold);
+		
+		List<MatOfPoint> polygons = findPolygons(imgTreshHold, 3);
+		imgTreshHold.release();
+		
+		// return all triangles with defined color
+		return polygons;
+		
+	}
+	
+	@Deprecated
+	private void findCarsWithPolygons(Mat frame) {
+		// convert to grayscale
+		Mat imgGrayScale = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
+		Mat imgBilat = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
+		Imgproc.cvtColor(frame, imgGrayScale, Imgproc.COLOR_BGR2GRAY);
+		
+		Imgproc.bilateralFilter(imgGrayScale, imgBilat, 5, 1, 100);
+		
+		Imgproc.threshold(imgBilat, imgGrayScale, 128, 255, Imgproc.THRESH_BINARY);
+		
+		_p.setImage(imgGrayScale);
+		
+		List<MatOfPoint> triangles = findPolygons(imgGrayScale, 3);
+		List<MatOfPoint> rectangles = findPolygons(imgGrayScale, 4);
 		List<MatOfPoint> candidates = new ArrayList<MatOfPoint>();
+		
 		for (MatOfPoint triangle : triangles) {
 			double triangleArea = Imgproc.contourArea(triangle);
 			if (_drawTriangels) {
@@ -147,6 +272,7 @@ public class OpenCVCamera implements Runnable {
 				}
 				Core.line(frame, points[2], points[0], color);
 			}
+			
 			for (MatOfPoint rectangle : rectangles) {
 				if (Imgproc.contourArea(rectangle) > triangleArea) {
 					// check if triangle is within rectangel
@@ -160,6 +286,16 @@ public class OpenCVCamera implements Runnable {
 						}
 					}
 					
+					if (_drawTriangels) {
+						points = rectangle.toArray();
+						Scalar color = new Scalar(0, 255, 0);
+						
+						for (int i = 0; i < 3; i++) {
+							Core.line(frame, points[i], points[i + 1], color);
+						}
+						Core.line(frame, points[3], points[0], color);
+					}
+					
 					// triangle is within a bigger rectangle
 					if (inside) {
 						candidates.add(triangle);
@@ -168,7 +304,11 @@ public class OpenCVCamera implements Runnable {
 			}
 		}
 		// TODO delete test code for drawing candidates
+		// if (_drawTriangels) {
+		// Core.fillPoly(frame, rectangles, new Scalar(0, 255, 0));
+		// Core.fillPoly(frame, triangles, new Scalar(0, 0, 255));
 		Core.fillPoly(frame, candidates, new Scalar(0, 0, 255));
+		// }
 		
 		java.util.Map<Car, MatOfPoint> cars = mapCandidatesToCars(candidates);
 		
@@ -197,26 +337,12 @@ public class OpenCVCamera implements Runnable {
 	 */
 	private List<MatOfPoint> findPolygons(Mat frame, int corners) {
 		
-		Mat imgGrayScale = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
-		
-		Imgproc.cvtColor(frame, imgGrayScale, Imgproc.COLOR_BGR2GRAY);
-		Imgproc.threshold(imgGrayScale, imgGrayScale, 184, 255, Imgproc.THRESH_BINARY);
-		
 		// find contours
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 		List<MatOfPoint> polygons = new ArrayList<MatOfPoint>();
 		
-		// find only black objects
-		// Mat imgHSV = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
-		// Imgproc.cvtColor(frame, imgHSV, Imgproc.COLOR_BGR2HSV);
-		
-		// Mat imgTreshold = new Mat(imgHSV.size(), Core.DEPTH_MASK_8U, new Scalar(1));
-		// Core.inRange(imgHSV, new Scalar(0, 50, 200), new Scalar(179, 0, 255), imgTreshold);
-		
-		// Imgproc.GaussianBlur(imgTreshold, imgTreshold, new Size(5, 5), 5, 5);
-		
-		Imgproc.findContours(imgGrayScale, contours, new Mat(), Imgproc.RETR_LIST,
-				Imgproc.CHAIN_APPROX_SIMPLE);
+		Imgproc.findContours(frame, contours, new Mat(), Imgproc.RETR_LIST,
+				Imgproc.CHAIN_APPROX_TC89_KCOS);
 		
 		for (MatOfPoint contour : contours) {
 			
@@ -224,12 +350,12 @@ public class OpenCVCamera implements Runnable {
 			Imgproc.approxPolyDP(contour2f, contour2f, Imgproc.arcLength(contour2f, true) * 0.1,
 					true);
 			
-			// find triangles and mark them with blue lines
+			// find specified polygons and add them to list of polygons
 			if (contour2f.total() == corners) {
-				polygons.add(contour);
+				polygons.add(new MatOfPoint(contour2f.toArray()));
 			}
 		}
-		return polygons;
+		return contours;
 	}
 	
 	public void openCamera(int device) {
@@ -325,6 +451,7 @@ public class OpenCVCamera implements Runnable {
 	
 	public boolean beginPositioning() {
 		Mat m = getFrame();
+		
 		MatOfPoint2f corners = new MatOfPoint2f();
 		if (m != null && Calib3d.findChessboardCorners(m, getPatternSize(), corners)) {
 			_positioning = true;
@@ -358,8 +485,10 @@ public class OpenCVCamera implements Runnable {
 		MatOfPoint2f xImage = new MatOfPoint2f();
 		xImage.push_back(new MatOfPoint2f(new Point(_positionX + 0, _positionY + 0)));
 		xImage.push_back(new MatOfPoint2f(new Point(_positionX + _zoom, _positionY + 0)));
-		xImage.push_back(new MatOfPoint2f(new Point(_positionX + _zoom, _positionY + _zoom)));
-		xImage.push_back(new MatOfPoint2f(new Point(_positionX + 0, _positionY + _zoom)));
+		xImage.push_back(new MatOfPoint2f(new Point(_positionX + _zoom, _positionY + _zoom
+				* (4.0 / 6.0))));
+		xImage.push_back(new MatOfPoint2f(new Point(_positionX + 0, _positionY + _zoom
+				* (4.0 / 6.0))));
 		
 		_homography = Calib3d.findHomography(_cheesboardCorners, xImage);
 		
@@ -405,6 +534,10 @@ public class OpenCVCamera implements Runnable {
 					mat.release();
 					mat = dst;
 				}
+				
+				Mat imgBilat = mat.clone();
+				Imgproc.bilateralFilter(imgBilat, mat, 5, 1, 100);
+				imgBilat.release();
 				
 				if (!_positioning) {
 					Mat homography = _homography;
@@ -498,5 +631,24 @@ public class OpenCVCamera implements Runnable {
 		}
 		stream.close();
 		return m;
+	}
+	
+	public void updateHueRange(int colorLower, int colorUpper, int saturationLower,
+			int saturationUpper, int valueLower, int valueUpper) {
+		
+		_lowerBound = new Scalar(colorLower, saturationLower, valueLower);
+		_upperBound = new Scalar(colorUpper, saturationUpper, valueUpper);
+		
+	}
+	
+	public void nextCar() {
+		if (_cameraCars == null) {
+			List<OpenCVCameraCar> _cameraCars = new ArrayList<OpenCVCameraCar>();
+		}
+		
+		if (detectCar(getFrame())) {
+			OpenCVCameraCar car = new OpenCVCameraCar();
+			car.setHueRange(_lowerBound, _upperBound);
+		}
 	}
 }

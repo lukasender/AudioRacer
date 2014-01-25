@@ -112,7 +112,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				id = ++_plrId;
 				player.setPlayerId(_plrId);
 				_playerList.put(_plrId, player);
-				_logger.debug("added player {} with playerId {}", playerName, id);
+				_logger.debug("added {} to playerList", player);
 			}
 		} else {
 			_logger.warn("player name received is null! This is not allowed!");
@@ -241,6 +241,14 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				// handle distance and direction to next checkpoint
 				nextCheckpointPosition = _checkpoints.get(carId).peekFirst();
 				if (nextCheckpointPosition != null) {
+					
+					if (_map != null) {
+						int cpNum = ((_checkpointStartCount - _checkpoints.get(carId).size()) + 1);
+						Checkpoint nextCP = new Checkpoint(carId, nextCheckpointPosition,
+								_checkpointUtil.getCheckpointRadius(), cpNum);
+						_map.addCheckpoint(nextCP);
+					}
+					
 					float transform = -car.getDirection().getDirection();
 					Position carPosTransformed = _checkpointUtil.rotatePosition(currentPosition,
 							transform);
@@ -280,8 +288,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	}
 	
 	public void selectCar(PlayerConnection playerConnection, byte carId) {
-		_logger.debug("selectCar called from player with id: {} and name: {}", playerConnection
-				.getPlayer().getPlayerId(), playerConnection.getPlayer().getName());
+		_logger.debug("selectCar called from {}", playerConnection.getPlayer());
 		
 		SelectCarResponseMessage selectResponse = new SelectCarResponseMessage();
 		selectResponse.successfull = false;
@@ -298,6 +305,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 						carToSelect.setPlayer(playerConnection.getPlayer());
 						playerConnection.getPlayer().setCar(carToSelect);
 						selectResponse.successfull = true;
+						_logger.info("Player with id: {} successfully selected car with id: {}",
+								playerConnection.getPlayer().getPlayerId(), carId);
 					} else {
 						// for development purposes only
 						if (_carList.containsKey(carId) == false) {
@@ -388,6 +397,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		_logger.debug("sending freeCarsMessage: {}", free.length);
 		freeCarsMessage.freeCars = free;
 		_playerServer.sendToAllTCP(freeCarsMessage);
+		_logger.debug("free cars sent.");
 	}
 	
 	/**
@@ -469,9 +479,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					}
 					_logger.debug("generate checkpoint number: {} for carId: {}", i, car.getCarId());
 					Position nextP = _checkpointUtil.generateNextCheckpoint(previousCheckpoint);
-					// nextP.setPosX(33.53742f);
-					// nextP.setPosY(35.255993f);
-					if (_map != null) {
+					
+					if (_map != null && i == 0) {
 						Checkpoint nextCP = new Checkpoint(car.getCarId(), nextP,
 								_checkpointUtil.getCheckpointRadius(), i + 1);
 						_map.addCheckpoint(nextCP);
@@ -508,15 +517,27 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		boolean playerHasBeenDecoubled = false;
 		synchronized (_lockObject) {
 			if (playerConnection.getPlayer().getCar() != null) {
+				
+				_logger.info("Decouple player from car - {}.", playerConnection.getPlayer());
+				
 				// decouple car and player instance
 				Car<?> car = playerConnection.getPlayer().getCar();
 				playerConnection.getPlayer().setCar(null);
 				car.setPlayer(null);
 				playerHasBeenDecoubled = true;
 				_playersInGameCount--;
+				
 				_logger.info(
-						"Player {} disconnected from car with id: {}. Currently {} player(s) in game.",
-						playerConnection.getPlayer().getName(), car.getCarId(), _playersInGameCount);
+						"Player-id: {} decoupled successfully. Currently {} player(s) in game.",
+						playerConnection.getPlayer().getPlayerId(), _playersInGameCount);
+				
+				// during a game in progress and this was the last player in game we have to send
+				// game over message
+				if (_gameRunning == true && _playersInGameCount == 0) {
+					_logger.info("Game over, last player-car disconnected.");
+					PlayerMessage gameOverMsg = new PlayerMessage(MessageId.GAME_END);
+					_playerServer.sendToAllTCP(gameOverMsg);
+				}
 			}
 		}
 		if (playerHasBeenDecoubled) {
@@ -618,7 +639,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		
 		// TODO: avoid that everybody can do this
 		
-		_logger.debug("network reconnect for player id: {} stop timeout first.", playerId);
+		_logger.debug(
+				"network reconnect for player id: {} stop timeout first. ---------------------",
+				playerId);
 		_playerTimeoutScheduler.stopTimeout(playerId);
 		Player oldPlrToCopy = _playerList.get(playerId);
 		if (oldPlrToCopy == null) {
@@ -632,7 +655,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		
 		_playerList.put(playerId, copied);
 		
-		_logger.debug("Player info copied: {}", copied);
+		_logger.debug("Player info copied: {} --------------------------- ", copied);
 		
 		ReconnectRequestResponse resp = new ReconnectRequestResponse();
 		resp.reconnectSuccess = true;
@@ -657,6 +680,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 	
 	@Override
 	public void playerTimeout(int playerId) {
-		carPlayerDisconnect(_playerList.get(playerId).getPlayerConnection());
+		Player p = _playerList.get(playerId);
+		_logger.debug("Timeout for {} called. Disconnect him from his car.", p);
+		carPlayerDisconnect(p.getPlayerConnection());
 	}
 }
