@@ -528,18 +528,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		if (playerHasBeenDecoubled) {
 			PlayerDisconnectedMessage playerDisconnectedMsg = new PlayerDisconnectedMessage();
 			playerDisconnectedMsg.playerId = playerConnection.getPlayer().getPlayerId();
-			_logger.debug("Before send player disconnected msg to all except kryo-id {} ...",
-					playerConnection.getID());
 			_playerServer.sendToAllExceptTCP(playerConnection.getID(), playerDisconnectedMsg);
-			_logger.debug("After send player disconnected msg to all except kryo-id {} ...",
-					playerConnection.getID());
-			
-			// TODO: da geht er für disconnect spieler nicht hinein, glaube er hängt bei letzter code zeile
-			// auf was für einer playerconnection hampeln wir da rum?
-			
-			_logger.info("Before broadcast plr - {}", playerConnection.getPlayer());
 			_broadcastFreeCars();
-			_logger.info("After broadcast plr - {}", playerConnection.getPlayer());
 		}
 	}
 	
@@ -650,9 +640,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		
 		_playerList.put(playerId, copied);
 		
-		_logger.debug(
-				"Player info copied: {} --------------------------- es passiert was mit Connections ",
-				copied);
+		_logger.debug("Player info copied: {} --------------------------- ", copied);
 		
 		ReconnectRequestResponse resp = new ReconnectRequestResponse();
 		resp.reconnectSuccess = true;

@@ -77,7 +77,7 @@ public class PlayerTimeoutScheduler {
 		for (IPlayerTimeoutEvent listeners : _timeoutEventListenerList) {
 			listeners.playerTimeout(playerId);
 		}
-		_logger.debug("listeners notified for player-id: {} next is remove Future.", playerId);
+		_logger.debug("listeners notified for player-id: {}. Up next: remove Future.", playerId);
 	}
 	
 	private void removeFuture(int playerId, boolean cancelFuture) {
