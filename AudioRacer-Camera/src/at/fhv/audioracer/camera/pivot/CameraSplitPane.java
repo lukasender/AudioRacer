@@ -9,7 +9,10 @@ import org.apache.pivot.util.Resources;
 import org.apache.pivot.wtk.Alert;
 import org.apache.pivot.wtk.Button;
 import org.apache.pivot.wtk.ButtonPressListener;
+import org.apache.pivot.wtk.Label;
 import org.apache.pivot.wtk.PushButton;
+import org.apache.pivot.wtk.Slider;
+import org.apache.pivot.wtk.SliderValueListener;
 import org.apache.pivot.wtk.Spinner;
 import org.apache.pivot.wtk.SpinnerSelectionListener;
 import org.apache.pivot.wtk.SplitPane;
@@ -32,6 +35,32 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 	private PushButton _gameAreaSelectedButton;
 	@BXML
 	private PushButton _allCarsDetectedButton;
+	
+	// HUE sliders
+	@BXML
+	private Slider _colorLowerSlider;
+	@BXML
+	private Slider _colorUpperSlider;
+	@BXML
+	private Slider _saturationLowerSlider;
+	@BXML
+	private Slider _saturationUpperSlider;
+	@BXML
+	private Slider _valueLowerSlider;
+	@BXML
+	private Slider _valueUpperSlider;
+	@BXML
+	private Label _colorLowerLabel;
+	@BXML
+	private Label _colorUpperLabel;
+	@BXML
+	private Label _saturationLowerLabel;
+	@BXML
+	private Label _saturationUpperLabel;
+	@BXML
+	private Label _valueLowerLabel;
+	@BXML
+	private Label _valueUpperLabel;
 	
 	@BXML
 	private CameraMapComponent _cameraMapComponent;
@@ -136,8 +165,104 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				}
 				
 				_allCarsDetectedButton.setEnabled(false);
+				
 				CameraApplication.getInstance().allCarsDected();
 			}
 		});
+		
+		// HUE sliders
+		_colorLowerSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value > _colorUpperSlider.getValue()) {
+					_colorUpperSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_colorUpperSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value < _colorLowerSlider.getValue()) {
+					_colorLowerSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_saturationLowerSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value > _saturationUpperSlider.getValue()) {
+					_saturationUpperSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_saturationUpperSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value < _saturationLowerSlider.getValue()) {
+					_saturationLowerSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_valueLowerSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value > _valueUpperSlider.getValue()) {
+					_valueUpperSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_valueUpperSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value < _valueLowerSlider.getValue()) {
+					_valueLowerSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		updateHue();
+	}
+	
+	private void updateHue() {
+		_cameraMapComponent.updateHueRange(_colorLowerSlider.getValue(),
+				_colorUpperSlider.getValue(), _saturationLowerSlider.getValue(),
+				_saturationUpperSlider.getValue(), _valueLowerSlider.getValue(),
+				_valueUpperSlider.getValue());
+		
+		_colorLowerLabel.setText(Integer.toString(_colorLowerSlider.getValue()));
+		_colorUpperLabel.setText(Integer.toString(_colorUpperSlider.getValue()));
+		_saturationLowerLabel.setText(Integer.toString(_saturationLowerSlider.getValue()));
+		_saturationUpperLabel.setText(Integer.toString(_saturationUpperSlider.getValue()));
+		_valueLowerLabel.setText(Integer.toString(_valueLowerSlider.getValue()));
+		_valueUpperLabel.setText(Integer.toString(_valueUpperSlider.getValue()));
 	}
 }

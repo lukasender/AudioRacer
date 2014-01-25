@@ -32,6 +32,30 @@
 					<PushButton bxml:id="_gameAreaSelectedButton" buttonData="Game area selected" />
 				</Form.Section>
 				<Form.Section heading="Step 4 - Car detection">
+					<BoxPane Form.label="Color lower bound">
+						<Slider bxml:id="_colorLowerSlider" range="{start:0, end:179}" value="0" />
+						<Label bxml:id="_colorLowerLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Color upper bound">
+						<Slider bxml:id="_colorUpperSlider" range="{start:0, end:179}" value="179" />
+						<Label bxml:id="_colorUpperLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Saturation lower bound">
+						<Slider bxml:id="_saturationLowerSlider" range="{start:0, end:255}" value="0" />
+						<Label bxml:id="_saturationLowerLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Saturation upper bound">
+						<Slider bxml:id="_saturationUpperSlider" range="{start:0, end:255}" value="255" />
+						<Label bxml:id="_saturationUpperLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Value lower bound">
+						<Slider bxml:id="_valueLowerSlider" range="{start:0, end:255}" value="0" />
+						<Label bxml:id="_valueLowerLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Value upper bound">
+						<Slider bxml:id="_valueUpperSlider" range="{start:0, end:255}" value="255" /> 
+						<Label bxml:id="_valueUpperLabel" />
+					</BoxPane>
 					<PushButton bxml:id="_allCarsDetectedButton" buttonData="All cars detected" />
 				</Form.Section>
 			</Form>

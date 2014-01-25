@@ -318,4 +318,10 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		image2.getRaster().setDataElements(0, 0, cols, rows, data);
 		return image2;
 	}
+	
+	public void updateHueRange(int colorLower, int colorUpper, int saturationLower,
+			int saturationUpper, int valueLower, int valueUpper) {
+		// TODO Auto-generated method stub
+		
+	}
 }
