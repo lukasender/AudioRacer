@@ -41,6 +41,10 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 	@BXML
 	private PushButton _gameAreaSelectedButton;
 	@BXML
+	private PushButton _directionHueButton;
+	@BXML
+	private PushButton _carConfiguredButton;
+	@BXML
 	private PushButton _allCarsDetectedButton;
 	
 	// HUE sliders
@@ -78,11 +82,12 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 		_calibrationFinishedButton.setEnabled(false);
 		_loadCalibrationButton.setEnabled(false);
 		_storeCalibrationButton.setEnabled(false);
-		
 		_startPositioningButton.setEnabled(false);
 		_rotateButton.setEnabled(false);
 		_startSelectGameAreaButton.setEnabled(false);
 		_gameAreaSelectedButton.setEnabled(false);
+		_directionHueButton.setEnabled(false);
+		_carConfiguredButton.setEnabled(false);
 		_allCarsDetectedButton.setEnabled(false);
 		
 		_cameraIdSpinner.getSpinnerSelectionListeners().add(new SpinnerSelectionListener.Adapter() {
@@ -214,11 +219,29 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				}
 				
 				_gameAreaSelectedButton.setEnabled(false);
+				_directionHueButton.setEnabled(true);
+				_carConfiguredButton.setEnabled(true);
 				_allCarsDetectedButton.setEnabled(true);
 				
 			}
 		});
 		
+		_directionHueButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				_cameraMapComponent.directionHueConfigured();
+			}
+		});
+		_carConfiguredButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				if (!_cameraMapComponent.carConfigured()) {
+					Alert.alert("Configuration issue! Car could not be detected!", getWindow());
+				}
+			}
+		});
 		_allCarsDetectedButton.getButtonPressListeners().add(new ButtonPressListener() {
 			
 			@Override
@@ -228,6 +251,8 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 					return;
 				}
 				
+				_carConfiguredButton.setEnabled(false);
+				_directionHueButton.setEnabled(false);
 				_allCarsDetectedButton.setEnabled(false);
 				
 				CameraApplication.getInstance().allCarsDected();

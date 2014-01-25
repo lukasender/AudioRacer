@@ -343,4 +343,22 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	public boolean loadCalibration() throws ClassNotFoundException, IOException {
 		return _camera.loadCalibration();
 	}
+	
+	/**
+	 * Called when the HUE range values are configured, so that the direction color (which is used on all cars) is configured
+	 */
+	public void directionHueConfigured() {
+		
+		// TODO Auto-generated method stub
+	}
+	
+	/**
+	 * Called when the HUE range values are configured, so that it is possible to exactly detect one car.
+	 * 
+	 * @return true when exactly one car could be detected, otherwise false
+	 */
+	public boolean carConfigured() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

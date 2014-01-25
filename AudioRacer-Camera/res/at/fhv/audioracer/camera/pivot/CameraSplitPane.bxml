@@ -59,6 +59,8 @@
 						<Slider bxml:id="_valueUpperSlider" range="{start:0, end:255}" value="255" /> 
 						<Label bxml:id="_valueUpperLabel" />
 					</BoxPane>
+					<PushButton bxml:id="_directionHueButton" buttonData="Direction color configured" />
+					<PushButton bxml:id="_carConfiguredButton" buttonData="Car configured" />
 					<PushButton bxml:id="_allCarsDetectedButton" buttonData="All cars detected" />
 				</Form.Section>
 			</Form>
