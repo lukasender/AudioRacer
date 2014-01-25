@@ -520,9 +520,17 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				playerHasBeenDecoubled = true;
 				_playersInGameCount--;
 				
-				// TODO: if count == 0 we have to send game over
+				_logger.info(
+						"Player-id: {} decoupled successfully. Currently {} player(s) in game.",
+						playerConnection.getPlayer().getPlayerId(), _playersInGameCount);
 				
-				// _logger.info("Currently {} player(s) in game.", _playersInGameCount);
+				// during a game in progress and this was the last player in game we have to send
+				// game over message
+				if (_gameRunning == true && _playersInGameCount == 0) {
+					_logger.info("Game over, last player-car disconnected.");
+					PlayerMessage gameOverMsg = new PlayerMessage(MessageId.GAME_END);
+					_playerServer.sendToAllTCP(gameOverMsg);
+				}
 			}
 		}
 		if (playerHasBeenDecoubled) {
