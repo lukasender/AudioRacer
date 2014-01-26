@@ -1,11 +1,16 @@
 package at.fhv.audioracer.client.android.activity;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -24,11 +29,14 @@ import at.fhv.audioracer.client.android.activity.util.GameStatsListItemArrayAdap
 import at.fhv.audioracer.client.android.activity.util.PressedButton;
 import at.fhv.audioracer.client.android.activity.util.PressedTouchListener;
 import at.fhv.audioracer.client.android.activity.view.JoystickView;
+import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
 import at.fhv.audioracer.client.android.network.task.TrimSettingsAsyncTask;
 import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
 import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
+import at.fhv.audioracer.client.player.IPlayerClientListener;
+import at.fhv.audioracer.core.model.Player;
 
 /**
  * This is the main activity to play the game.<br>
@@ -77,8 +85,6 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private PressedButton _trimSteeringUp = new PressedButton();
 	private PressedButton _trimSteeringDown = new PressedButton();
 	
-	private GameStats _gameStats;
-	
 	@Override
 	public void onBackPressed() {
 		if (_controlsSettingsControlsView.getVisibility() == View.VISIBLE) {
@@ -87,6 +93,24 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			stopAllThreads();
 			hideAllViews();
 			_controlsSettingsControlsView.setVisibility(View.VISIBLE);
+		}
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.play_game, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_game_stats_list:
+				toggleGameStatsListView();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
 	
@@ -107,30 +131,31 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		// game stats
 		_gameStatsListView = (ListView) findViewById(R.id.game_stats_list_view);
 		
-		_gameStats = new GameStats();
-		GameStatsEntry e1 = new GameStatsEntry();
-		e1.playerName = "foo";
-		e1.time = "00:00";
-		e1.coinsLeft = "3";
-		GameStatsEntry e2 = new GameStatsEntry();
-		e2.playerName = "bar";
-		e2.time = "00:00";
-		e2.coinsLeft = "5";
-		GameStatsEntry e3 = new GameStatsEntry();
-		e3.playerName = "baz";
-		e3.time = "00:00";
-		e3.coinsLeft = "2";
-		GameStatsEntry e4 = new GameStatsEntry();
-		e4.playerName = "foo";
-		e4.time = "00:11";
-		e4.coinsLeft = "3";
-		_gameStats.addGameStats(e1);
-		_gameStats.addGameStats(e2);
-		_gameStats.addGameStats(e3);
-		_gameStats.addGameStats(e4);
+		final GameStats gameStats = new GameStats();
+		final GameStatsListItemArrayAdapter adapter = new GameStatsListItemArrayAdapter(this, gameStats.getEntriesSorted());
 		
-		GameStatsListItemArrayAdapter adapter = new GameStatsListItemArrayAdapter(this, _gameStats.getEntriesSorted());
-		_gameStatsListView.setAdapter(adapter);
+		IPlayerClientListener listener = new IPlayerClientListener.Adapter() {
+			public void onUpdateGameState(Player player) {
+				Log.d("play game", "called onUpdateGameState: " + player.getName() + ", coinsLeft " + player.getCoinsLeft() + ", time " + player.getTime());
+				GameStatsEntry entry = new GameStatsEntry();
+				entry.playerName = player.getName();
+				entry.coinsLeft = "" + player.getCoinsLeft();
+				Date d = new Date(new Integer(player.getTime()).longValue());
+				SimpleDateFormat format = new SimpleDateFormat("mm:ss");
+				entry.time = format.format(d);
+				
+				gameStats.addGameStats(entry);
+				
+				_gameStatsListView.post(new Runnable() {
+					@Override
+					public void run() {
+						adapter.notifyDataSetChanged();
+					}
+				});
+			};
+		};
+		
+		ClientManager.getInstance().getPlayerClient().getListenerList().add(listener);
 		
 		_views = new LinkedList<View>();
 		_views.add(_controlsSettingsControlsView);
@@ -149,6 +174,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_motionSensorControlsView.setVisibility(View.INVISIBLE);
 		_joystickControlsView.setVisibility(View.INVISIBLE);
 		_trimSettingsView.setVisibility(View.INVISIBLE);
+		_gameStatsListView.setVisibility(View.INVISIBLE);
 		
 		/* Settings */
 		final Button trimSettingsButton = (Button) findViewById(R.id.trim_settings);
@@ -299,12 +325,14 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		resume();
+	}
+	
+	private void resume() {
 		// enable controls again.
 		if (_chosenControlMode != null) {
 			setControlMode(_chosenControlMode);
 		}
-		_controlsSettingsControlsView.setVisibility(View.INVISIBLE);
-		_gameStatsListView.setVisibility(View.VISIBLE);
 	}
 	
 	@Override
@@ -358,6 +386,24 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			default:
 				// set control to STANDARD
 				setControlMode(ControlMode.STANDARD);
+		}
+	}
+	
+	private boolean areGameStatsVisible() {
+		if (_gameStatsListView.getVisibility() == View.VISIBLE) {
+			return true;
+		}
+		return false;
+	}
+	
+	private void toggleGameStatsListView() {
+		if (!areGameStatsVisible()) {
+			hideAllViews();
+			stopAllThreads();
+			_gameStatsListView.setVisibility(View.VISIBLE);
+		} else {
+			resume();
+			_gameStatsListView.setVisibility(View.INVISIBLE);
 		}
 	}
 	

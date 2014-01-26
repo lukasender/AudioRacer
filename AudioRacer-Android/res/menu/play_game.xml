@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <!-- Game stats list, should appear as action button -->
+    <item android:id="@+id/action_game_stats_list"
+          android:icon="@drawable/ic_coins_l"
+          android:title="@string/action_game_stats_list"
+          android:showAsAction="ifRoom" />
+    
+</menu>

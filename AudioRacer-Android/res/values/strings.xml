@@ -27,5 +27,7 @@
     <string name="ctrl_left">left</string>
     <string name="ctrl_right">right</string>
     <string name="joystick_ctrl">Joysticks</string>
+    
+    <string name="action_game_stats_list">Game stats</string>
 
 </resources>
