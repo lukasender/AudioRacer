@@ -59,6 +59,7 @@ public class OpenCVCamera implements Runnable {
 	private int _positionX;
 	private int _positionY;
 	private int _zoom;
+	private int _rotation;
 	
 	private Size _patternSize;
 	
@@ -89,6 +90,7 @@ public class OpenCVCamera implements Runnable {
 		_positionX = positionX;
 		_positionY = positionY;
 		_zoom = zoom;
+		_rotation = 0;
 		
 		_capture = new VideoCapture();
 		_capture.set(Highgui.CV_CAP_PROP_FRAME_WIDTH, 1024);
@@ -490,9 +492,18 @@ public class OpenCVCamera implements Runnable {
 		xImage.push_back(new MatOfPoint2f(new Point(_positionX + 0, _positionY + _zoom
 				* (4.0 / 6.0))));
 		
-		_homography = Calib3d.findHomography(_cheesboardCorners, xImage);
+		if (_rotation != 0) {
+			Point center = new Point(_positionX + (_zoom / 2), _positionY + (_zoom / 2));
+			Mat rotationMat = Imgproc.getRotationMatrix2D(center, _rotation, 1);
+			
+			MatOfPoint2f dst = new MatOfPoint2f();
+			Core.transform(xImage, dst, rotationMat);
+			xImage = dst;
+		}
 		
+		_homography = Calib3d.findHomography(_cheesboardCorners, xImage);
 		Mat dst = new Mat();
+		
 		Imgproc.warpPerspective(_positioningFrame, dst, _homography, _positioningFrame.size());
 		setFrame(dst);
 	}
@@ -506,6 +517,12 @@ public class OpenCVCamera implements Runnable {
 	
 	public void setZoom(int zoom) {
 		_zoom = zoom;
+		
+		updateHomography();
+	}
+	
+	public void setRotation(int degree) {
+		_rotation = degree;
 		
 		updateHomography();
 	}

@@ -243,6 +243,10 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		_camera.rotate();
 	}
 	
+	public void setRotation(int degree) {
+		_camera.setRotation(degree);
+	}
+	
 	public boolean gameAreaSelected() {
 		int width = Math.abs(_gameAreaX1 - _gameAreaX2);
 		int height = Math.abs(_gameAreaY1 - _gameAreaY2);

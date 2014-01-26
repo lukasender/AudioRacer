@@ -37,6 +37,10 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 	@BXML
 	private PushButton _rotateButton;
 	@BXML
+	private Slider _rotationSlider;
+	@BXML
+	private Label _rotationLabel;
+	@BXML
 	private PushButton _startSelectGameAreaButton;
 	@BXML
 	private PushButton _gameAreaSelectedButton;
@@ -84,6 +88,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 		_storeCalibrationButton.setEnabled(false);
 		_startPositioningButton.setEnabled(false);
 		_rotateButton.setEnabled(false);
+		_rotationSlider.setEnabled(false);
 		_startSelectGameAreaButton.setEnabled(false);
 		_gameAreaSelectedButton.setEnabled(false);
 		_directionHueButton.setEnabled(false);
@@ -131,11 +136,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 					return;
 				}
 				
-				_calibrationStepButton.setEnabled(false);
-				_calibrationFinishedButton.setEnabled(false);
-				_loadCalibrationButton.setEnabled(false);
-				_storeCalibrationButton.setEnabled(true);
-				_startPositioningButton.setEnabled(true);
+				calibrationFinished();
 			}
 		});
 		_loadCalibrationButton.getButtonPressListeners().add(new ButtonPressListener() {
@@ -146,11 +147,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 					if (!_cameraMapComponent.loadCalibration()) {
 						Alert.alert("Calibration loading failed!", getWindow());
 					} else {
-						_calibrationStepButton.setEnabled(false);
-						_calibrationFinishedButton.setEnabled(false);
-						_loadCalibrationButton.setEnabled(false);
-						_storeCalibrationButton.setEnabled(true);
-						_startPositioningButton.setEnabled(true);
+						calibrationFinished();
 					}
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
@@ -187,6 +184,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				
 				_startPositioningButton.setEnabled(false);
 				_rotateButton.setEnabled(true);
+				_rotationSlider.setEnabled(true);
 				_startSelectGameAreaButton.setEnabled(true);
 			}
 		});
@@ -197,11 +195,22 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				_cameraMapComponent.rotate();
 			}
 		});
+		_rotationSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				// TODO Auto-generated method stub
+				_cameraMapComponent.setRotation(_rotationSlider.getValue());
+				updateRotationLabel();
+			}
+		});
+		updateRotationLabel();
 		_startSelectGameAreaButton.getButtonPressListeners().add(new ButtonPressListener() {
 			
 			@Override
 			public void buttonPressed(Button button) {
 				_rotateButton.setEnabled(false);
+				_rotationSlider.setEnabled(false);
 				_startSelectGameAreaButton.setEnabled(false);
 				_gameAreaSelectedButton.setEnabled(true);
 				
@@ -339,6 +348,18 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 			}
 		});
 		updateHue();
+	}
+	
+	protected void calibrationFinished() {
+		_calibrationStepButton.setEnabled(false);
+		_calibrationFinishedButton.setEnabled(false);
+		_loadCalibrationButton.setEnabled(false);
+		_storeCalibrationButton.setEnabled(true);
+		_startPositioningButton.setEnabled(true);
+	}
+	
+	protected void updateRotationLabel() {
+		_rotationLabel.setText(_rotationSlider.getValue() + "°");
 	}
 	
 	private void updateHue() {
