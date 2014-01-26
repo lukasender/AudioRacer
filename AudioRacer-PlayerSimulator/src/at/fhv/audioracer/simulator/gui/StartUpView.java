@@ -86,7 +86,7 @@ public class StartUpView extends JFrame {
 		_playerClient.getListenerList().add(new IPlayerClientListener() {
 			
 			@Override
-			public void onUpdateGameState(int playerId) {
+			public void onUpdateGameState(Player player) {
 				// TODO Auto-generated method stub
 				
 			}

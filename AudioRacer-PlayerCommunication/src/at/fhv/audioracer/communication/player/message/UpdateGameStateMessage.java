@@ -2,7 +2,7 @@ package at.fhv.audioracer.communication.player.message;
 
 public class UpdateGameStateMessage extends PlayerMessage {
 	
-	public byte carId;
+	public int playerId;
 	public int coinsLeft;
 	public int time;
 	

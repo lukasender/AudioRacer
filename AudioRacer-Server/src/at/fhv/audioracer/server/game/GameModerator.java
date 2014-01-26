@@ -229,15 +229,21 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					long currentTime = System.currentTimeMillis();
 					int timeSinceGameStart = (int) (currentTime - _gameStartTimeInMillis);
 					_checkpoints.get(carId).pollFirst();
+					
 					UpdateGameStateMessage updateGameStateMsg = new UpdateGameStateMessage();
-					updateGameStateMsg.carId = carId;
-					updateGameStateMsg.time = timeSinceGameStart;
 					updateGameStateMsg.coinsLeft = _checkpoints.get(carId).size();
+					updateGameStateMsg.time = timeSinceGameStart;
+					Player player = car.getPlayer();
+					int playerId = -1;
+					if (player != null) {
+						player.setCoinsLeft(updateGameStateMsg.coinsLeft);
+						playerId = player.getPlayerId();
+					}
+					updateGameStateMsg.playerId = playerId;
 					_logger.info("Player: {} coins left: {}", car.getPlayer().getName(),
 							updateGameStateMsg.coinsLeft);
 					_playerServer.sendToAllTCP(updateGameStateMsg);
 					
-					car.getPlayer().setCoinsLeft(updateGameStateMsg.coinsLeft);
 				}
 				
 				// handle distance and direction to next checkpoint
@@ -427,8 +433,13 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				entry = it.next();
 				queue = entry.getValue();
 				carId = entry.getKey();
+				int playerId = -1;
+				Player player = _carList.get(carId).getPlayer();
+				if (player != null) {
+					playerId = player.getPlayerId();
+				}
 				coinsLeft = queue.size();
-				msg.carId = carId;
+				msg.playerId = playerId;
 				msg.coinsLeft = coinsLeft;
 				msg.time = 0;
 				_playerServer.sendToAllTCP(msg);
