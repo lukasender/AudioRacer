@@ -10,6 +10,8 @@ import org.apache.pivot.util.Resources;
 import org.apache.pivot.wtk.Alert;
 import org.apache.pivot.wtk.Button;
 import org.apache.pivot.wtk.ButtonPressListener;
+import org.apache.pivot.wtk.Component;
+import org.apache.pivot.wtk.ComponentMouseButtonListener;
 import org.apache.pivot.wtk.Label;
 import org.apache.pivot.wtk.PushButton;
 import org.apache.pivot.wtk.Slider;
@@ -19,6 +21,8 @@ import org.apache.pivot.wtk.SpinnerSelectionListener;
 import org.apache.pivot.wtk.SplitPane;
 
 public class CameraSplitPane extends SplitPane implements Bindable {
+	
+	private static final int HUE_VALUE_RANGE = 5;
 	
 	@BXML
 	private Spinner _cameraIdSpinner;
@@ -79,6 +83,28 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 	
 	@BXML
 	private CameraMapComponent _cameraMapComponent;
+	
+	private ComponentMouseButtonListener _mouseButtonListener;
+	
+	public CameraSplitPane() {
+		_mouseButtonListener = new ComponentMouseButtonListener.Adapter() {
+			@Override
+			public boolean mouseClick(Component component,
+					org.apache.pivot.wtk.Mouse.Button button, int x, int y, int count) {
+				
+				int[] values = _cameraMapComponent.getHueValues(x, y);
+				
+				_colorLowerSlider.setValue(values[0] - HUE_VALUE_RANGE);
+				_colorUpperSlider.setValue(values[0] + HUE_VALUE_RANGE);
+				_saturationLowerSlider.setValue(values[1] - HUE_VALUE_RANGE);
+				_saturationUpperSlider.setValue(values[1] + HUE_VALUE_RANGE);
+				_valueLowerSlider.setValue(values[2] - HUE_VALUE_RANGE);
+				_valueUpperSlider.setValue(values[2] + HUE_VALUE_RANGE);
+				
+				return true;
+			}
+		};
+	}
 	
 	@Override
 	public void initialize(Map<String, Object> namespace, URL location, Resources resources) {
@@ -232,6 +258,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				_carConfiguredButton.setEnabled(true);
 				_allCarsDetectedButton.setEnabled(true);
 				
+				_cameraMapComponent.getComponentMouseButtonListeners().add(_mouseButtonListener);
 			}
 		});
 		
@@ -263,6 +290,8 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				_carConfiguredButton.setEnabled(false);
 				_directionHueButton.setEnabled(false);
 				_allCarsDetectedButton.setEnabled(false);
+				
+				_cameraMapComponent.getComponentMouseButtonListeners().remove(_mouseButtonListener);
 				
 				CameraApplication.getInstance().allCarsDected();
 			}
