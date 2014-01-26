@@ -16,8 +16,10 @@ public class OpenCVCameraCar {
 	private Car<?> _car;
 	private Scalar _lowerBound;
 	private Scalar _upperBound;
+	private byte _id;
 	
-	public OpenCVCameraCar() {
+	public OpenCVCameraCar(byte id) {
+		_id = id;
 	}
 	
 	/**

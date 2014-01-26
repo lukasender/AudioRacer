@@ -22,7 +22,7 @@ import org.apache.pivot.wtk.SplitPane;
 
 public class CameraSplitPane extends SplitPane implements Bindable {
 	
-	private static final int HUE_VALUE_RANGE = 5;
+	private static final int HUE_VALUE_RANGE = 15;
 	
 	@BXML
 	private Spinner _cameraIdSpinner;
@@ -96,10 +96,10 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				
 				_colorLowerSlider.setValue(values[0] - HUE_VALUE_RANGE);
 				_colorUpperSlider.setValue(values[0] + HUE_VALUE_RANGE);
-				_saturationLowerSlider.setValue(values[1] - HUE_VALUE_RANGE);
-				_saturationUpperSlider.setValue(values[1] + HUE_VALUE_RANGE);
-				_valueLowerSlider.setValue(values[2] - HUE_VALUE_RANGE);
-				_valueUpperSlider.setValue(values[2] + HUE_VALUE_RANGE);
+				_saturationLowerSlider.setValue(values[1] - (2 * HUE_VALUE_RANGE));
+				_saturationUpperSlider.setValue(values[1] + (2 * HUE_VALUE_RANGE));
+				_valueLowerSlider.setValue(values[2] - (2 * HUE_VALUE_RANGE));
+				_valueUpperSlider.setValue(values[2] + (2 * HUE_VALUE_RANGE));
 				
 				return true;
 			}

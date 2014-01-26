@@ -377,6 +377,9 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	public void directionHueConfigured() {
 		
 		// TODO Auto-generated method stub
+		
+		_camera.directionHueConfigured();
+		
 	}
 	
 	/**
@@ -385,7 +388,6 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	 * @return true when exactly one car could be detected, otherwise false
 	 */
 	public boolean carConfigured() {
-		// TODO Auto-generated method stub
-		return false;
+		return _camera.nextCar();
 	}
 }
