@@ -236,6 +236,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					_logger.info("Player: {} coins left: {}", car.getPlayer().getName(),
 							updateGameStateMsg.coinsLeft);
 					_playerServer.sendToAllTCP(updateGameStateMsg);
+					
+					car.getPlayer().setCoinsLeft(updateGameStateMsg.coinsLeft);
 				}
 				
 				// handle distance and direction to next checkpoint
@@ -494,6 +496,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 						_map.addCheckpoint(nextCP);
 					}
 					_checkpoints.get(car.getCarId()).addLast(nextP);
+					
+					car.getPlayer().setCoinsLeft(_checkpoints.get(car.getCarId()).size());
 				}
 			}
 			
