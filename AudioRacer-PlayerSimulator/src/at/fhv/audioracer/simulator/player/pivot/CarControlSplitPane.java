@@ -38,6 +38,9 @@ public class CarControlSplitPane extends SplitPane implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
+				
+				PlayerSimulatorWindow.getInstance().getPlayerClient().getPlayerServer()
+						.disconnect();
 				PlayerSimulatorWindow.getInstance().setContent(CarSelectForm.class);
 			}
 		});
@@ -51,7 +54,7 @@ public class CarControlSplitPane extends SplitPane implements Bindable {
 							@Override
 							public void run() {
 								_pushButtonReady.setEnabled(true);
-								_pushButtonSelectCar.setEnabled(false);
+								_pushButtonSelectCar.setEnabled(true);
 							}
 						});
 					}

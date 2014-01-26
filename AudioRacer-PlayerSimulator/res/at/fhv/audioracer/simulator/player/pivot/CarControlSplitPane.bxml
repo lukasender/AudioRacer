@@ -10,7 +10,7 @@
 		<Border styles="{padding: 3}">
 			<Form>
 				<Form.Section heading="Actions">
-					<PushButton bxml:id="_pushButtonSelectCar" buttonData="Select other car" />
+					<PushButton bxml:id="_pushButtonSelectCar" buttonData="Decouple from Car" />
 					<PushButton bxml:id="_pushButtonReady" buttonData="Ready" />
 				</Form.Section>
 				<Form.Section heading="Scoreboard">

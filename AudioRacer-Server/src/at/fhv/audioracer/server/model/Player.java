@@ -34,6 +34,10 @@ public class Player extends at.fhv.audioracer.core.model.Player {
 		return _playerConnection;
 	}
 	
+	public boolean isInGame() {
+		return _isReady;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder(super.toString());
