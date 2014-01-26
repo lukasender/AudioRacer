@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
 import at.fhv.audioracer.client.android.activity.thread.JoystickControlThread;
@@ -48,6 +50,17 @@ import at.fhv.audioracer.core.model.Player;
  * </ul>
  */
 public class PlayGameActivity extends Activity implements IControlMode {
+	
+	public class OnGameEndsListener extends IPlayerClientListener.Adapter {
+		
+		private final Intent selectCarsIntent = new Intent(PlayGameActivity.this, SelectCarActivity.class);
+		
+		@Override
+		public void onGameEnd() {
+			Toast.makeText(PlayGameActivity.this, "The game has ended and will restart again. Choose a free car!", Toast.LENGTH_SHORT);
+			startActivity(selectCarsIntent);
+		}
+	}
 	
 	private SystemUiHider _systemUiHider;
 	
@@ -156,6 +169,7 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		};
 		
 		ClientManager.getInstance().getPlayerClient().getListenerList().add(listener);
+		ClientManager.getInstance().getPlayerClient().getListenerList().add(new OnGameEndsListener());
 		
 		_views = new LinkedList<View>();
 		_views.add(_controlsSettingsControlsView);
