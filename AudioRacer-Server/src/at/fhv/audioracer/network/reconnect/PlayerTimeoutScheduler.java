@@ -60,10 +60,12 @@ public class PlayerTimeoutScheduler {
 		public void run() {
 			_logger.debug("Timeout for playerId: {} triggered, notify listeners ...", _playerId);
 			
-			// TODO: comment in next line results in unexpected behavior, investigate
-			// notifyListeners(_playerId);
-			
-			removeFuture(_playerId, false);
+			try {
+				notifyListeners(_playerId);
+				removeFuture(_playerId, false);
+			} catch (Exception e) {
+				_logger.error("Exception caught in Timeout-Thread.", e);
+			}
 		}
 	}
 	
@@ -75,9 +77,11 @@ public class PlayerTimeoutScheduler {
 		for (IPlayerTimeoutEvent listeners : _timeoutEventListenerList) {
 			listeners.playerTimeout(playerId);
 		}
+		_logger.debug("listeners notified for player-id: {}. Up next: remove Future.", playerId);
 	}
 	
 	private void removeFuture(int playerId, boolean cancelFuture) {
+		_logger.debug("remove Future START for player-id: {}", playerId);
 		synchronized (_currentTimeoutFutures) {
 			if (_currentTimeoutFutures.containsKey(playerId)) {
 				if (cancelFuture == true) {
@@ -93,5 +97,6 @@ public class PlayerTimeoutScheduler {
 						playerId, _currentTimeoutFutures.size());
 			}
 		}
+		_logger.debug("remove Future END for player-id: {}", playerId);
 	}
 }

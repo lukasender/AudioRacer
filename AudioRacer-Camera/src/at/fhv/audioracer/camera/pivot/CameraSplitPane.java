@@ -1,5 +1,6 @@
 package at.fhv.audioracer.camera.pivot;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.apache.pivot.beans.BXML;
@@ -9,40 +10,115 @@ import org.apache.pivot.util.Resources;
 import org.apache.pivot.wtk.Alert;
 import org.apache.pivot.wtk.Button;
 import org.apache.pivot.wtk.ButtonPressListener;
+import org.apache.pivot.wtk.Component;
+import org.apache.pivot.wtk.ComponentMouseButtonListener;
+import org.apache.pivot.wtk.Label;
 import org.apache.pivot.wtk.PushButton;
+import org.apache.pivot.wtk.Slider;
+import org.apache.pivot.wtk.SliderValueListener;
 import org.apache.pivot.wtk.Spinner;
 import org.apache.pivot.wtk.SpinnerSelectionListener;
 import org.apache.pivot.wtk.SplitPane;
 
 public class CameraSplitPane extends SplitPane implements Bindable {
 	
+	private static final int HUE_VALUE_RANGE = 5;
+	
 	@BXML
 	private Spinner _cameraIdSpinner;
 	@BXML
-	PushButton _cameraSelectedButton;
+	private PushButton _cameraSelectedButton;
+	@BXML
+	private PushButton _calibrationStepButton;
+	@BXML
+	private PushButton _calibrationFinishedButton;
+	@BXML
+	private PushButton _loadCalibrationButton;
+	@BXML
+	private PushButton _storeCalibrationButton;
 	@BXML
 	private PushButton _startPositioningButton;
 	@BXML
 	private PushButton _rotateButton;
 	@BXML
-	private PushButton _startCalibrationButton;
+	private Slider _rotationSlider;
 	@BXML
-	private PushButton _calibrationFinishedButton;
+	private Label _rotationLabel;
+	@BXML
+	private PushButton _startSelectGameAreaButton;
 	@BXML
 	private PushButton _gameAreaSelectedButton;
 	@BXML
+	private PushButton _directionHueButton;
+	@BXML
+	private PushButton _carConfiguredButton;
+	@BXML
 	private PushButton _allCarsDetectedButton;
+	
+	// HUE sliders
+	@BXML
+	private Slider _colorLowerSlider;
+	@BXML
+	private Slider _colorUpperSlider;
+	@BXML
+	private Slider _saturationLowerSlider;
+	@BXML
+	private Slider _saturationUpperSlider;
+	@BXML
+	private Slider _valueLowerSlider;
+	@BXML
+	private Slider _valueUpperSlider;
+	@BXML
+	private Label _colorLowerLabel;
+	@BXML
+	private Label _colorUpperLabel;
+	@BXML
+	private Label _saturationLowerLabel;
+	@BXML
+	private Label _saturationUpperLabel;
+	@BXML
+	private Label _valueLowerLabel;
+	@BXML
+	private Label _valueUpperLabel;
 	
 	@BXML
 	private CameraMapComponent _cameraMapComponent;
 	
+	private ComponentMouseButtonListener _mouseButtonListener;
+	
+	public CameraSplitPane() {
+		_mouseButtonListener = new ComponentMouseButtonListener.Adapter() {
+			@Override
+			public boolean mouseClick(Component component,
+					org.apache.pivot.wtk.Mouse.Button button, int x, int y, int count) {
+				
+				int[] values = _cameraMapComponent.getHueValues(x, y);
+				
+				_colorLowerSlider.setValue(values[0] - HUE_VALUE_RANGE);
+				_colorUpperSlider.setValue(values[0] + HUE_VALUE_RANGE);
+				_saturationLowerSlider.setValue(values[1] - HUE_VALUE_RANGE);
+				_saturationUpperSlider.setValue(values[1] + HUE_VALUE_RANGE);
+				_valueLowerSlider.setValue(values[2] - HUE_VALUE_RANGE);
+				_valueUpperSlider.setValue(values[2] + HUE_VALUE_RANGE);
+				
+				return true;
+			}
+		};
+	}
+	
 	@Override
 	public void initialize(Map<String, Object> namespace, URL location, Resources resources) {
+		_calibrationStepButton.setEnabled(false);
+		_calibrationFinishedButton.setEnabled(false);
+		_loadCalibrationButton.setEnabled(false);
+		_storeCalibrationButton.setEnabled(false);
 		_startPositioningButton.setEnabled(false);
 		_rotateButton.setEnabled(false);
-		_startCalibrationButton.setEnabled(false);
-		_calibrationFinishedButton.setEnabled(false);
+		_rotationSlider.setEnabled(false);
+		_startSelectGameAreaButton.setEnabled(false);
 		_gameAreaSelectedButton.setEnabled(false);
+		_directionHueButton.setEnabled(false);
+		_carConfiguredButton.setEnabled(false);
 		_allCarsDetectedButton.setEnabled(false);
 		
 		_cameraIdSpinner.getSpinnerSelectionListeners().add(new SpinnerSelectionListener.Adapter() {
@@ -59,9 +135,65 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 			public void buttonPressed(Button button) {
 				_cameraIdSpinner.setEnabled(false);
 				_cameraSelectedButton.setEnabled(false);
-				_startPositioningButton.setEnabled(true);
+				_calibrationStepButton.setEnabled(true);
+				_calibrationFinishedButton.setEnabled(true);
+				_loadCalibrationButton.setEnabled(true);
 				
+				_cameraMapComponent.startCalibration();
 				_cameraMapComponent.setDrawCheesboard(true);
+			}
+		});
+		
+		_calibrationStepButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				if (!_cameraMapComponent.calibrationStep()) {
+					Alert.alert("Detection failed!", getWindow());
+				}
+			}
+		});
+		_calibrationFinishedButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				if (!_cameraMapComponent.endCalibration()) {
+					Alert.alert("Calibration failed!", getWindow());
+					return;
+				}
+				
+				calibrationFinished();
+			}
+		});
+		_loadCalibrationButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				try {
+					if (!_cameraMapComponent.loadCalibration()) {
+						Alert.alert("Calibration loading failed!", getWindow());
+					} else {
+						calibrationFinished();
+					}
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		_storeCalibrationButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				try {
+					_cameraMapComponent.storeCalibration();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		
@@ -78,7 +210,8 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				
 				_startPositioningButton.setEnabled(false);
 				_rotateButton.setEnabled(true);
-				_startCalibrationButton.setEnabled(true);
+				_rotationSlider.setEnabled(true);
+				_startSelectGameAreaButton.setEnabled(true);
 			}
 		});
 		_rotateButton.getButtonPressListeners().add(new ButtonPressListener() {
@@ -88,26 +221,26 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				_cameraMapComponent.rotate();
 			}
 		});
-		_startCalibrationButton.getButtonPressListeners().add(new ButtonPressListener() {
+		_rotationSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				// TODO Auto-generated method stub
+				_cameraMapComponent.setRotation(_rotationSlider.getValue());
+				updateRotationLabel();
+			}
+		});
+		updateRotationLabel();
+		_startSelectGameAreaButton.getButtonPressListeners().add(new ButtonPressListener() {
 			
 			@Override
 			public void buttonPressed(Button button) {
 				_rotateButton.setEnabled(false);
-				_startCalibrationButton.setEnabled(false);
-				_calibrationFinishedButton.setEnabled(true);
-				
-				_cameraMapComponent.startCalibration();
-			}
-		});
-		
-		_calibrationFinishedButton.getButtonPressListeners().add(new ButtonPressListener() {
-			
-			@Override
-			public void buttonPressed(Button button) {
-				_calibrationFinishedButton.setEnabled(false);
+				_rotationSlider.setEnabled(false);
+				_startSelectGameAreaButton.setEnabled(false);
 				_gameAreaSelectedButton.setEnabled(true);
 				
-				_cameraMapComponent.endCalibration();
+				_cameraMapComponent.startSelectGameArea();
 			}
 		});
 		
@@ -121,11 +254,30 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				}
 				
 				_gameAreaSelectedButton.setEnabled(false);
+				_directionHueButton.setEnabled(true);
+				_carConfiguredButton.setEnabled(true);
 				_allCarsDetectedButton.setEnabled(true);
 				
+				_cameraMapComponent.getComponentMouseButtonListeners().add(_mouseButtonListener);
 			}
 		});
 		
+		_directionHueButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				_cameraMapComponent.directionHueConfigured();
+			}
+		});
+		_carConfiguredButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				if (!_cameraMapComponent.carConfigured()) {
+					Alert.alert("Configuration issue! Car could not be detected!", getWindow());
+				}
+			}
+		});
 		_allCarsDetectedButton.getButtonPressListeners().add(new ButtonPressListener() {
 			
 			@Override
@@ -135,9 +287,121 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 					return;
 				}
 				
+				_carConfiguredButton.setEnabled(false);
+				_directionHueButton.setEnabled(false);
 				_allCarsDetectedButton.setEnabled(false);
+				
+				_cameraMapComponent.getComponentMouseButtonListeners().remove(_mouseButtonListener);
+				
 				CameraApplication.getInstance().allCarsDected();
 			}
 		});
+		
+		// HUE sliders
+		_colorLowerSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value > _colorUpperSlider.getValue()) {
+					_colorUpperSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_colorUpperSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value < _colorLowerSlider.getValue()) {
+					_colorLowerSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_saturationLowerSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value > _saturationUpperSlider.getValue()) {
+					_saturationUpperSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_saturationUpperSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value < _saturationLowerSlider.getValue()) {
+					_saturationLowerSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_valueLowerSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value > _valueUpperSlider.getValue()) {
+					_valueUpperSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		_valueUpperSlider.getSliderValueListeners().add(new SliderValueListener() {
+			
+			@Override
+			public void valueChanged(Slider slider, int previousValue) {
+				int value = slider.getValue();
+				
+				if (value < _valueLowerSlider.getValue()) {
+					_valueLowerSlider.setValue(value);
+				}
+				
+				updateHue();
+			}
+		});
+		updateHue();
+	}
+	
+	protected void calibrationFinished() {
+		_calibrationStepButton.setEnabled(false);
+		_calibrationFinishedButton.setEnabled(false);
+		_loadCalibrationButton.setEnabled(false);
+		_storeCalibrationButton.setEnabled(true);
+		_startPositioningButton.setEnabled(true);
+	}
+	
+	protected void updateRotationLabel() {
+		_rotationLabel.setText(_rotationSlider.getValue() + "°");
+	}
+	
+	private void updateHue() {
+		_cameraMapComponent.updateHueRange(_colorLowerSlider.getValue(),
+				_colorUpperSlider.getValue(), _saturationLowerSlider.getValue(),
+				_saturationUpperSlider.getValue(), _valueLowerSlider.getValue(),
+				_valueUpperSlider.getValue());
+		
+		_colorLowerLabel.setText(Integer.toString(_colorLowerSlider.getValue()));
+		_colorUpperLabel.setText(Integer.toString(_colorUpperSlider.getValue()));
+		_saturationLowerLabel.setText(Integer.toString(_saturationLowerSlider.getValue()));
+		_saturationUpperLabel.setText(Integer.toString(_saturationUpperSlider.getValue()));
+		_valueLowerLabel.setText(Integer.toString(_valueLowerSlider.getValue()));
+		_valueUpperLabel.setText(Integer.toString(_valueUpperSlider.getValue()));
 	}
 }

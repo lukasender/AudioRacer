@@ -35,7 +35,12 @@ public class Panel extends JPanel {
 	
 	private void setimage(BufferedImage newimage) {
 		image = newimage;
+		repaint();
 		return;
+	}
+	
+	public void setImage(Mat image) {
+		setimage(matToBufferedImage(image));
 	}
 	
 	/**
@@ -217,15 +222,15 @@ public class Panel extends JPanel {
 								Imgproc.arcLength(contour2f, true) * 0.1, true);
 						
 						// find triangles and mark them with blue lines
-						if (contour2f.total() == 3) {
+						if (contour2f.total() == 4) {
 							triangles++;
 							Point[] points = contour2f.toArray();
 							Scalar color = new Scalar(255, 0, 0);
 							
-							for (int i = 0; i < 2; i++) {
+							for (int i = 0; i < 3; i++) {
 								Core.line(webcam_image, points[i], points[i + 1], color);
 							}
-							Core.line(webcam_image, points[2], points[0], color);
+							Core.line(webcam_image, points[3], points[0], color);
 						}
 						
 					}

@@ -25,10 +25,10 @@ public class PlayerClient extends Listener implements IPlayerClient {
 			implements IPlayerClientListener {
 		
 		@Override
-		public void onUpdateGameState(int playerId) {
+		public void onUpdateGameState(Player player) {
 			
 			for (IPlayerClientListener listener : listeners()) {
-				listener.onUpdateGameState(playerId);
+				listener.onUpdateGameState(player);
 			}
 			
 		}
@@ -74,6 +74,15 @@ public class PlayerClient extends Listener implements IPlayerClient {
 			
 			for (IPlayerClientListener listener : listeners()) {
 				listener.onGameStarts();
+			}
+			
+		}
+		
+		@Override
+		public void onGameEnd() {
+			
+			for (IPlayerClientListener listener : listeners()) {
+				listener.onGameEnd();
 			}
 			
 		}
@@ -175,9 +184,9 @@ public class PlayerClient extends Listener implements IPlayerClient {
 			Player p = _players.get(Integer.valueOf(playerId));
 			p.setCoinsLeft(coinsLeft);
 			p.setTime(time);
+			
+			_listenerList.onUpdateGameState(p);
 		}
-		
-		_listenerList.onUpdateGameState(playerId);
 		
 	}
 	
@@ -324,9 +333,10 @@ public class PlayerClient extends Listener implements IPlayerClient {
 					break;
 				case UPDATE_GAME_STATE:
 					UpdateGameStateMessage updateGS = (UpdateGameStateMessage) message;
-					System.out.println("GameState update received for id: " + updateGS.carId
-							+ " coins left: " + updateGS.coinsLeft + " current time: "
-							+ updateGS.time);
+					System.out.println("GameState update received for player id: "
+							+ updateGS.playerId + " coins left: " + updateGS.coinsLeft
+							+ " current time: " + updateGS.time);
+					updateGameState(updateGS.playerId, updateGS.coinsLeft, updateGS.time);
 					break;
 				case PLAYER_CONNECTED:
 					PlayerConnectedMessage connectedMsg = (PlayerConnectedMessage) message;
@@ -335,6 +345,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 					break;
 				case GAME_END:
 					System.out.println("Game over.");
+					_listenerList.onGameEnd();
 					break;
 				default:
 					// System.out.println("Message with id: " + message.messageId

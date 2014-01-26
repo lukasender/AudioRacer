@@ -148,13 +148,6 @@ public class SimulationController {
 		return getMapComponent().getMap();
 	}
 	
-	public void update() {
-		// int x = getMap().getMap().getSizeX();
-		// int y = getMap().getMap().getSizeY();
-		// System.out.println("MapSize: " + x + ", " + y);
-		
-	}
-	
 	public Client getCamera() {
 		return _camera;
 	}

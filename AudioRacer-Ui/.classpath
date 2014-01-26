@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="res"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="/AudioRacer/libs/pivot-core-2.0.3.jar" sourcepath="/AudioRacer/libs/apache-pivot-2.0.3-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="/AudioRacer/libs/pivot-wtk-2.0.3.jar" sourcepath="/AudioRacer/libs/apache-pivot-2.0.3-src.zip"/>

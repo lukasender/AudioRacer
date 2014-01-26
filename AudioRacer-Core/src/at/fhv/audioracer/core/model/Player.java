@@ -85,7 +85,7 @@ public class Player {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
-		b.append("id: ");
+		b.append("Player -> id: ");
 		b.append(_playerId);
 		b.append(" name: ");
 		b.append(_name);

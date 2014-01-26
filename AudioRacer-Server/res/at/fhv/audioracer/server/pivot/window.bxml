@@ -13,7 +13,12 @@
 			</left>
 			<right>
 				<Border title="Game State Variables">
-					<Label text="Goes here"/>
+					<TableView bxml:id="_tableView">
+						<columns>
+							<TableView.Column name="player" width="1*" />
+							<TableView.Column name="checkpoints" width="-1" />
+						</columns>
+					</TableView>
 				</Border>
 			</right>
 		</SplitPane>

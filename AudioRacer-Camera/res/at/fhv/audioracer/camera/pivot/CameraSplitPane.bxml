@@ -20,18 +20,51 @@
             		</Spinner>
 					<PushButton bxml:id="_cameraSelectedButton" buttonData="Camera selected" />
 				</Form.Section>
-				<Form.Section heading="Step 1 - Position">
-					<PushButton bxml:id="_startPositioningButton" buttonData="Start positioning" />
-					<PushButton bxml:id="_rotateButton" buttonData="Rotate" />
-					<PushButton bxml:id="_startCalibrationButton" buttonData="Start calibration" />
-				</Form.Section>
 				<Form.Section heading="Step 2 - Calibration">
+					<PushButton bxml:id="_calibrationStepButton" buttonData="Calibration step" />
 					<PushButton bxml:id="_calibrationFinishedButton" buttonData="Calibration finished" />
+					<PushButton bxml:id="_loadCalibrationButton" buttonData="Load calibration" />
+					<PushButton bxml:id="_storeCalibrationButton" buttonData="Store calibration" />
 				</Form.Section>
-				<Form.Section heading="Step 3 - Select game area">
+				<Form.Section heading="Step 3 - Position">
+					<PushButton bxml:id="_startPositioningButton" buttonData="Start positioning" />
+					<PushButton bxml:id="_rotateButton" buttonData="Rotate 90° left" />
+					<BoxPane Form.label="Fine rotate">
+						<Slider bxml:id="_rotationSlider" range="{start:0, end:90}" value="0" />
+						<Label bxml:id="_rotationLabel" />
+					</BoxPane>
+					<PushButton bxml:id="_startSelectGameAreaButton" buttonData="Start select game area" />
+				</Form.Section>
+				<Form.Section heading="Step 4 - Select game area">
 					<PushButton bxml:id="_gameAreaSelectedButton" buttonData="Game area selected" />
 				</Form.Section>
-				<Form.Section heading="Step 4 - Car detection">
+				<Form.Section heading="Step 5 - Car detection">
+					<BoxPane Form.label="Color lower bound">
+						<Slider bxml:id="_colorLowerSlider" range="{start:0, end:179}" value="0" />
+						<Label bxml:id="_colorLowerLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Color upper bound">
+						<Slider bxml:id="_colorUpperSlider" range="{start:0, end:179}" value="179" />
+						<Label bxml:id="_colorUpperLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Saturation lower bound">
+						<Slider bxml:id="_saturationLowerSlider" range="{start:0, end:255}" value="0" />
+						<Label bxml:id="_saturationLowerLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Saturation upper bound">
+						<Slider bxml:id="_saturationUpperSlider" range="{start:0, end:255}" value="255" />
+						<Label bxml:id="_saturationUpperLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Value lower bound">
+						<Slider bxml:id="_valueLowerSlider" range="{start:0, end:255}" value="0" />
+						<Label bxml:id="_valueLowerLabel" />
+					</BoxPane>
+					<BoxPane Form.label="Value upper bound">
+						<Slider bxml:id="_valueUpperSlider" range="{start:0, end:255}" value="255" /> 
+						<Label bxml:id="_valueUpperLabel" />
+					</BoxPane>
+					<PushButton bxml:id="_directionHueButton" buttonData="Direction color configured" />
+					<PushButton bxml:id="_carConfiguredButton" buttonData="Car configured" />
 					<PushButton bxml:id="_allCarsDetectedButton" buttonData="All cars detected" />
 				</Form.Section>
 			</Form>

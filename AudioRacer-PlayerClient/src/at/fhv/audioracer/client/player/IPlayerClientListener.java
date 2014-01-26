@@ -1,12 +1,13 @@
 package at.fhv.audioracer.client.player;
 
+import at.fhv.audioracer.core.model.Player;
 import at.fhv.audioracer.core.util.IListener;
 import at.fhv.audioracer.core.util.Position;
 
 public interface IPlayerClientListener extends IListener {
 	public static class Adapter implements IPlayerClientListener {
 		@Override
-		public void onUpdateGameState(int playerId) {
+		public void onUpdateGameState(Player player) {
 			// no-op.
 		}
 		
@@ -34,9 +35,14 @@ public interface IPlayerClientListener extends IListener {
 		public void onGameStarts() {
 			// no-op.
 		}
+		
+		@Override
+		public void onGameEnd() {
+			
+		}
 	}
 	
-	void onUpdateGameState(int playerId);
+	void onUpdateGameState(Player player);
 	
 	void onUpdateCheckpointDirection(Position position);
 	
@@ -47,5 +53,7 @@ public interface IPlayerClientListener extends IListener {
 	void onPlayerDisconnected(int playerId);
 	
 	void onGameStarts();
+	
+	void onGameEnd();
 	
 }

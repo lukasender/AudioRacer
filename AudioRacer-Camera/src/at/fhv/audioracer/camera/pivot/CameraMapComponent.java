@@ -3,6 +3,7 @@ package at.fhv.audioracer.camera.pivot;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -12,6 +13,7 @@ import org.apache.pivot.wtk.Mouse.ScrollType;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.imgproc.Imgproc;
 
 import at.fhv.audioracer.camera.OpenCVCamera;
 import at.fhv.audioracer.camera.OpenCVCameraListener;
@@ -139,6 +141,15 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		_camera.openCamera(id);
 	}
 	
+	public void startCalibration() {
+		_positioning = false;
+		_camera.startCalibration();
+	}
+	
+	public boolean endCalibration() {
+		return _camera.endCalibration();
+	}
+	
 	public boolean startPositioning() {
 		if (_camera.beginPositioning()) {
 			_positioning = true;
@@ -148,13 +159,9 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		}
 	}
 	
-	public void startCalibration() {
+	public void startSelectGameArea() {
+		_camera.endPositioning();
 		_positioning = false;
-		_camera.startCalibration();
-	}
-	
-	public void endCalibration() {
-		_camera.endCalibration();
 		_selecting = true;
 	}
 	
@@ -177,7 +184,7 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 			return true;
 		} else if (_selecting && button == Button.LEFT) {
 			_gameAreaX1 = getRealImageCoordinateX(xArgument);
-			_gameAreaY1 = getRealIamgeCoordinateY(yArgument);
+			_gameAreaY1 = getRealImageCoordinateY(yArgument);
 			_gameAreaX2 = _gameAreaX1;
 			_gameAreaY2 = _gameAreaY1;
 			return true;
@@ -203,7 +210,7 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 			return true;
 		} else if (_selecting && Mouse.isPressed(Button.LEFT)) {
 			_gameAreaX2 = getRealImageCoordinateX(xArgument);
-			_gameAreaY2 = getRealIamgeCoordinateY(yArgument);
+			_gameAreaY2 = getRealImageCoordinateY(yArgument);
 			return true;
 		} else {
 			return super.mouseMove(xArgument, yArgument);
@@ -237,6 +244,10 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		_camera.rotate();
 	}
 	
+	public void setRotation(int degree) {
+		_camera.setRotation(degree);
+	}
+	
 	public boolean gameAreaSelected() {
 		int width = Math.abs(_gameAreaX1 - _gameAreaX2);
 		int height = Math.abs(_gameAreaY1 - _gameAreaY2);
@@ -268,7 +279,7 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		return (int) ((x - _cameraImagePosX) * _cameraImageWidthScale);
 	}
 	
-	private int getRealIamgeCoordinateY(int y) {
+	private int getRealImageCoordinateY(int y) {
 		return (int) ((y - _cameraImagePosY) * _cameraImageHeightScale);
 	}
 	
@@ -317,5 +328,64 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		BufferedImage image2 = new BufferedImage(cols, rows, type);
 		image2.getRaster().setDataElements(0, 0, cols, rows, data);
 		return image2;
+	}
+	
+	public int[] getHueValues(int x, int y) {
+		x = getRealImageCoordinateX(x);
+		y = getRealImageCoordinateY(y);
+		
+		Mat frame = _camera.getFrame();
+		Mat pixel = frame.col(x).row(y);
+		Mat pixelHue = new Mat();
+		Imgproc.cvtColor(pixel, pixelHue, Imgproc.COLOR_BGR2HSV);
+		
+		byte[] tmp = new byte[3];
+		pixelHue.get(0, 0, tmp);
+		
+		frame.release();
+		
+		int[] data = new int[3];
+		data[0] = tmp[0] & 0xFF; // get the unsigned value of the byte
+		data[1] = tmp[1] & 0xFF;
+		data[2] = tmp[2] & 0xFF;
+		
+		return data;
+	}
+	
+	public void updateHueRange(int colorLower, int colorUpper, int saturationLower,
+			int saturationUpper, int valueLower, int valueUpper) {
+		_camera.updateHueRange(colorLower, colorUpper, saturationLower, saturationUpper,
+				valueLower, valueUpper);
+		
+	}
+	
+	public boolean calibrationStep() {
+		return _camera.calibrationStep();
+	}
+	
+	public void storeCalibration() throws IOException {
+		_camera.storeCalibration();
+	}
+	
+	public boolean loadCalibration() throws ClassNotFoundException, IOException {
+		return _camera.loadCalibration();
+	}
+	
+	/**
+	 * Called when the HUE range values are configured, so that the direction color (which is used on all cars) is configured
+	 */
+	public void directionHueConfigured() {
+		
+		// TODO Auto-generated method stub
+	}
+	
+	/**
+	 * Called when the HUE range values are configured, so that it is possible to exactly detect one car.
+	 * 
+	 * @return true when exactly one car could be detected, otherwise false
+	 */
+	public boolean carConfigured() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

@@ -60,22 +60,6 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 			// We should probably disable some of the GUI's functionality
 			_logger.error(msg, e1);
 		}
-		
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(1000);
-					while (true) {
-						SimulationController.getInstance().update();
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-		
 	}
 	
 	@Override
