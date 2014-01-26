@@ -266,17 +266,17 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					car.getPlayer().getPlayerConnection().sendUDP(updateCheckpointDirMsg);
 					
 				} else {
-					boolean gameOver = false;
 					synchronized (_lockObject) {
 						_playersInGameCount--;
 						_logger.info(
 								"Player {} finished game. No checkpoints left. Currently {} player(s) in game.",
 								car.getPlayer().getName(), _playersInGameCount);
 						if (_playersInGameCount == 0) {
-							gameOver = true;
+							_gameRunning = false;
 						}
+						resetAllPlayerReadyFlags();
 					}
-					if (gameOver) {
+					if (!_gameRunning) {
 						PlayerMessage endMsg = new PlayerMessage(MessageId.GAME_END);
 						_playerServer.sendToAllTCP(endMsg);
 					}
@@ -285,6 +285,14 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			
 		}
 		car.updatePosition(new Position(posX, posY), new Direction(direction));
+	}
+	
+	private void resetAllPlayerReadyFlags() {
+		synchronized (_playerList) {
+			for (Player p : _playerList.values()) {
+				p.setReady(false);
+			}
+		}
 	}
 	
 	public void selectCar(PlayerConnection playerConnection, byte carId) {
@@ -537,6 +545,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					_logger.info("Game over, last player-car disconnected.");
 					PlayerMessage gameOverMsg = new PlayerMessage(MessageId.GAME_END);
 					_playerServer.sendToAllTCP(gameOverMsg);
+					resetAllPlayerReadyFlags();
+					_gameRunning = false;
 				}
 			}
 		}
@@ -552,12 +562,15 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		
 		synchronized (_lockObject) {
 			Player player = playerConnection.getPlayer();
-			player.setReady(true);
-			_playersInGameCount++;
-			_logger.debug("Player {} with id {} in ready state. Currently {} player(s) in game.",
-					player.getName(), player.getPlayerId(), _playersInGameCount);
-			
-			_checkPreconditionsAndStartGameIfAllFine();
+			if (player.isReady() == false && player.getCar() != null) {
+				player.setReady(true);
+				_playersInGameCount++;
+				_logger.debug(
+						"Player {} with id {} in ready state. Currently {} player(s) in game.",
+						player.getName(), player.getPlayerId(), _playersInGameCount);
+				
+				_checkPreconditionsAndStartGameIfAllFine();
+			}
 		}
 	}
 	

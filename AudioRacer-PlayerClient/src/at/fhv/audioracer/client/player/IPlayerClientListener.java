@@ -34,6 +34,11 @@ public interface IPlayerClientListener extends IListener {
 		public void onGameStarts() {
 			// no-op.
 		}
+		
+		@Override
+		public void onGameEnd() {
+			
+		}
 	}
 	
 	void onUpdateGameState(int playerId);
@@ -47,5 +52,7 @@ public interface IPlayerClientListener extends IListener {
 	void onPlayerDisconnected(int playerId);
 	
 	void onGameStarts();
+	
+	void onGameEnd();
 	
 }

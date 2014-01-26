@@ -140,6 +140,12 @@ public class StartUpView extends JFrame {
 				});
 				t.start();
 			}
+			
+			@Override
+			public void onGameEnd() {
+				// TODO Auto-generated method stub
+				
+			}
 		});
 		
 		_btnReady = new JButton("Ready");

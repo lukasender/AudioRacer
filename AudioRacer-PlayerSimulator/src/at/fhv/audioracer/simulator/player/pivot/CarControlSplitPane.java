@@ -6,10 +6,13 @@ import org.apache.pivot.beans.BXML;
 import org.apache.pivot.beans.Bindable;
 import org.apache.pivot.collections.Map;
 import org.apache.pivot.util.Resources;
+import org.apache.pivot.wtk.ApplicationContext;
 import org.apache.pivot.wtk.Button;
 import org.apache.pivot.wtk.ButtonPressListener;
 import org.apache.pivot.wtk.PushButton;
 import org.apache.pivot.wtk.SplitPane;
+
+import at.fhv.audioracer.client.player.IPlayerClientListener;
 
 public class CarControlSplitPane extends SplitPane implements Bindable {
 	
@@ -38,6 +41,21 @@ public class CarControlSplitPane extends SplitPane implements Bindable {
 				PlayerSimulatorWindow.getInstance().setContent(CarSelectForm.class);
 			}
 		});
+		
+		PlayerSimulatorWindow.getInstance().getPlayerClient().getListenerList()
+				.add(new IPlayerClientListener.Adapter() {
+					@Override
+					public void onGameEnd() {
+						ApplicationContext.queueCallback(new Runnable() {
+							
+							@Override
+							public void run() {
+								_pushButtonReady.setEnabled(true);
+								_pushButtonSelectCar.setEnabled(false);
+							}
+						});
+					}
+				});
 	}
 	
 }

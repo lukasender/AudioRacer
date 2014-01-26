@@ -78,6 +78,15 @@ public class PlayerClient extends Listener implements IPlayerClient {
 			
 		}
 		
+		@Override
+		public void onGameEnd() {
+			
+			for (IPlayerClientListener listener : listeners()) {
+				listener.onGameEnd();
+			}
+			
+		}
+		
 	}
 	
 	/*
@@ -335,6 +344,7 @@ public class PlayerClient extends Listener implements IPlayerClient {
 					break;
 				case GAME_END:
 					System.out.println("Game over.");
+					_listenerList.onGameEnd();
 					break;
 				default:
 					// System.out.println("Message with id: " + message.messageId
