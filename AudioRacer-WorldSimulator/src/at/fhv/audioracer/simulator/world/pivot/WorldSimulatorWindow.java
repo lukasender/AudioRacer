@@ -61,6 +61,8 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 			_logger.error(msg, e1);
 		}
 		
+		// @formatter:off
+		/* FIXME: this thread is consuming 100 % of a cpu core doing nothing. Why?
 		new Thread(new Runnable() {
 			
 			@Override
@@ -75,6 +77,8 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 				}
 			}
 		}).start();
+		*/
+		// @formatter:on
 		
 	}
 	
