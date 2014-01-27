@@ -52,4 +52,12 @@ public class OpenCVCameraCar {
 		_upperBound = upperBound.clone();
 		
 	}
+	
+	public Scalar getLowerHueBound() {
+		return _lowerBound;
+	}
+	
+	public Scalar getUpperHueBound() {
+		return _upperBound;
+	}
 }

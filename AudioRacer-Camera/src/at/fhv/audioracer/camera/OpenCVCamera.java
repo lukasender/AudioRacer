@@ -21,6 +21,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
@@ -31,7 +32,9 @@ import org.opencv.imgproc.Moments;
 
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Map;
+import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.ListenerList;
+import at.fhv.audioracer.core.util.Position;
 
 public class OpenCVCamera implements Runnable {
 	private static class OpenCVCameraListenerList extends ListenerList<OpenCVCameraListener>
@@ -75,6 +78,7 @@ public class OpenCVCamera implements Runnable {
 	private Mat _distCoeefs;
 	
 	private Panel _p;
+	private Panel _testPanel;
 	private long _lastFrame;
 	private int _frameCounter;
 	
@@ -84,7 +88,7 @@ public class OpenCVCamera implements Runnable {
 	private Scalar _lowerDirectionHueBound;
 	private Scalar _upperDirectionHueBound;
 	
-	private byte id = 0;
+	private byte _id = 0;
 	
 	private List<OpenCVCameraCar> _cameraCars;
 	private Map _map;
@@ -107,12 +111,19 @@ public class OpenCVCamera implements Runnable {
 		
 		_patternSize = new Size(4, 6);
 		
-		JFrame frame = new JFrame("BasicPanel");
+		JFrame frame = new JFrame("ThreshHoldPanel");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(400, 400);
 		_p = new Panel();
 		frame.setContentPane(_p);
 		frame.setVisible(true);
+		
+		JFrame testPanelFrame = new JFrame("TestPanel");
+		testPanelFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		testPanelFrame.setSize(400, 400);
+		_testPanel = new Panel();
+		testPanelFrame.setContentPane(_testPanel);
+		testPanelFrame.setVisible(true);
 		
 		_frameCounter = 0;
 	}
@@ -396,10 +407,6 @@ public class OpenCVCamera implements Runnable {
 		Core.fillPoly(frame, candidates, new Scalar(0, 0, 255));
 		// }
 		
-		java.util.Map<Car, MatOfPoint> cars = mapCandidatesToCars(candidates);
-		
-		calcCarDirection(cars);
-		
 	}
 	
 	private void calcCarDirection(java.util.Map<Car, MatOfPoint> cars) {
@@ -407,9 +414,91 @@ public class OpenCVCamera implements Runnable {
 		
 	}
 	
-	private java.util.Map<Car, MatOfPoint> mapCandidatesToCars(List<MatOfPoint> candidates) {
-		// TODO Auto-generated method stub
+	/**
+	 * 
+	 * called from nextCar after CarDetetection was successful
+	 * 
+	 * @param car
+	 * @return Point[0] = position, Point[1] = directionVector
+	 */
+	private Point[] calcCarPosition(OpenCVCameraCar car, Mat frame) {
+		
+		// Mat frame = getFrame();
+		
+		// convert to hue
+		Mat imgHue = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
+		Imgproc.cvtColor(frame, imgHue, Imgproc.COLOR_BGR2HSV);
+		
+		// getCar contour should be one
+		List<MatOfPoint> cars = findCarByColor(imgHue, car.getLowerHueBound(),
+				car.getUpperHueBound());
+		// getDirection contours
+		List<MatOfPoint> directionContour = findCarByColor(imgHue, _lowerDirectionHueBound,
+				_upperDirectionHueBound);
+		imgHue.release();
+		
+		// calculate center points of contours
+		if (cars.size() == 1) {
+			
+			Moments moments = Imgproc.moments(cars.get(0));
+			Point carMarkerCenter = new Point();
+			carMarkerCenter.x = moments.get_m10() / moments.get_m00();
+			carMarkerCenter.y = moments.get_m01() / moments.get_m00();
+			
+			MatOfPoint carDirectionMarker = null;
+			Point directionMarkerCenter = null;
+			double minDist = Double.MAX_VALUE;
+			// find nearest directionPolygon
+			for (MatOfPoint direction : directionContour) {
+				
+				moments = Imgproc.moments(direction);
+				
+				Point center = new Point();
+				center.x = moments.get_m10() / moments.get_m00();
+				center.y = moments.get_m01() / moments.get_m00();
+				
+				double x = carMarkerCenter.x - center.x;
+				double y = carMarkerCenter.y - center.y;
+				
+				double distance = x * x + y * y;
+				
+				if (distance < minDist) {
+					directionMarkerCenter = center;
+					carDirectionMarker = direction;
+					minDist = distance;
+				}
+				
+			}
+			
+			// vector from directionMarker to carMarker
+			Point directionToCar = new Point(carMarkerCenter.x - directionMarkerCenter.x,
+					carMarkerCenter.y - directionMarkerCenter.y);
+			
+			// carCenter is theoretically halfway between direction and car markers
+			Point carCenter = new Point(directionMarkerCenter.x + directionToCar.x * 0.5,
+					directionMarkerCenter.y + directionToCar.y * 0.5);
+			
+			// rotation counterClockwise by 90 degrees
+			Point carDirection = new Point();
+			carDirection.x = -directionToCar.y;
+			carDirection.y = directionToCar.x;
+			
+			Point[] returnValues = { carCenter, carDirection };
+			
+			// TODO remove drawing marker boundingboxes
+			Rect carMarkerBox = Imgproc.boundingRect(cars.get(0));
+			Rect directionMarkerBox = Imgproc.boundingRect(carDirectionMarker);
+			
+			Core.rectangle(frame, carMarkerBox.tl(), carMarkerBox.br(), new Scalar(0, 255, 0), 1);
+			Core.rectangle(frame, directionMarkerBox.tl(), directionMarkerBox.br(), new Scalar(0,
+					0, 255), 1);
+			
+			return returnValues;
+			
+		}
+		
 		return null;
+		
 	}
 	
 	/**
@@ -754,9 +843,23 @@ public class OpenCVCamera implements Runnable {
 			return false;
 		}
 		
-		if (detectCar(frame, true)) {
-			OpenCVCameraCar car = new OpenCVCameraCar(id++);
+		if (detectCar(frame, false)) {
+			byte id = _id++;
+			OpenCVCameraCar car = new OpenCVCameraCar(id);
 			car.setHueRange(_lowerBound, _upperBound);
+			Point[] carVectors = calcCarPosition(car, frame);
+			double direction = carVectors[1].x / Math.sqrt(carVectors[1].dot(new Point(0, 0)));
+			// convert Point to Position and add offsetOfGameArea
+			Position carPosition = new Position((float) (carVectors[0].x - _offsetPoint.x),
+					(float) (carVectors[0].y - _offsetPoint.y));
+			car.carDetected(id, carPosition, new Direction((float) direction));
+			// TODO remove testPanelCode
+			Core.circle(frame, carVectors[0], 3, new Scalar(255, 0, 255), -1);
+			Point carDirectionPoint = new Point(carVectors[0].x + (3 * carVectors[1].x),
+					carVectors[0].y + (3 * carVectors[1].y));
+			Core.line(frame, carVectors[0], carDirectionPoint, new Scalar(255, 255, 255));
+			_testPanel.setImage(frame);
+			
 			// try to find car
 			return true;
 		}
