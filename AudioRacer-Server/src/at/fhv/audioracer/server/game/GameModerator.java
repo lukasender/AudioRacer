@@ -81,6 +81,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		_playerServer = PlayerServer.getInstance();
 		CarClientManager.getInstance().getCarClientListenerList().add(this);
 		_worldZigbeeThread = new Thread(_worldZigbeeRunnable);
+		_worldZigbeeRunnable.getWorldZigbeeConnectionCountListenerList().add(this);
 		CarClientManager.getInstance().getCarClientListenerList().add(_worldZigbeeRunnable);
 		_playerTimeoutScheduler.registerEvent(this);
 	}
