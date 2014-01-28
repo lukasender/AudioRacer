@@ -12,14 +12,22 @@
 				</Border>
 			</left>
 			<right>
-				<Border title="Game State Variables">
-					<TableView bxml:id="_tableView">
-						<columns>
-							<TableView.Column name="player" width="1*" />
-							<TableView.Column name="checkpoints" width="-1" />
-						</columns>
-					</TableView>
-				</Border>
+				<BoxPane orientation="vertical" styles="{fill:true}">
+					<Form>
+						<Form.Section heading="COM Port selection">
+							<ListButton bxml:id="_comPortsListButton" />
+							<PushButton bxml:id="_refreshComPortsButton" buttonData="Refresh COM ports" />
+						</Form.Section>
+						<Form.Section heading="Scoreboard">
+							<TableView bxml:id="_tableView">
+								<columns>
+									<TableView.Column name="player" width="1*" />
+									<TableView.Column name="checkpoints" width="-1" />
+								</columns>
+							</TableView>
+						</Form.Section>
+					</Form>
+				</BoxPane>
 			</right>
 		</SplitPane>
 	</CardPane>

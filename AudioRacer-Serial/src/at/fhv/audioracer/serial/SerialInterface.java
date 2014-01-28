@@ -38,6 +38,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	private final SerialPort _serialPort;
 	
 	private boolean _running;
+	private volatile boolean _stopped;
 	
 	// used to determine if a log message is sent
 	private boolean _logging = false;
@@ -187,7 +188,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	private void startWriting() {
 		_lock.lock();
 		try {
-			if (!_running && _serialPort.isCTS()) {
+			if (!_stopped && !_running && _serialPort.isCTS()) {
 				_running = true;
 				Thread thread = new Thread(new Runnable() {
 					@Override
@@ -214,7 +215,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 		_lock.lock();
 		boolean locked = true;
 		try {
-			while (_serialPort.isCTS()) {
+			while (!_stopped && _serialPort.isCTS()) {
 				// only send when hardware is ready
 				
 				_lock.unlock();
@@ -222,7 +223,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 				
 				byte[] buff = null;
 				Command command = _writingQueue.take();
-				if (command.command == CAR_UPDATE_VELOCITY) {
+				if (command != null && command.command == CAR_UPDATE_VELOCITY) {
 					Velocity velocity = command.car.getVelocity();
 					if (velocity != null) {
 						buff = new byte[] { command.command, command.car.getCarClientId(),
@@ -233,7 +234,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 							(command.car != null ? command.car.getCarClientId() : 0), 0, 0 }; // always padding to 4 byte
 				}
 				
-				if (buff != null) {
+				if (buff != null && !_stopped) {
 					_serialPort.writeBytes(buff);
 				}
 				
@@ -251,6 +252,23 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 			
 			_running = false;
 			_lock.unlock();
+		}
+	}
+	
+	public void stop() {
+		// TODO: does not always work.
+		_stopped = true;
+		
+		// force a wakeup of the writing thread
+		_writingQueue.add(new Command());
+		
+		try {
+			if (_serialPort.isOpened()) {
+				_serialPort.closePort();
+			}
+		} catch (SerialPortException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
