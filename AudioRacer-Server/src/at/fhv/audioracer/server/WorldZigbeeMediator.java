@@ -12,6 +12,8 @@ import at.fhv.audioracer.communication.world.ICarManagerListener;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.util.ListenerList;
+import at.fhv.audioracer.core.util.Position;
+import at.fhv.audioracer.server.game.CheckpointUtil;
 import at.fhv.audioracer.server.model.IWorldZigbeeConnectionCountChanged;
 
 public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerListener {
@@ -33,28 +35,34 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 	private BlockingQueue<ICarClient> _awaitingConnectionQueue = new LinkedBlockingQueue<ICarClient>();
 	private ICarClient _currentCarClientToConnect = null;
 	private Boolean _assignNextCarClient = true;
-	private HashMap<Byte, Integer> _updateCarInvocationCount = new HashMap<Byte, Integer>();
-	private final int _upateCarInvocationCountThreshold = 100;
+	
+	// Object[0] = Car
+	// Object[1] = initial Position, detection process started with
+	private HashMap<Byte, Object[]> _carAndInitialPositionMap = new HashMap<>();
+	
 	private int _connectionCount = 0;
-	private float _configurationSpeed = 1.f;
+	private float _configurationSpeed = 0.2f;
 	private float _configurationDirection = 0.0f;
 	private WorldZigbeeConnectionCountListenerList _listenerList = new WorldZigbeeConnectionCountListenerList();
+	private int _mapX = 0;
+	private int _mapY = 0;
+	private float _distanceToDrive = 0.f;
+	private CheckpointUtil _rangeUtil = new CheckpointUtil();
 	
 	@Override
 	public void run() {
 		_logger.info("Mediator thread start.");
 		
 		try {
-			float speed = _configurationSpeed;
 			while (true) {
-				speed *= -1.f;
 				if (_assignNextCarClient) {
 					_assignNextCarClient = false;
 					_currentCarClientToConnect = _awaitingConnectionQueue.take();
 				} else {
-					Thread.sleep(50);
+					Thread.sleep(10);
 					// _logger.debug("try to assign CarClient ... send update velocity.");
-					_currentCarClientToConnect.updateVelocity(speed, _configurationDirection);
+					_currentCarClientToConnect.updateVelocity(_configurationSpeed,
+							_configurationDirection);
 					
 				}
 			}
@@ -71,31 +79,34 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 	
 	@Override
 	public void onCarPositionChanged(Car<?> car) {
-		int count = 0;
 		byte carId = car.getCarId();
-		if (_updateCarInvocationCount.containsKey(carId) == false) {
-			count = 1;
-			_updateCarInvocationCount.put(carId, count);
-		} else {
-			count = _updateCarInvocationCount.get(carId);
-			count++;
-			_updateCarInvocationCount.put(car.getCarId(), count);
-		}
-		// _logger.debug("try to assign CarClient with id: {} current updatePos count: {}", carId,
-		// count);
 		
-		if (count > _upateCarInvocationCountThreshold
-				&& car.getCarClientId() == Car.CAR_CLIENT_NOT_ASSIGNED_ID) {
-			byte id = _currentCarClientToConnect.getCarClientId();
-			_logger.info(
-					"zigbee connection with carClientId: {} connected with car with id: {} ... {} connections left -----------------------",
-					new Object[] { id, car.getCarId(), _awaitingConnectionQueue.size() });
-			car.setCarClientId(id);
+		// return immediately on Car movement misinterpretation from camera implementation
+		if (car.getCarClientId() != Car.CAR_CLIENT_NOT_ASSIGNED_ID) {
+			return;
+		}
+		
+		if (!_carAndInitialPositionMap.containsKey(carId)) {
+			_carAndInitialPositionMap.put(carId, new Object[2]);
+		}
+		Object[] carPosMap = _carAndInitialPositionMap.get(carId);
+		if (carPosMap[1] == null) {
+			carPosMap[1] = car.getPosition();
+			_logger.debug("Initial car position of car-id: {} is {}", car.getCarId(),
+					car.getPosition());
+		}
+		float distToInitialPosition = _rangeUtil.getDistance(car.getPosition(),
+				(Position) carPosMap[1]);
+		if (distToInitialPosition > _distanceToDrive) {
+			_logger.debug("Car with id {} drove {} ... it will be paired with Car-client-id: {}",
+					car.getCarId(), distToInitialPosition,
+					_currentCarClientToConnect.getCarClientId());
+			car.setCarClientId(_currentCarClientToConnect.getCarClientId());
 			int oldConnectionCount = _connectionCount;
 			_connectionCount++;
 			_listenerList.onWorldZigbeeConnectionCountChanged(oldConnectionCount, _connectionCount);
 			_assignNextCarClient = true;
-			_updateCarInvocationCount.clear();
+			_carAndInitialPositionMap.remove(carId);
 		}
 	}
 	
@@ -119,5 +130,12 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 	
 	public ListenerList<IWorldZigbeeConnectionCountChanged> getWorldZigbeeConnectionCountListenerList() {
 		return _listenerList;
+	}
+	
+	public void setMapSize(int sizeX, int sizeY) {
+		_mapX = sizeX;
+		_mapY = sizeY;
+		_distanceToDrive = (Math.min(_mapX, _mapY) / 4);
+		_logger.debug("Each Car must drive {} to be detected.", _distanceToDrive);
 	}
 }

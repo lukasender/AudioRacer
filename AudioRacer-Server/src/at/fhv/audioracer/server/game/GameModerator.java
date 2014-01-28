@@ -167,6 +167,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			} else {
 				_mapConfigured = true;
 				_checkpointUtil.setMapSize(sizeX, sizeY);
+				_worldZigbeeRunnable.setMapSize(sizeX, sizeY);
 				if (_map != null) {
 					_map.setSizeX(sizeX);
 					_map.setSizeY(sizeY);
