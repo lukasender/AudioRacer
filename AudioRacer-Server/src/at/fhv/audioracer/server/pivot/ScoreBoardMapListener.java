@@ -55,4 +55,9 @@ public class ScoreBoardMapListener implements IMapListener {
 		}
 	}
 	
+	@Override
+	public void repaintMapComponents() {
+		// no-op.
+	}
+	
 }

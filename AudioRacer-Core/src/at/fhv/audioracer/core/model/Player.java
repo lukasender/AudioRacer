@@ -34,6 +34,12 @@ public class Player {
 	 */
 	protected Car<?> _car;
 
+	/**
+	 * Server-Player Connection state. Default is CONNECTED because this object
+	 * is instantiated each time a new client connection is incoming.
+	 */
+	protected ConnectionState _connectionState = ConnectionState.CONNECTED;
+
 	public String getName() {
 		return _name;
 	}
@@ -82,6 +88,14 @@ public class Player {
 		_coinsLeft = coinsLeft;
 	}
 
+	public ConnectionState getConnectionState() {
+		return _connectionState;
+	}
+
+	public void setConnectionState(ConnectionState connectionState) {
+		_connectionState = connectionState;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
@@ -95,11 +109,13 @@ public class Player {
 		b.append(_coinsLeft);
 		b.append(" time: ");
 		b.append(_time);
+		b.append(" server-connection-state: ");
+		b.append(_connectionState.getDescription());
+
 		if (_car != null) {
 			b.append(" car-id: ");
 			b.append(_car.getCarId());
 		}
 		return b.toString();
 	}
-
 }

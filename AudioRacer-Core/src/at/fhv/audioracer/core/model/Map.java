@@ -40,6 +40,13 @@ public class Map {
 			}
 
 		}
+
+		@Override
+		public void repaintMapComponents() {
+			for (IMapListener listener : listeners()) {
+				listener.repaintMapComponents();
+			}
+		}
 	}
 
 	private int _sizeX;
@@ -115,6 +122,14 @@ public class Map {
 			_checkpoints.remove(removedCP);
 			_listenerList.onCheckpointChange();
 		}
+	}
+
+	public void repaintMapComponents() {
+		_listenerList.repaintMapComponents();
+	}
+
+	public void onConnectionStateChanged(Player p) {
+
 	}
 
 	public Collection<Car<?>> getCars() {

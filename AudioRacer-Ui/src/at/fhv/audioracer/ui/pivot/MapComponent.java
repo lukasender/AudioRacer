@@ -87,4 +87,9 @@ public class MapComponent extends Component implements IMapListener, ICarListene
 			});
 		}
 	}
+	
+	@Override
+	public void repaintMapComponents() {
+		repaint();
+	}
 }
