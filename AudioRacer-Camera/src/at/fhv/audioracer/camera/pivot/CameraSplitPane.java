@@ -287,6 +287,8 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 					return;
 				}
 				
+				_cameraMapComponent.allCarsDetected();
+				
 				_carConfiguredButton.setEnabled(false);
 				_directionHueButton.setEnabled(false);
 				_allCarsDetectedButton.setEnabled(false);

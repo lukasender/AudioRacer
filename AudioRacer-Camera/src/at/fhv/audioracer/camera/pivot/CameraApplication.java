@@ -1,6 +1,10 @@
 package at.fhv.audioracer.camera.pivot;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import org.apache.pivot.beans.BXMLSerializer;
 import org.apache.pivot.collections.Map;
@@ -19,6 +23,7 @@ import at.fhv.audioracer.communication.world.message.UpdateCarMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.model.IMapListener;
+import at.fhv.audioracer.ui.pivot.MapComponent;
 
 import com.esotericsoftware.kryonet.Client;
 
@@ -70,12 +75,28 @@ public class CameraApplication implements Application, IMapListener, ICarListene
 	public void onCarAdded(Car<?> addedCar) {
 		addedCar.getCarListenerList().add(this);
 		
+		// TODO review BufferedImage conversion to byte[]
+		BufferedImage originalImage;
+		byte[] imageInByte = null;
+		
+		try {
+			originalImage = ImageIO.read(MapComponent.class.getResource("car-red.png"));
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(originalImage, "jpg", baos);
+			baos.flush();
+			imageInByte = baos.toByteArray();
+			baos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		CarDetectedMessage msg = new CarDetectedMessage();
 		msg.carId = addedCar.getCarId();
 		msg.posX = addedCar.getPosition().getPosX();
 		msg.posY = addedCar.getPosition().getPosY();
 		msg.direction = addedCar.getDirection().getDirection();
-		msg.image = null; // TODO: implement
+		msg.image = imageInByte;
 		_cameraClient.sendTCP(msg);
 	}
 	

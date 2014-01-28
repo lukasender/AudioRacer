@@ -16,11 +16,6 @@ public class OpenCVCameraCar {
 	private Car<?> _car;
 	private Scalar _lowerBound;
 	private Scalar _upperBound;
-	private byte _id;
-	
-	public OpenCVCameraCar(byte id) {
-		_id = id;
-	}
 	
 	/**
 	 * call to create a detected Object as Car in Model
@@ -59,5 +54,13 @@ public class OpenCVCameraCar {
 	
 	public Scalar getUpperHueBound() {
 		return _upperBound;
+	}
+	
+	public Car<?> getCar() {
+		return _car;
+	}
+	
+	public byte getID() {
+		return _car.getCarId();
 	}
 }

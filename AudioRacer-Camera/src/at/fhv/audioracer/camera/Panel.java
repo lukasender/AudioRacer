@@ -35,7 +35,6 @@ public class Panel extends JPanel {
 	
 	private void setimage(BufferedImage newimage) {
 		image = newimage;
-		repaint();
 		return;
 	}
 	
