@@ -17,7 +17,7 @@ public class CarClientListener implements ICarListener {
 		msg.direction = car.getDirection().getDirection();
 		msg.posX = car.getPosition().getPosX();
 		msg.posY = car.getPosition().getPosY();
-		camera.sendTCP(msg);
+		camera.sendUDP(msg);
 	}
 	
 }
