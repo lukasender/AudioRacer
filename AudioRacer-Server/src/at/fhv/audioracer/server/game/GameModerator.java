@@ -506,6 +506,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					_logger.debug("generate checkpoint number: {} for carId: {}", i, car.getCarId());
 					Position nextP = _checkpointUtil.generateNextCheckpoint(previousCheckpoint);
 					
+					car.getPlayer().setCoinsLeft(_checkpointStartCount);
+					
 					if (_map != null && i == 0) {
 						Checkpoint nextCP = new Checkpoint(car.getCarId(), nextP,
 								_checkpointUtil.getCheckpointRadius(), i + 1);
@@ -513,7 +515,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 					}
 					_checkpoints.get(car.getCarId()).addLast(nextP);
 					
-					car.getPlayer().setCoinsLeft(_checkpoints.get(car.getCarId()).size());
+					_logger.debug("{} checkpoints left for player  {}", car.getPlayer().getName(),
+							_checkpoints.get(car.getCarId()).size());
 				}
 			}
 			
