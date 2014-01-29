@@ -695,10 +695,10 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				playerId);
 		_playerTimeoutScheduler.stopTimeout(playerId);
 		Player oldPlrToCopy = _playerList.get(playerId);
+		ReconnectRequestResponse resp = new ReconnectRequestResponse();
+		resp.reconnectSuccess = false;
 		if (oldPlrToCopy == null) {
 			_logger.warn("old Player for id: {} ist null!", playerId);
-			ReconnectRequestResponse resp = new ReconnectRequestResponse();
-			resp.reconnectSuccess = false;
 			playerConnection.sendTCP(resp);
 			return;
 		}
@@ -706,18 +706,21 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		playerConnection.setPlayer(new Player(oldPlrToCopy));
 		Player copied = playerConnection.getPlayer();
 		copied.setPlayerConnection(playerConnection);
-		Car<Player> oldCar = _carList.get(copied.getCar().getCarId());
-		oldCar.setPlayer(copied);
-		
-		_playerList.put(playerId, copied);
-		if (_map != null) {
-			_map.repaintMapComponents();
+		if (copied.getCar() != null) {
+			Car<Player> oldCar = _carList.get(copied.getCar().getCarId());
+			oldCar.setPlayer(copied);
+			resp.reconnectSuccess = true;
+			_logger.debug("Player reconnection failed for id {}", playerId);
+		} else {
+			
+			_playerList.put(playerId, copied);
+			if (_map != null) {
+				_map.repaintMapComponents();
+			}
+			
+			_logger.debug("Player info copied: {} --------------------------- ", copied);
 		}
 		
-		_logger.debug("Player info copied: {} --------------------------- ", copied);
-		
-		ReconnectRequestResponse resp = new ReconnectRequestResponse();
-		resp.reconnectSuccess = true;
 		_playerServer.sendToTCP(playerConnection.getID(), resp);
 		_broadcastFreeCars();
 	}

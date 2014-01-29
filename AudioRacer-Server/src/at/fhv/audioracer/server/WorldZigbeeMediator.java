@@ -98,6 +98,11 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 		float distToInitialPosition = _rangeUtil.getDistance(car.getPosition(),
 				(Position) carPosMap[1]);
 		if (distToInitialPosition > _distanceToDrive) {
+			if (_currentCarClientToConnect == null) {
+				_logger.debug("Camera car with id {} is still waiting for zigbee connections.");
+				return;
+			}
+			
 			_logger.debug("Car with id {} drove {} ... it will be paired with Car-client-id: {}",
 					car.getCarId(), distToInitialPosition,
 					_currentCarClientToConnect.getCarClientId());

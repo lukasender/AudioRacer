@@ -309,8 +309,23 @@ public class PlayerClient extends Listener implements IPlayerClient {
 		}
 		if (!_connected) {
 			_player.setPlayerId(getPlayerServer().setPlayerName(playerName));
+			
+			addPlayer(_player.getPlayerId(), playerName);
+			
 			_connected = true;
 		}
+	}
+	
+	private void addPlayer(int playerId, String playerName) {
+		Player player;
+		if (_players.containsKey(playerId)) {
+			player = _players.get(playerId);
+		} else {
+			player = new Player();
+			_players.put(playerId, player);
+			player.setPlayerId(playerId);
+		}
+		player.setName(playerName);
 	}
 	
 	public void stopClient() {
@@ -347,6 +362,8 @@ public class PlayerClient extends Listener implements IPlayerClient {
 					PlayerConnectedMessage connectedMsg = (PlayerConnectedMessage) message;
 					System.out.println("Other player conneted with name: "
 							+ connectedMsg.playerName);
+					
+					addPlayer(connectedMsg.id, connectedMsg.playerName);
 					break;
 				case GAME_END:
 					System.out.println("Game over.");

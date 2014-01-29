@@ -139,7 +139,6 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	public void received(Connection connection, Object object) {
 		if (object instanceof PlayerMessage) {
 			PlayerMessage message = (PlayerMessage) object;
-			System.out.println("Received " + message.messageId + " message.");
 			switch (message.messageId) {
 				case SET_PLAYER_NAME_RESPONSE:
 					SetPlayerNameResponseMessage setNameResponse = (SetPlayerNameResponseMessage) message;

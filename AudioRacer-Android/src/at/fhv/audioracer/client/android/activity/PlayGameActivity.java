@@ -6,8 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,12 +53,25 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	public class OnGameEndsListener extends IPlayerClientListener.Adapter {
 		
-		private final Intent selectCarsIntent = new Intent(PlayGameActivity.this, SelectCarActivity.class);
-		
 		@Override
 		public void onGameEnd() {
-			Toast.makeText(PlayGameActivity.this, "The game has ended and will restart again. Choose a free car!", Toast.LENGTH_SHORT);
-			startActivity(selectCarsIntent);
+			getWindow().getDecorView().getRootView().post(new Runnable() {
+				
+				@Override
+				public void run() {
+					Toast.makeText(PlayGameActivity.this, "The game has ended and will restart again.", Toast.LENGTH_SHORT);
+					
+					stopAllThreads();
+					_chosenControlMode = null;
+					
+					_controlsSettingsControlsView.setVisibility(View.VISIBLE);
+					
+					_trimSettingsView.setVisibility(View.INVISIBLE);
+					_standardControlsView.setVisibility(View.INVISIBLE);
+					_motionSensorControlsView.setVisibility(View.INVISIBLE);
+					_joystickControlsView.setVisibility(View.INVISIBLE);
+				}
+			});
 		}
 	}
 	
@@ -95,6 +109,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private PressedButton _trimSteeringUp = new PressedButton();
 	private PressedButton _trimSteeringDown = new PressedButton();
 	
+	private Vibrator _vibrator;
+	
 	@Override
 	public void onBackPressed() {
 		if (_controlsSettingsControlsView.getVisibility() == View.VISIBLE) {
@@ -130,6 +146,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		
 		setContentView(R.layout.activity_play_game);
 		
+		_vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		
 		/* get all views */
 		// controls
 		_controlsSettingsControlsView = findViewById(R.id.controls_settings);
@@ -145,6 +163,8 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		final GameStatsListItemArrayAdapter adapter = new GameStatsListItemArrayAdapter(this, gameStats.getEntriesSorted());
 		
 		IPlayerClientListener listener = new IPlayerClientListener.Adapter() {
+			private int _lastCoinsLeft = -1;
+			
 			public void onUpdateGameState(Player player) {
 				Log.d("play game", "called onUpdateGameState: " + player.getName() + ", coinsLeft " + player.getCoinsLeft() + ", time " + player.getTime());
 				GameStatsEntry entry = new GameStatsEntry();
@@ -155,6 +175,16 @@ public class PlayGameActivity extends Activity implements IControlMode {
 				entry.time = format.format(d);
 				
 				gameStats.addGameStats(entry);
+				
+				if (player != null && player.getPlayerId() == ClientManager.getInstance().getPlayerClient().getPlayer().getPlayerId()) {
+					int coinsLeft = player.getCoinsLeft();
+					if (coinsLeft == 0) {
+						_vibrator.vibrate(new long[] { 0, 300, 100, 300, 100, 300 }, -1);
+					} else if (coinsLeft < _lastCoinsLeft && _lastCoinsLeft >= 0) {
+						_vibrator.vibrate(50);
+					}
+					_lastCoinsLeft = coinsLeft;
+				}
 				
 				_gameStatsListView.post(new Runnable() {
 					@Override

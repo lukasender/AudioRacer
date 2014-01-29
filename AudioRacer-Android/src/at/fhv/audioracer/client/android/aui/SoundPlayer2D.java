@@ -168,7 +168,7 @@ public class SoundPlayer2D {
 		}
 		long newTime = System.currentTimeMillis();
 		// car to coin: if distance is reduced then it is positive velocity
-		double calcVelocity = (_position.getLength() - position.getLength()) / ((newTime - _oldTime) / 1000.0);
+		double calcVelocity = Math.abs(_position.getLength() - position.getLength()) / ((newTime - _oldTime) / 1000.0);
 		_oldTime = newTime;
 		_position.setPosX(position.getPosX());
 		_position.setPosY(position.getPosY());
