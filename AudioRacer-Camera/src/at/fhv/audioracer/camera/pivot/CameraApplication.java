@@ -3,7 +3,6 @@ package at.fhv.audioracer.camera.pivot;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
 
 import javax.imageio.ImageIO;
 
@@ -24,7 +23,6 @@ import at.fhv.audioracer.communication.world.message.UpdateCarMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.model.IMapListener;
-import at.fhv.audioracer.ui.pivot.MapComponent;
 
 import com.esotericsoftware.kryonet.Client;
 
@@ -81,13 +79,8 @@ public class CameraApplication implements Application, IMapListener, ICarListene
 		byte[] imageInByte = null;
 		
 		try {
-			URL carImage;
-			if (addedCar.getCarId() % 2 == 0) {
-				carImage = MapComponent.class.getResource("car-red.png");
-			} else {
-				carImage = MapComponent.class.getResource("car-blue.png");
-			}
-			originalImage = ImageIO.read(carImage);
+			
+			originalImage = addedCar.getImage();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageIO.write(originalImage, "jpg", baos);
 			baos.flush();
