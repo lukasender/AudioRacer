@@ -49,7 +49,6 @@ public class OpenCVCamera implements Runnable {
 	
 	private boolean _detectCar = false;
 	private boolean _directionConfigured = false;
-	private boolean _drawTriangels = false;
 	private Object _lock;
 	
 	private OpenCVCameraListenerList _listenerList;
@@ -78,9 +77,6 @@ public class OpenCVCamera implements Runnable {
 	private Mat _distCoeefs;
 	
 	private Panel _threshholdPanel;
-	private Mat _pImage; // threshHold image
-	private Panel _testPanel;
-	private Mat _testImage; // testImage
 	private long _lastFrame;
 	private int _frameCounter;
 	
@@ -121,13 +117,6 @@ public class OpenCVCamera implements Runnable {
 		_threshholdPanel = new Panel();
 		frame.setContentPane(_threshholdPanel);
 		frame.setVisible(true);
-		
-		JFrame testPanelFrame = new JFrame("TestPanel");
-		testPanelFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		testPanelFrame.setSize(400, 400);
-		_testPanel = new Panel();
-		testPanelFrame.setContentPane(_testPanel);
-		testPanelFrame.setVisible(true);
 		
 		_frameCounter = 0;
 	}
@@ -207,6 +196,10 @@ public class OpenCVCamera implements Runnable {
 		List<MatOfPoint> directionMarkers = findCarByColor(imgHue, _lowerDirectionHueBound,
 				_upperDirectionHueBound, false);
 		
+		if (directionMarkers.size() != _cameraCars.size()) {
+			return;
+		}
+		
 		for (OpenCVCameraCar car : _cameraCars) {
 			_lowerBound = car.getLowerHueBound();
 			_upperBound = car.getUpperHueBound();
@@ -225,10 +218,6 @@ public class OpenCVCamera implements Runnable {
 			Core.line(frame, carVectors[0], carDirectionPoint, new Scalar(255, 255, 255));
 			
 		}
-		
-		// TODO remove testpanel code
-		_testPanel.setImage(frame);
-		_testPanel.repaint();
 	}
 	
 	/**
@@ -246,11 +235,6 @@ public class OpenCVCamera implements Runnable {
 		_offsetPoint = new Point(offsetX, offsetY);
 	}
 	
-	// finds every car defined in _cameraCars and updates position and direction
-	private void findCars(Mat frame) {
-		// TODO implement
-	}
-	
 	/**
 	 * trys to detect one car specified with a huerange
 	 * 
@@ -259,7 +243,6 @@ public class OpenCVCamera implements Runnable {
 	private synchronized boolean detectCar(Mat frame, boolean draw) {
 		
 		if (_lowerBound == null || _upperBound == null) {
-			// TODO do something
 			return false;
 		}
 		
@@ -275,6 +258,7 @@ public class OpenCVCamera implements Runnable {
 			imgHue.release();
 			
 			if (directionPolygons != null && directionPolygons.size() > 0) {// draw direction boxes
+			
 				Core.fillPoly(frame, directionPolygons, _upperBound);
 				
 				// draw direction box centers
@@ -306,7 +290,6 @@ public class OpenCVCamera implements Runnable {
 				carCenter.y = moments.get_m01() / moments.get_m00();
 				
 				MatOfPoint carDirection = null;
-				Point directionCenter = null;
 				double minDist = Double.MAX_VALUE;
 				// find nearest directionPolygon
 				for (MatOfPoint direction : directionPolygons) {
@@ -323,7 +306,6 @@ public class OpenCVCamera implements Runnable {
 					double distance = x * x + y * y;
 					
 					if (distance < minDist) {
-						directionCenter = center;
 						carDirection = direction;
 						minDist = distance;
 					}
@@ -337,13 +319,16 @@ public class OpenCVCamera implements Runnable {
 				
 				// draw car but not direction associated to car
 				if (cars.size() > 0 && carDirection != null) {
-					// if (draw) {
-					// Core.fillPoly(frame, cars, _lowerBound);
-					// // Core.fillPoly(frame, direction, _lowerDirectionHueBound);
-					//
-					// Core.circle(frame, carCenter, 3, new Scalar(0, 0, 255), -1);
-					// // Core.circle(frame, directionCenter, 3, new Scalar(255, 255, 255), -1);
-					// }
+					if (draw) {
+						// Scalar middle = middleRange(_lowerBound, _upperBound);
+						// Scalar bgrMiddle = hueToBGR(middle);
+						// Core.fillPoly(frame, cars, bgrMiddle);
+						Imgproc.drawContours(frame, cars, -1, new Scalar(255, 255, 255));
+						// // Core.fillPoly(frame, direction, _lowerDirectionHueBound);
+						//
+						// Core.circle(frame, carCenter, 2, new Scalar(0, 0, 255), -1);
+						// // Core.circle(frame, directionCenter, 3, new Scalar(255, 255, 255), -1);
+					}
 					
 					return true;
 				}
@@ -390,74 +375,6 @@ public class OpenCVCamera implements Runnable {
 		
 	}
 	
-	@Deprecated
-	private void findCarsWithPolygons(Mat frame) {
-		// convert to grayscale
-		Mat imgGrayScale = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
-		Mat imgBilat = new Mat(frame.size(), Core.DEPTH_MASK_8U, new Scalar(3));
-		Imgproc.cvtColor(frame, imgGrayScale, Imgproc.COLOR_BGR2GRAY);
-		
-		Imgproc.bilateralFilter(imgGrayScale, imgBilat, 5, 1, 100);
-		
-		Imgproc.threshold(imgBilat, imgGrayScale, 128, 255, Imgproc.THRESH_BINARY);
-		
-		_threshholdPanel.setImage(imgGrayScale);
-		
-		List<MatOfPoint> triangles = findPolygons(imgGrayScale, 3);
-		List<MatOfPoint> rectangles = findPolygons(imgGrayScale, 4);
-		List<MatOfPoint> candidates = new ArrayList<MatOfPoint>();
-		
-		for (MatOfPoint triangle : triangles) {
-			double triangleArea = Imgproc.contourArea(triangle);
-			if (_drawTriangels) {
-				Point[] points = triangle.toArray();
-				Scalar color = new Scalar(0, 0, 255);
-				
-				for (int i = 0; i < 2; i++) {
-					Core.line(frame, points[i], points[i + 1], color);
-				}
-				Core.line(frame, points[2], points[0], color);
-			}
-			
-			for (MatOfPoint rectangle : rectangles) {
-				if (Imgproc.contourArea(rectangle) > triangleArea) {
-					// check if triangle is within rectangel
-					Point[] points = triangle.toArray();
-					boolean inside = true;
-					for (int i = 0; i < 3; i++) {
-						if (0 > Imgproc.pointPolygonTest(new MatOfPoint2f(rectangle.toArray()),
-								points[i], false)) {
-							inside = false;
-							break;
-						}
-					}
-					
-					if (_drawTriangels) {
-						points = rectangle.toArray();
-						Scalar color = new Scalar(0, 255, 0);
-						
-						for (int i = 0; i < 3; i++) {
-							Core.line(frame, points[i], points[i + 1], color);
-						}
-						Core.line(frame, points[3], points[0], color);
-					}
-					
-					// triangle is within a bigger rectangle
-					if (inside) {
-						candidates.add(triangle);
-					}
-				}
-			}
-		}
-		// TODO delete test code for drawing candidates
-		// if (_drawTriangels) {
-		// Core.fillPoly(frame, rectangles, new Scalar(0, 255, 0));
-		// Core.fillPoly(frame, triangles, new Scalar(0, 0, 255));
-		Core.fillPoly(frame, candidates, new Scalar(0, 0, 255));
-		// }
-		
-	}
-	
 	/**
 	 * converts a direction value to Direction Type
 	 * 
@@ -497,14 +414,13 @@ public class OpenCVCamera implements Runnable {
 		imgHue.release();
 		
 		// calculate center points of contours
-		if (cars.size() == 1 && directionMarkers.size() == _cameraCars.size()) {
+		if (cars.size() == 1) {
 			
 			Moments moments = Imgproc.moments(cars.get(0));
 			Point carMarkerCenter = new Point();
 			carMarkerCenter.x = moments.get_m10() / moments.get_m00();
 			carMarkerCenter.y = moments.get_m01() / moments.get_m00();
 			
-			MatOfPoint carDirectionMarker = null;
 			Point directionMarkerCenter = null;
 			double minDist = Double.MAX_VALUE;
 			// find nearest directionPolygon
@@ -523,7 +439,6 @@ public class OpenCVCamera implements Runnable {
 				
 				if (distance < minDist) {
 					directionMarkerCenter = center;
-					carDirectionMarker = direction;
 					minDist = distance;
 				}
 				
@@ -554,38 +469,6 @@ public class OpenCVCamera implements Runnable {
 		
 		return null;
 		
-	}
-	
-	/**
-	 * finds polygons with same number of corners defined
-	 * 
-	 * @param frame
-	 *            image to find polygons
-	 * @param corners
-	 *            number of corners
-	 * @return List of found polygons
-	 */
-	private List<MatOfPoint> findPolygons(Mat frame, int corners) {
-		
-		// find contours
-		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-		List<MatOfPoint> polygons = new ArrayList<MatOfPoint>();
-		
-		Imgproc.findContours(frame.clone(), contours, new Mat(), Imgproc.RETR_LIST,
-				Imgproc.CHAIN_APPROX_TC89_KCOS);
-		
-		for (MatOfPoint contour : contours) {
-			
-			MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
-			Imgproc.approxPolyDP(contour2f, contour2f, Imgproc.arcLength(contour2f, true) * 0.1,
-					true);
-			
-			// find specified polygons and add them to list of polygons
-			if (contour2f.total() == corners) {
-				polygons.add(new MatOfPoint(contour2f.toArray()));
-			}
-		}
-		return contours;
 	}
 	
 	public void openCamera(int device) {
@@ -651,9 +534,8 @@ public class OpenCVCamera implements Runnable {
 		List<Mat> rvecs = new LinkedList<>();
 		List<Mat> tvecs = new LinkedList<>();
 		
-		double rms = Calib3d
-				.calibrateCamera(objectPoints, _calibrationPoints, frame.size(), cameraMatrix,
-						distCoeffs, rvecs, tvecs, Calib3d.CALIB_FIX_K4 | Calib3d.CALIB_FIX_K5);
+		Calib3d.calibrateCamera(objectPoints, _calibrationPoints, frame.size(), cameraMatrix,
+				distCoeffs, rvecs, tvecs, Calib3d.CALIB_FIX_K4 | Calib3d.CALIB_FIX_K5);
 		
 		boolean ok = Core.checkRange(frame) && Core.checkRange(distCoeffs);
 		
@@ -896,6 +778,9 @@ public class OpenCVCamera implements Runnable {
 		if (_cameraCars == null) {
 			_cameraCars = new ArrayList<OpenCVCameraCar>();
 		}
+		if (_lowerDirectionHueBound == null || _upperDirectionHueBound == null) {
+			return false;
+		}
 		// test currentUpperBound within range of direction color
 		if ((_upperBound.val[0] > _lowerDirectionHueBound.val[0] && _upperBound.val[0] < _upperDirectionHueBound.val[0])) {
 			return false;
@@ -917,8 +802,10 @@ public class OpenCVCamera implements Runnable {
 				return false;
 			}
 		}
-		
-		Mat frame = _frame.clone();
+		Mat frame;
+		synchronized (_lock) {
+			frame = _frame.clone();
+		}
 		if (frame == null || frame.empty()) {
 			return false;
 		}
@@ -935,23 +822,18 @@ public class OpenCVCamera implements Runnable {
 			byte id = _id++;
 			OpenCVCameraCar car = new OpenCVCameraCar();
 			car.setHueRange(_lowerBound, _upperBound);
-			_cameraCars.add(car);
+			
 			Point[] carVectors = calcCarPosition(car, imgHue, directionMarkers);
 			if (carVectors == null) {
 				return false;
 			}
+			_cameraCars.add(car);
 			Direction direction = calcDirection(carVectors[1]);
 			// convert Point to Position and add offsetOfGameArea
 			Position carPosition = new Position((float) (carVectors[0].x - _offsetPoint.x),
 					(float) (carVectors[0].y - _offsetPoint.y));
 			car.carDetected(id, carPosition, direction);
 			_map.addCar(car.getCar());
-			// TODO remove testPanelCode
-			Core.circle(frame, carVectors[0], 3, new Scalar(0, 0, 0), -1);
-			Point carDirectionPoint = new Point(carVectors[0].x + (3 * carVectors[1].x),
-					carVectors[0].y + (3 * carVectors[1].y));
-			Core.line(frame, carVectors[0], carDirectionPoint, new Scalar(255, 255, 255));
-			_testPanel.setImage(frame);
 			
 			// try to find car
 			return true;

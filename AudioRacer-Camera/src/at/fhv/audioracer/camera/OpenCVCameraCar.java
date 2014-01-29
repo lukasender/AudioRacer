@@ -31,7 +31,6 @@ public class OpenCVCameraCar {
 					.getResource("car-red.png")));
 			return true;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
