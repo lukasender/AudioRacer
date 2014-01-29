@@ -294,17 +294,22 @@ public class PlayerClient extends Listener implements IPlayerClient {
 	}
 	
 	public void startClient(String playerName, String host) throws IOException {
-		if (!_client.isConnected()) {
-			_client.connect(5000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
-					PlayerNetwork.PLAYER_SERVICE_PORT);
+		if (_client.isConnected()) {
+			_client.close();
+		}
+		_client.connect(5000, host, PlayerNetwork.PLAYER_SERVICE_PORT,
+				PlayerNetwork.PLAYER_SERVICE_PORT);
+		
+		_connected = false;
+		if (_player.getPlayerId() != Player.INVALID_PLAYER_ID) {
+			// player already has a valid id, reconnect
+			System.out.println("reconnect with player-id: " + _player.getPlayerId());
+			_connected = _playerServer.reconnect(getPlayer().getPlayerId());
+			System.out.println("reconnecting succeded: " + _connected);
+		}
+		if (!_connected) {
+			_player.setPlayerId(getPlayerServer().setPlayerName(playerName));
 			_connected = true;
-			if (_player.getPlayerId() == Player.INVALID_PLAYER_ID) {
-				_player.setPlayerId(getPlayerServer().setPlayerName(playerName));
-			} else {
-				// player already has a valid id, reconnect
-				System.out.println("reconnect with player-id: " + _player.getPlayerId());
-				_playerServer.reconnect(getPlayer().getPlayerId());
-			}
 		}
 	}
 	

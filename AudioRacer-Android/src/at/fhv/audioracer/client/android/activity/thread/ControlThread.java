@@ -17,7 +17,7 @@ public abstract class ControlThread implements Runnable {
 	private IPlayerClientListener _listener;
 	
 	// We should probably get this from the server.
-	protected static double MAX_DISTANCE = 100;
+	protected static double MAX_DISTANCE = 1000; // sqrt(957² + 540²) = ~1000 --> x = 957, y = 540
 	protected static double SCALE_OF_VELOCITY = 1;
 	
 	public ControlThread() {

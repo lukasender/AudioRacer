@@ -111,8 +111,6 @@ public class SoundPlayer2D {
 					}
 					genTone();
 					
-					Vector unitVector = _position.norm();
-					Log.d("audioracer", "UnitVector: " + unitVector.getValues()[0] + " / " + unitVector.getValues()[1]);
 					Vector zero = new Vector(new float[] { 1, 0 });
 					float cos = _position.multiplication(zero) / _position.getLength();
 					// cos 1 --> 90° left
@@ -120,7 +118,6 @@ public class SoundPlayer2D {
 					// cos -1 --> 90° right
 					float directionVolumeFactor = cos / 2;
 					float distanceVolumeFactor = Math.max(0f, _position.getLength() / (float) _maxDistance);
-					Log.d("audioracer", "DirectoinVolumeFactor: " + directionVolumeFactor);
 					
 					float leftVolume = (0.5f + directionVolumeFactor) * (1 - distanceVolumeFactor);
 					float rightVolume = (0.5f - directionVolumeFactor) * (1 - distanceVolumeFactor);
@@ -211,7 +208,6 @@ public class SoundPlayer2D {
 		if (Double.isNaN(frequency)) {
 			Log.d("audioracer", "Help!");
 		}
-		Log.d("audioracer", "Velocity: " + velocity);
 		// generate tone for next sound loop
 		genTone(frequency);
 	}
@@ -222,9 +218,6 @@ public class SoundPlayer2D {
 	 * @param freqOfTone
 	 */
 	private void genTone(double freqOfTone) {
-		
-		Log.d("audioracer", System.currentTimeMillis() + " Frequency: " + freqOfTone);
-		
 		boolean periodFinished = false;
 		double currentValue;
 		int i = 1;

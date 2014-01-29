@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.app.ListActivity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -101,7 +100,6 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 			}
 		});
 		
-		final Intent selectCarsIntent = new Intent(this, SelectCarActivity.class);
 		ListView gamesListView = (ListView) findViewById(android.R.id.list);
 		gamesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
@@ -121,13 +119,12 @@ public class JoinGameActivity extends ListActivity implements IServerDiscoverLis
 				// try to connect and switch to next activity.
 				@SuppressWarnings("unchecked")
 				HashMap<String, String> game = (HashMap<String, String>) parent.getItemAtPosition(position);
-				StartClientAsyncTask startClient = new StartClientAsyncTask();
+				StartClientAsyncTask startClient = new StartClientAsyncTask(JoinGameActivity.this);
 				StartClientParams params = new StartClientParams();
 				params.playerName = playerName;
 				params.host = game.get(GameInfo.INFO);
 				startClient.execute(params);
 				
-				startActivity(selectCarsIntent);
 			}
 		});
 		

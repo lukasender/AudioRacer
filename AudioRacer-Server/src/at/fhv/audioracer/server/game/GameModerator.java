@@ -697,6 +697,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		Player oldPlrToCopy = _playerList.get(playerId);
 		if (oldPlrToCopy == null) {
 			_logger.warn("old Player for id: {} ist null!", playerId);
+			ReconnectRequestResponse resp = new ReconnectRequestResponse();
+			resp.reconnectSuccess = false;
+			playerConnection.sendTCP(resp);
 			return;
 		}
 		oldPlrToCopy.setConnectionState(ConnectionState.CONNECTED);
@@ -716,6 +719,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		ReconnectRequestResponse resp = new ReconnectRequestResponse();
 		resp.reconnectSuccess = true;
 		_playerServer.sendToTCP(playerConnection.getID(), resp);
+		_broadcastFreeCars();
 	}
 	
 	/**

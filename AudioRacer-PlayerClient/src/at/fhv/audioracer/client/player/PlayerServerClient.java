@@ -20,6 +20,8 @@ import com.esotericsoftware.kryonet.Listener;
 
 public class PlayerServerClient extends Listener implements IPlayerServer {
 	
+	private static final long TIMEOUT = 2000;
+	
 	private Object _lock;
 	
 	private Client _client;
@@ -41,8 +43,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	
 	@Override
 	public int setPlayerName(String playerName) {
-		if (_playerIdResponse != Player.INVALID_PLAYER_ID)
-			return _playerIdResponse;
+		_playerIdResponse = Player.INVALID_PLAYER_ID;
 		
 		SetPlayerNameRequestMessage setNameMsg = new SetPlayerNameRequestMessage();
 		setNameMsg.playerName = playerName;
@@ -50,7 +51,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 		
 		try {
 			synchronized (_lock) {
-				_lock.wait(); // could be improved
+				_lock.wait(TIMEOUT); // could be improved
 			}
 		} catch (InterruptedException e) {
 			System.out.println("InterruptException caught in setPlayerName!");
@@ -69,7 +70,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 		_client.sendTCP(reconnectReqMsg);
 		try {
 			synchronized (_lock) {
-				_lock.wait();
+				_lock.wait(TIMEOUT);
 			}
 		} catch (InterruptedException e) {
 			return false;
@@ -101,7 +102,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 		
 		synchronized (_lock) {
 			try {
-				_lock.wait(); // could be improved
+				_lock.wait(TIMEOUT); // could be improved
 			} catch (InterruptedException e) {
 				return false;
 			}
@@ -120,7 +121,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 		
 		synchronized (_lock) {
 			try {
-				_lock.wait(); // could be improved
+				_lock.wait(TIMEOUT); // could be improved
 			} catch (InterruptedException e) {
 				return null;
 			}
@@ -138,6 +139,7 @@ public class PlayerServerClient extends Listener implements IPlayerServer {
 	public void received(Connection connection, Object object) {
 		if (object instanceof PlayerMessage) {
 			PlayerMessage message = (PlayerMessage) object;
+			System.out.println("Received " + message.messageId + " message.");
 			switch (message.messageId) {
 				case SET_PLAYER_NAME_RESPONSE:
 					SetPlayerNameResponseMessage setNameResponse = (SetPlayerNameResponseMessage) message;
