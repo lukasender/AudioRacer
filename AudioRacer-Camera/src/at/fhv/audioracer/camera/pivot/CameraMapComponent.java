@@ -392,4 +392,27 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 	public void allCarsDetected() {
 		_camera.allCarsDetected();
 	}
+	
+	public boolean loadGameArea() {
+		int[] gameArea = _camera.loadGameArea();
+		if (gameArea == null || gameArea.length != 4) {
+			return false;
+		}
+		
+		_gameAreaX1 = gameArea[0];
+		_gameAreaY1 = gameArea[1];
+		_gameAreaX2 = gameArea[2];
+		_gameAreaY2 = gameArea[3];
+		
+		if (gameAreaSelected()) {
+			_drawCheesboard = false;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public void storeGameArea() {
+		_camera.storeGameArea(new int[] { _gameAreaX1, _gameAreaY1, _gameAreaX2, _gameAreaY2 });
+	}
 }

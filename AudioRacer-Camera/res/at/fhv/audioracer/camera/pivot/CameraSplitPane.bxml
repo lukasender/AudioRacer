@@ -37,6 +37,8 @@
 				</Form.Section>
 				<Form.Section heading="Step 4 - Select game area">
 					<PushButton bxml:id="_gameAreaSelectedButton" buttonData="Game area selected" />
+					<PushButton bxml:id="_loadGameAreaButton" buttonData="Load game area configuration" />
+					<PushButton bxml:id="_storeGameAreaButton" buttonData="Store game area configuration" />
 				</Form.Section>
 				<Form.Section heading="Step 5 - Car detection">
 					<BoxPane Form.label="Color lower bound">

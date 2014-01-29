@@ -49,6 +49,10 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 	@BXML
 	private PushButton _gameAreaSelectedButton;
 	@BXML
+	private PushButton _loadGameAreaButton;
+	@BXML
+	private PushButton _storeGameAreaButton;
+	@BXML
 	private PushButton _directionHueButton;
 	@BXML
 	private PushButton _carConfiguredButton;
@@ -143,6 +147,8 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 		_rotationSlider.setEnabled(false);
 		_startSelectGameAreaButton.setEnabled(false);
 		_gameAreaSelectedButton.setEnabled(false);
+		_loadGameAreaButton.setEnabled(false);
+		_storeGameAreaButton.setEnabled(false);
 		_directionHueButton.setEnabled(false);
 		_carConfiguredButton.setEnabled(false);
 		_allCarsDetectedButton.setEnabled(false);
@@ -279,12 +285,23 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 					return;
 				}
 				
-				_gameAreaSelectedButton.setEnabled(false);
-				_directionHueButton.setEnabled(true);
-				_carConfiguredButton.setEnabled(true);
-				_allCarsDetectedButton.setEnabled(true);
-				
-				_cameraMapComponent.getComponentMouseButtonListeners().add(_mouseButtonListener);
+				gameAreaSelected();
+			}
+		});
+		_loadGameAreaButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				if (_cameraMapComponent.loadGameArea()) {
+					gameAreaSelected();
+				}
+			}
+		});
+		_storeGameAreaButton.getButtonPressListeners().add(new ButtonPressListener() {
+			
+			@Override
+			public void buttonPressed(Button button) {
+				_cameraMapComponent.storeGameArea();
 			}
 		});
 		
@@ -292,6 +309,10 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 			
 			@Override
 			public void buttonPressed(Button button) {
+				_directionHueButton.setEnabled(false);
+				_carConfiguredButton.setEnabled(true);
+				_allCarsDetectedButton.setEnabled(true);
+				
 				_cameraMapComponent.directionHueConfigured();
 			}
 		});
@@ -316,7 +337,6 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				_cameraMapComponent.allCarsDetected();
 				
 				_carConfiguredButton.setEnabled(false);
-				_directionHueButton.setEnabled(false);
 				_allCarsDetectedButton.setEnabled(false);
 				
 				_cameraMapComponent.getComponentMouseButtonListeners().remove(_mouseButtonListener);
@@ -407,16 +427,29 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 		updateHue();
 	}
 	
-	protected void calibrationFinished() {
+	private void calibrationFinished() {
 		_calibrationStepButton.setEnabled(false);
 		_calibrationFinishedButton.setEnabled(false);
 		_loadCalibrationButton.setEnabled(false);
-		_storeCalibrationButton.setEnabled(true);
 		_startPositioningButton.setEnabled(true);
+		_loadGameAreaButton.setEnabled(true);
 	}
 	
-	protected void updateRotationLabel() {
+	private void updateRotationLabel() {
 		_rotationLabel.setText(_rotationSlider.getValue() + "°");
+	}
+	
+	private void gameAreaSelected() {
+		_startPositioningButton.setEnabled(false);
+		_rotateButton.setEnabled(false);
+		_rotationSlider.setEnabled(false);
+		_startSelectGameAreaButton.setEnabled(false);
+		_gameAreaSelectedButton.setEnabled(false);
+		_loadGameAreaButton.setEnabled(false);
+		_storeGameAreaButton.setEnabled(true);
+		_directionHueButton.setEnabled(true);
+		
+		_cameraMapComponent.getComponentMouseButtonListeners().add(_mouseButtonListener);
 	}
 	
 	private void updateHue() {

@@ -626,8 +626,10 @@ public class OpenCVCamera implements Runnable {
 	
 	public void endPositioning() {
 		_positioning = false;
-		_positioningFrame.release();
-		_positioningFrame = null;
+		if (_positioningFrame != null) {
+			_positioningFrame.release();
+			_positioningFrame = null;
+		}
 		_cheesboardCorners = null;
 		
 		startWorkerThread();
@@ -838,5 +840,36 @@ public class OpenCVCamera implements Runnable {
 		_lowerDirectionHueBound = _lowerBound.clone();
 		_upperDirectionHueBound = _upperBound.clone();
 		_directionConfigured = true;
+	}
+	
+	public int[] loadGameArea() {
+		File file = new File("gameArea.foo");
+		if (file.exists()) {
+			try {
+				ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file));
+				int[] gameArea = (int[]) stream.readObject();
+				_homography = loadMatrix(stream);
+				
+				endPositioning();
+				
+				return gameArea;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return null;
+	}
+	
+	public void storeGameArea(int[] gameArea) {
+		File file = new File("gameArea.foo");
+		try {
+			ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(file));
+			stream.writeObject(gameArea);
+			storeMatrix(stream, _homography);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
