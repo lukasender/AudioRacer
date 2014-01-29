@@ -21,7 +21,7 @@
 						<Form.Section heading="Scoreboard">
 							<TableView bxml:id="_tableView">
 								<columns>
-									<TableView.Column name="player" width="1*" />
+									<TableView.Column name="player" width="120" />
 									<TableView.Column name="checkpoints" width="-1" />
 								</columns>
 							</TableView>

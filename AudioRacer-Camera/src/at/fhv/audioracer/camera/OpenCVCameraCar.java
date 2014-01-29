@@ -1,6 +1,7 @@
 package at.fhv.audioracer.camera;
 
 import java.io.IOException;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 
@@ -27,11 +28,15 @@ public class OpenCVCameraCar {
 	 */
 	public boolean carDetected(byte id, Position position, Direction direction) {
 		try {
-			_car = new Car<>(id, position, direction, ImageIO.read(MapComponent.class
-					.getResource("car-red.png")));
+			URL carImage;
+			if (id % 2 == 0) {
+				carImage = MapComponent.class.getResource("car-red.png");
+			} else {
+				carImage = MapComponent.class.getResource("car-blue.png");
+			}
+			_car = new Car<>(id, position, direction, ImageIO.read(carImage));
 			return true;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}

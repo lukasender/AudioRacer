@@ -23,7 +23,6 @@ import at.fhv.audioracer.communication.world.message.UpdateCarMessage;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.ICarListener;
 import at.fhv.audioracer.core.model.IMapListener;
-import at.fhv.audioracer.ui.pivot.MapComponent;
 
 import com.esotericsoftware.kryonet.Client;
 
@@ -48,7 +47,8 @@ public class CameraApplication implements Application, IMapListener, ICarListene
 	}
 	
 	public void connect(String host) throws IOException {
-		_cameraClient.connect(1000, host, WorldNetwork.CAMERA_SERVICE_PORT);
+		_cameraClient.connect(1000, host, WorldNetwork.CAMERA_SERVICE_PORT,
+				WorldNetwork.CAMERA_SERVICE_PORT);
 	}
 	
 	public void configureMap(at.fhv.audioracer.core.model.Map map) {
@@ -75,12 +75,12 @@ public class CameraApplication implements Application, IMapListener, ICarListene
 	public void onCarAdded(Car<?> addedCar) {
 		addedCar.getCarListenerList().add(this);
 		
-		// TODO review BufferedImage conversion to byte[]
 		BufferedImage originalImage;
 		byte[] imageInByte = null;
 		
 		try {
-			originalImage = ImageIO.read(MapComponent.class.getResource("car-red.png"));
+			
+			originalImage = addedCar.getImage();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageIO.write(originalImage, "jpg", baos);
 			baos.flush();
@@ -117,7 +117,7 @@ public class CameraApplication implements Application, IMapListener, ICarListene
 		msg.direction = car.getDirection().getDirection();
 		msg.posX = car.getPosition().getPosX();
 		msg.posY = car.getPosition().getPosY();
-		_cameraClient.sendTCP(msg); // TODO: why not UDP?
+		_cameraClient.sendUDP(msg);
 	}
 	
 	@Override

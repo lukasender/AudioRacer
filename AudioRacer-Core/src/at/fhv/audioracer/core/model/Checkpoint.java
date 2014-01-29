@@ -5,13 +5,16 @@ import at.fhv.audioracer.core.util.Position;
 public class Checkpoint {
 
 	private byte _carId;
+	private String _playerName;
 	private int _checkpointNumber;
 	private Position _position;
 	private float _radius;
 	private float _EPSILON = 0.0001f;
 
-	public Checkpoint(byte carId, Position position, float radius, int number) {
+	public Checkpoint(byte carId, String playerName, Position position,
+			float radius, int number) {
 		_carId = carId;
+		_playerName = playerName;
 		_position = position;
 		_radius = radius;
 		_checkpointNumber = number;
@@ -33,6 +36,10 @@ public class Checkpoint {
 		return _checkpointNumber;
 	}
 
+	public String getPlayerName() {
+		return _playerName;
+	}
+
 	public boolean equals(Object checkpoint) {
 		if (checkpoint == null)
 			return false;
@@ -44,6 +51,7 @@ public class Checkpoint {
 		Checkpoint cPt = (Checkpoint) checkpoint;
 		if (cPt.getCarId() == _carId
 				&& cPt.getCheckpointNumber() == _checkpointNumber
+				&& cPt.getPlayerName().equals(_playerName)
 				&& nearlyEqual(cPt.getPosition().getPosX(),
 						_position.getPosX(), _EPSILON)
 				&& nearlyEqual(cPt.getPosition().getPosY(),
