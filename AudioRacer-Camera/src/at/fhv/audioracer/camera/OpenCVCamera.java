@@ -837,6 +837,9 @@ public class OpenCVCamera implements Runnable {
 	 * current hue setting configured as directionHue
 	 */
 	public void directionHueConfigured() {
+		if (_directionConfigured) {
+			return;
+		}
 		_lowerDirectionHueBound = _lowerBound.clone();
 		_upperDirectionHueBound = _upperBound.clone();
 		_directionConfigured = true;

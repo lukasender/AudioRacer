@@ -66,7 +66,7 @@ public class GameStatsListItemArrayAdapter extends ArrayAdapter<GameStatsEntry> 
 		TextView secondLine = (TextView) rowView.findViewById(R.id.game_stats_second_line);
 		// ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
 		firstLine.setText(_values[position].playerName);
-		secondLine.setText(_values[position].time + " " + _values[position].coinsLeft);
+		secondLine.setText("Total time: " + _values[position].time + ", Coints left: " + _values[position].coinsLeft);
 		
 		return rowView;
 	}
