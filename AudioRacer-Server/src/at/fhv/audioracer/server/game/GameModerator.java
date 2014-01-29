@@ -30,6 +30,7 @@ import at.fhv.audioracer.communication.world.ICarClient;
 import at.fhv.audioracer.communication.world.ICarManagerListener;
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Checkpoint;
+import at.fhv.audioracer.core.model.ConnectionState;
 import at.fhv.audioracer.core.util.Direction;
 import at.fhv.audioracer.core.util.Position;
 import at.fhv.audioracer.network.reconnect.IPlayerTimeoutEvent;
@@ -81,6 +82,7 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		_playerServer = PlayerServer.getInstance();
 		CarClientManager.getInstance().getCarClientListenerList().add(this);
 		_worldZigbeeThread = new Thread(_worldZigbeeRunnable);
+		_worldZigbeeRunnable.getWorldZigbeeConnectionCountListenerList().add(this);
 		CarClientManager.getInstance().getCarClientListenerList().add(_worldZigbeeRunnable);
 		_playerTimeoutScheduler.registerEvent(this);
 	}
@@ -568,6 +570,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 				
 				plr.setCar(null);
 				car.setPlayer(null);
+				if (_map != null) {
+					_map.repaintMapComponents();
+				}
 				playerHasBeenDecoubled = true;
 				
 				_logger.info(
@@ -692,7 +697,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		Player oldPlrToCopy = _playerList.get(playerId);
 		if (oldPlrToCopy == null) {
 			_logger.warn("old Player for id: {} ist null!", playerId);
+			return;
 		}
+		oldPlrToCopy.setConnectionState(ConnectionState.CONNECTED);
 		playerConnection.setPlayer(new Player(oldPlrToCopy));
 		Player copied = playerConnection.getPlayer();
 		copied.setPlayerConnection(playerConnection);
@@ -700,6 +707,9 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		oldCar.setPlayer(copied);
 		
 		_playerList.put(playerId, copied);
+		if (_map != null) {
+			_map.repaintMapComponents();
+		}
 		
 		_logger.debug("Player info copied: {} --------------------------- ", copied);
 		
@@ -719,6 +729,10 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 			if (p != null) {
 				if (p.getCar() != null) {
 					_playerTimeoutScheduler.startTimeout(playerId);
+					p.setConnectionState(ConnectionState.RECONNECTING);
+					if (_map != null) {
+						_map.repaintMapComponents();
+					}
 				}
 			}
 		}
@@ -729,5 +743,8 @@ public class GameModerator implements ICarManagerListener, IWorldZigbeeConnectio
 		Player p = _playerList.get(playerId);
 		_logger.debug("Timeout for {} called. Disconnect him from his car.", p);
 		carPlayerDisconnect(p.getPlayerConnection());
+		if (_map != null) {
+			_map.repaintMapComponents();
+		}
 	}
 }

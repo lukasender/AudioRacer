@@ -11,4 +11,6 @@ public interface IMapListener extends IListener {
 	public void onCarRemoved(Car<?> removedCar);
 
 	public void onCheckpointChange();
+
+	public void repaintMapComponents();
 }

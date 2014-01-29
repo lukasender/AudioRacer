@@ -1,5 +1,6 @@
 package at.fhv.audioracer.ui.pivot;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -10,11 +11,15 @@ import org.apache.pivot.wtk.skin.ComponentSkin;
 
 import at.fhv.audioracer.core.model.Car;
 import at.fhv.audioracer.core.model.Checkpoint;
+import at.fhv.audioracer.core.model.ConnectionState;
 import at.fhv.audioracer.core.model.Map;
+import at.fhv.audioracer.core.model.Player;
 
 public class MapComponentSkin extends ComponentSkin {
 	
 	private final MapComponent _component;
+	private final Color _defaultColor = new Color(0);
+	private final float _imageDownScale = 0.05f;
 	
 	public MapComponentSkin(MapComponent mapComponent) {
 		_component = mapComponent;
@@ -51,8 +56,11 @@ public class MapComponentSkin extends ComponentSkin {
 		return ((_component.getBorderSize() * 2) + mapSizeY);
 	}
 	
+	private int _debugCtr = 0;
+	
 	@Override
 	public void paint(Graphics2D graphics) {
+		
 		Map map = _component.getMap();
 		if (map == null) {
 			return;
@@ -70,22 +78,43 @@ public class MapComponentSkin extends ComponentSkin {
 		int mapY = getMapY(mapSizeY, scale);
 		int mapWidth = (int) Math.floor(mapSizeX * scale);
 		int mapHeight = (int) Math.floor(mapSizeY * scale);
+		graphics.setColor(_defaultColor);
 		graphics.drawRect(mapX, mapY, mapWidth, mapHeight);
 		
-		// System.out.println("mapX: " + mapX + " mapY: " + mapY + " scale: " + scale + " mapSizeX: "
-		// + mapSizeX + " mapSizeY: " + mapSizeY + " width: " + width + " height: " + height
-		// + " scaleWidth: " + scaleWidth + " scaleHeight: " + scaleHeigth + " mapWidth: "
-		// + mapWidth + " mapHeight: " + mapHeight);
+		if (_debugCtr++ % 1000 == 0) {
+			// System.out.println("mapX: " + mapX + " mapY: " + mapY + " scale: " + scale
+			// + " mapSizeX: " + mapSizeX + " mapSizeY: " + mapSizeY + " scaleWidth: "
+			// + scaleWidth + " scaleHeight: " + scaleHeight + " mapWidth: " + mapWidth
+			// + " mapHeight: " + mapHeight);
+		}
 		
 		for (Car<?> car : _component.getMap().getCars()) {
 			AffineTransform xform = new AffineTransform();
 			xform.translate(mapX + (car.getPosition().getPosX() * scale), mapY
 					+ (car.getPosition().getPosY() * scale));
-			xform.scale(0.05 * scale, 0.05 * scale);
+			xform.scale(_imageDownScale * scale, _imageDownScale * scale);
 			xform.translate(-car.getImage().getWidth() / 2, -car.getImage().getHeight() / 2);
 			xform.rotate(Math.toRadians(car.getDirection().getDirection()), car.getImage()
 					.getWidth() / 2, car.getImage().getHeight() / 2);
 			graphics.drawImage(car.getImage(), xform, null);
+			
+			Player p = (Player) car.getPlayer();
+			float x = mapX + (car.getPosition().getPosX() * scale);
+			float y = mapY + (car.getPosition().getPosY() * scale);
+			float carMaxEdge = Math.max(car.getImage().getWidth(), car.getImage().getHeight());
+			x -= (int) (carMaxEdge * _imageDownScale * scale / 2);
+			y -= (int) ((carMaxEdge * _imageDownScale * scale) / 2) + 6;
+			if (p != null) {
+				graphics.drawString(p.getName(), x, y);
+				if (p.getConnectionState().equals(ConnectionState.RECONNECTING)) {
+					graphics.setColor(p.getConnectionState().getColor());
+					y += (int) ((carMaxEdge * _imageDownScale * scale / 2) * 2) + 20;
+					graphics.drawString(p.getConnectionState().getDescription(), x, y);
+					graphics.setColor(_defaultColor);
+				}
+			} else {
+				graphics.drawString("I am free", x, y);
+			}
 		}
 		
 		Collection<Checkpoint> c = _component.getMap().getCheckpoints();

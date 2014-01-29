@@ -24,6 +24,7 @@ public class Player extends at.fhv.audioracer.core.model.Player {
 		_name = toCopy.getName();
 		_time = toCopy.getTime();
 		_isReady = toCopy.isReady();
+		_connectionState = toCopy.getConnectionState();
 	}
 	
 	public void setPlayerConnection(PlayerConnection playerConnection) {
