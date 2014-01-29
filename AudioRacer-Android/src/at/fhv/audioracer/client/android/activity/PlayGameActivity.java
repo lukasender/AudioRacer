@@ -21,12 +21,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import at.fhv.audioracer.client.android.R;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
+import at.fhv.audioracer.client.android.activity.listener.IUpdateGameStatsListener;
 import at.fhv.audioracer.client.android.activity.thread.JoystickControlThread;
 import at.fhv.audioracer.client.android.activity.thread.MotionSensorControlThread;
 import at.fhv.audioracer.client.android.activity.thread.StandardControlThread;
 import at.fhv.audioracer.client.android.activity.thread.TrimSettingsControlThread;
 import at.fhv.audioracer.client.android.activity.thread.util.ThreadControlMode;
-import at.fhv.audioracer.client.android.activity.util.GameStats;
 import at.fhv.audioracer.client.android.activity.util.GameStatsEntry;
 import at.fhv.audioracer.client.android.activity.util.GameStatsListItemArrayAdapter;
 import at.fhv.audioracer.client.android.activity.util.PressedButton;
@@ -49,7 +49,7 @@ import at.fhv.audioracer.core.model.Player;
  * <li>(not yet implemented) Motion controls: use the motion sensors to control the car.</li>
  * </ul>
  */
-public class PlayGameActivity extends Activity implements IControlMode {
+public class PlayGameActivity extends Activity implements IControlMode, IUpdateGameStatsListener {
 	
 	public class OnGameEndsListener extends IPlayerClientListener.Adapter {
 		
@@ -74,6 +74,44 @@ public class PlayGameActivity extends Activity implements IControlMode {
 			});
 		}
 	}
+	
+	public class OnUpdateGameStateListener extends IPlayerClientListener.Adapter {
+		
+		private int _lastCoinsLeft = -1;
+		private IUpdateGameStatsListener _listener;
+		
+		public OnUpdateGameStateListener(IUpdateGameStatsListener listener) {
+			_listener = listener;
+		}
+		
+		public void onUpdateGameState(Player player) {
+			Log.d("play game", "called onUpdateGameState: " + player.getName() + ", coinsLeft " + player.getCoinsLeft() + ", time " + player.getTime());
+			
+			GameStatsEntry entry = new GameStatsEntry();
+			entry.playerName = player.getName();
+			entry.coinsLeft = "" + player.getCoinsLeft();
+			if (player.getTime() > 0) {
+				Date d = new Date(new Integer(player.getTime()).longValue());
+				SimpleDateFormat format = new SimpleDateFormat("mm:ss");
+				entry.time = format.format(d);
+			} else {
+				entry.time = "-";
+			}
+			
+			_listener.updateGameStats(entry);
+			
+			if (player != null && player.getPlayerId() == ClientManager.getInstance().getPlayerClient().getPlayer().getPlayerId()) {
+				int coinsLeft = player.getCoinsLeft();
+				if (coinsLeft == 0) {
+					_vibrator.vibrate(new long[] { 0, 300, 100, 300, 100, 300 }, -1);
+				} else if (coinsLeft < _lastCoinsLeft && _lastCoinsLeft >= 0) {
+					_vibrator.vibrate(50);
+				}
+				_lastCoinsLeft = coinsLeft;
+			}
+			
+		};
+	};
 	
 	private SystemUiHider _systemUiHider;
 	
@@ -110,6 +148,10 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	private PressedButton _trimSteeringDown = new PressedButton();
 	
 	private Vibrator _vibrator;
+	
+	private GameStatsListItemArrayAdapter _gameStatsAdapter;
+	
+	int bla = 10;
 	
 	@Override
 	public void onBackPressed() {
@@ -159,42 +201,10 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		// game stats
 		_gameStatsListView = (ListView) findViewById(R.id.game_stats_list_view);
 		
-		final GameStats gameStats = new GameStats();
-		final GameStatsListItemArrayAdapter adapter = new GameStatsListItemArrayAdapter(this, gameStats.getEntriesSorted());
+		_gameStatsAdapter = new GameStatsListItemArrayAdapter(this);
+		_gameStatsListView.setAdapter(_gameStatsAdapter);
 		
-		IPlayerClientListener listener = new IPlayerClientListener.Adapter() {
-			private int _lastCoinsLeft = -1;
-			
-			public void onUpdateGameState(Player player) {
-				Log.d("play game", "called onUpdateGameState: " + player.getName() + ", coinsLeft " + player.getCoinsLeft() + ", time " + player.getTime());
-				GameStatsEntry entry = new GameStatsEntry();
-				entry.playerName = player.getName();
-				entry.coinsLeft = "" + player.getCoinsLeft();
-				Date d = new Date(new Integer(player.getTime()).longValue());
-				SimpleDateFormat format = new SimpleDateFormat("mm:ss");
-				entry.time = format.format(d);
-				
-				gameStats.addGameStats(entry);
-				
-				if (player != null && player.getPlayerId() == ClientManager.getInstance().getPlayerClient().getPlayer().getPlayerId()) {
-					int coinsLeft = player.getCoinsLeft();
-					if (coinsLeft == 0) {
-						_vibrator.vibrate(new long[] { 0, 300, 100, 300, 100, 300 }, -1);
-					} else if (coinsLeft < _lastCoinsLeft && _lastCoinsLeft >= 0) {
-						_vibrator.vibrate(50);
-					}
-					_lastCoinsLeft = coinsLeft;
-				}
-				
-				_gameStatsListView.post(new Runnable() {
-					@Override
-					public void run() {
-						adapter.notifyDataSetChanged();
-					}
-				});
-			};
-		};
-		
+		OnUpdateGameStateListener listener = new OnUpdateGameStateListener(this);
 		ClientManager.getInstance().getPlayerClient().getListenerList().add(listener);
 		ClientManager.getInstance().getPlayerClient().getListenerList().add(new OnGameEndsListener());
 		
@@ -429,6 +439,17 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		for (ThreadControlMode tcm : _threads) {
 			tcm.thread.stop();
 		}
+	}
+	
+	@Override
+	public void updateGameStats(final GameStatsEntry entry) {
+		_gameStatsListView.post(new Runnable() {
+			@Override
+			public void run() {
+				_gameStatsAdapter.add(entry);
+				_gameStatsAdapter.notifyDataSetChanged();
+			}
+		});
 	}
 	
 }
