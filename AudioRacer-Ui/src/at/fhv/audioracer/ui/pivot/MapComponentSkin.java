@@ -130,9 +130,8 @@ public class MapComponentSkin extends ComponentSkin {
 					(scale * 2.0 * cp.getRadius()), (scale * 2.0 * cp.getRadius()));
 			graphics.draw(circle);
 			
-			graphics.drawString("car-id: " + cp.getCarId() + " nr: " + cp.getCheckpointNumber(),
-					mapX + cp.getPosition().getPosX() * scale, mapY + cp.getPosition().getPosY()
-							* scale);
+			graphics.drawString(cp.getPlayerName(), mapX + cp.getPosition().getPosX() * scale, mapY
+					+ cp.getPosition().getPosY() * scale);
 		}
 	}
 }
