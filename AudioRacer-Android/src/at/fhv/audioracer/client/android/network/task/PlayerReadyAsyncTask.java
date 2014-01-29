@@ -1,5 +1,6 @@
 package at.fhv.audioracer.client.android.network.task;
 
+import android.util.Log;
 import at.fhv.audioracer.client.android.activity.PlayGameActivity.ControlMode;
 import at.fhv.audioracer.client.android.activity.listener.IControlMode;
 import at.fhv.audioracer.client.android.controller.ClientManager;
@@ -17,12 +18,14 @@ public class PlayerReadyAsyncTask extends NetworkAsyncTask<NetworkParams, Void> 
 	
 	@Override
 	protected Void doInBackground(NetworkParams... params) {
+		Log.d("AsyncTask", this.getClass().getName());
 		ClientManager.getInstance().getPlayerClient().getPlayerServer().setPlayerReady();
 		return null;
 	}
 	
 	@Override
 	protected void onPostExecute(Void result) {
+		Log.d("AsyncTask", "onPostExecute" + this.getClass().getName());
 		_imode.setControlMode(_mode);
 	}
 	

@@ -19,10 +19,8 @@ import at.fhv.audioracer.client.android.activity.listener.IFreeCarsListener;
 import at.fhv.audioracer.client.android.activity.listener.ISelectCarListener;
 import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.info.CarInfo;
-import at.fhv.audioracer.client.android.network.task.FreeCarsAsyncTask;
 import at.fhv.audioracer.client.android.network.task.SelectFreeCarAsyncTask;
 import at.fhv.audioracer.client.android.network.task.SelectFreeCarAsyncTask.SuccessMessage;
-import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.network.task.params.SelectCarParams;
 import at.fhv.audioracer.client.player.IPlayerClientListener;
 import at.fhv.audioracer.client.player.PlayerClient;
@@ -56,9 +54,13 @@ public class SelectCarActivity extends ListActivity implements IFreeCarsListener
 			@Override
 			public void onUpdateFreeCars() {
 				Log.d(ACTIVITY_SERVICE, "called onUpdateFreeCars(); # of free cars:" + _playerClient.getFreeCarIds().length);
-				
-				final FreeCarsAsyncTask task = new FreeCarsAsyncTask(SelectCarActivity.this);
-				task.execute(new NetworkParams());
+				getListView().post(new Runnable() {
+					
+					@Override
+					public void run() {
+						addFreeCars(ClientManager.getInstance().getPlayerClient().getFreeCarIds());
+					}
+				});
 			}
 			
 		};
