@@ -36,10 +36,14 @@ public class CameraServerListener extends Listener {
 	public void received(Connection connection, Object object) {
 		if (object instanceof CameraMessage) {
 			CameraMessage message = (CameraMessage) object;
-			
+			CameraConnection cameraConnection = (CameraConnection) connection;
 			switch (message.messageId) {
 				case UPDATE_CAR:
 					UpdateCarMessage updateCarMsg = (UpdateCarMessage) message;
+					
+					if (!cameraConnection.isValidUpdateCarMessage(updateCarMsg.seqNr))
+						break;
+					
 					_moderator.updateCar(updateCarMsg.carId, updateCarMsg.posX, updateCarMsg.posY,
 							updateCarMsg.direction);
 					break;

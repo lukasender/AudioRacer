@@ -146,7 +146,7 @@ public class WorldSimulatorWindow extends Window implements Application, Bindabl
 		
 		WorldNetwork.register(_cameraClient);
 		
-		_cameraClient.connect(1000, InetAddress.getLoopbackAddress(), WorldNetwork.CAMERA_SERVICE_PORT);
+		_cameraClient.connect(1000, InetAddress.getLoopbackAddress(), WorldNetwork.CAMERA_SERVICE_PORT, WorldNetwork.CAMERA_SERVICE_PORT);
 		
 	}
 	

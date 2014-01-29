@@ -13,8 +13,6 @@ import at.fhv.audioracer.server.game.GameModerator;
 import at.fhv.audioracer.server.pivot.ServerView;
 import at.fhv.audioracer.ui.util.awt.RepeatingReleasedEventsFixer;
 
-import com.esotericsoftware.kryonet.Server;
-
 public class Main {
 	
 	public static final Executor executor = Executors.newSingleThreadExecutor();
@@ -26,8 +24,8 @@ public class Main {
 	
 	public static void start(String[] args) {
 		PlayerServer playerServer = PlayerServer.getInstance();
+		CameraServer cameraServer = CameraServer.getInstance();
 		PlayerServerListener playerServerListener = null;
-		Server cameraServer = null;
 		
 		try {
 			// comment in next line for "test run"
@@ -40,9 +38,7 @@ public class Main {
 			playerServer.bind(PlayerNetwork.PLAYER_SERVICE_PORT, PlayerNetwork.PLAYER_SERVICE_PORT);
 			playerServer.start();
 			
-			// cameraServer = new Server();
-			cameraServer = new Server(20 * 16384, 30 * 81920);
-			cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT);
+			cameraServer.bind(WorldNetwork.CAMERA_SERVICE_PORT, WorldNetwork.CAMERA_SERVICE_PORT);
 			
 			CameraServerListener cameraServerListener = new CameraServerListener(gameModerator);
 			cameraServer.addListener(cameraServerListener);
