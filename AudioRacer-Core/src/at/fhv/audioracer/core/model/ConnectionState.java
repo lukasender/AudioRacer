@@ -1,21 +1,18 @@
 package at.fhv.audioracer.core.model;
 
-import java.awt.Color;
-
 public enum ConnectionState {
-	CONNECTED(new Color(102, 255, 102), "Connected"), RECONNECTING(new Color(
-			255, 0, 0), "Reconnecting");
+	CONNECTED(255 << 8, "Connected"), RECONNECTING(255 << 16, "Reconnecting");
 
-	private final Color _c;
+	private final int _rgbColorValue;
 	private final String _desc;
 
-	ConnectionState(Color c, String desc) {
-		_c = c;
+	ConnectionState(int rgbColorValue, String desc) {
+		_rgbColorValue = rgbColorValue;
 		_desc = desc;
 	}
 
-	public Color getColor() {
-		return _c;
+	public int getRGBColorValue() {
+		return _rgbColorValue;
 	}
 
 	public String getDescription() {

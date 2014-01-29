@@ -107,7 +107,7 @@ public class MapComponentSkin extends ComponentSkin {
 			if (p != null) {
 				graphics.drawString(p.getName(), x, y);
 				if (p.getConnectionState().equals(ConnectionState.RECONNECTING)) {
-					graphics.setColor(p.getConnectionState().getColor());
+					graphics.setColor(new Color(p.getConnectionState().getRGBColorValue()));
 					y += (int) ((carMaxEdge * _imageDownScale * scale / 2) * 2) + 20;
 					graphics.drawString(p.getConnectionState().getDescription(), x, y);
 					graphics.setColor(_defaultColor);
