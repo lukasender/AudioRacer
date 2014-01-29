@@ -19,7 +19,7 @@ public class MapComponentSkin extends ComponentSkin {
 	
 	private final MapComponent _component;
 	private final Color _defaultColor = new Color(0);
-	private final float _imageDownScale = 0.02f;
+	private final float _imageDownScale = 0.05f;
 	
 	public MapComponentSkin(MapComponent mapComponent) {
 		_component = mapComponent;
@@ -107,7 +107,7 @@ public class MapComponentSkin extends ComponentSkin {
 			if (p != null) {
 				graphics.drawString(p.getName(), x, y);
 				if (p.getConnectionState().equals(ConnectionState.RECONNECTING)) {
-					graphics.setColor(p.getConnectionState().getColor());
+					graphics.setColor(new Color(p.getConnectionState().getRGBColorValue()));
 					y += (int) ((carMaxEdge * _imageDownScale * scale / 2) * 2) + 20;
 					graphics.drawString(p.getConnectionState().getDescription(), x, y);
 					graphics.setColor(_defaultColor);

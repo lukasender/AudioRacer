@@ -151,4 +151,10 @@ public class CameraApplication implements Application, IMapListener, ICarListene
 		DesktopApplicationContext.main(CameraApplication.class, args);
 	}
 	
+	@Override
+	public void repaintMapComponents() {
+		// No op
+		
+	}
+	
 }
