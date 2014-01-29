@@ -208,7 +208,6 @@ public class SoundPlayer2D {
 		if (Double.isNaN(frequency)) {
 			Log.d("audioracer", "Help!");
 		}
-		Log.d("audioracer", "Velocity: " + velocity);
 		// generate tone for next sound loop
 		genTone(frequency);
 	}
@@ -219,9 +218,6 @@ public class SoundPlayer2D {
 	 * @param freqOfTone
 	 */
 	private void genTone(double freqOfTone) {
-		
-		Log.d("audioracer", System.currentTimeMillis() + " Frequency: " + freqOfTone);
-		
 		boolean periodFinished = false;
 		double currentValue;
 		int i = 1;

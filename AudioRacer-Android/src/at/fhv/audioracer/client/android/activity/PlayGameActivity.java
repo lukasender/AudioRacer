@@ -33,7 +33,6 @@ import at.fhv.audioracer.client.android.activity.util.PressedTouchListener;
 import at.fhv.audioracer.client.android.activity.view.JoystickView;
 import at.fhv.audioracer.client.android.controller.ClientManager;
 import at.fhv.audioracer.client.android.network.task.PlayerReadyAsyncTask;
-import at.fhv.audioracer.client.android.network.task.TrimSettingsAsyncTask;
 import at.fhv.audioracer.client.android.network.task.params.NetworkParams;
 import at.fhv.audioracer.client.android.util.SystemUiHider;
 import at.fhv.audioracer.client.android.util.SystemUiHiderAndroidRacer;
@@ -91,8 +90,6 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private TextView _tsSpeedValueTextView;
 	private TextView _tsSteeringValueTextView;
-	private float _trimSpeed;
-	private float _trimSteering;
 	private PressedButton _trimSpeedUp = new PressedButton();
 	private PressedButton _trimSpeedDown = new PressedButton();
 	private PressedButton _trimSteeringUp = new PressedButton();
@@ -219,20 +216,12 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		_tsSpeedValueTextView = (TextView) findViewById(R.id.trim_settings_speed_value);
 		_tsSteeringValueTextView = (TextView) findViewById(R.id.trim_settings_steering_value);
 		
-		final Button tsSetTrimButton = (Button) findViewById(R.id.trim_settings_set_trim);
-		tsSetTrimButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				setTrim();
-			}
-		});
-		
 		// possible threads
 		_threads = new LinkedList<ThreadControlMode>();
 		_threads.add(new ThreadControlMode(ControlMode.STANDARD, new StandardControlThread(_speedUp, _speedDown, _steerLeft, _steerRight)));
 		_threads.add(new ThreadControlMode(ControlMode.SENSOR, new MotionSensorControlThread(this, _msCtrlImgView)));
 		_threads.add(new ThreadControlMode(ControlMode.SETTINGS_TRIM, new TrimSettingsControlThread(this, _trimSpeedUp, _trimSpeedDown, _trimSteeringUp,
-				_trimSteeringDown)));
+				_trimSteeringDown, (Button) findViewById(R.id.trim_settings_set_trim))));
 		_threads.add(new ThreadControlMode(ControlMode.JOYSTICK, new JoystickControlThread(_joystickControlsView)));
 		/* ChooseControls */
 		
@@ -291,32 +280,12 @@ public class PlayGameActivity extends Activity implements IControlMode {
 		}
 	}
 	
-	public void trimSpeedUp(float trimStep) {
-		_trimSpeed = Math.min(1.0f, _trimSpeed + trimStep);
-		setTrimValue(_tsSpeedValueTextView, _trimSpeed);
+	public void setTrimSteeringValue(float value) {
+		setTrimValue(_tsSteeringValueTextView, value);
 	}
 	
-	public void trimSpeedDown(float trimStep) {
-		_trimSpeed = Math.max(-1.0f, _trimSpeed - trimStep);
-		setTrimValue(_tsSpeedValueTextView, _trimSpeed);
-	}
-	
-	public void trimSteeringUp(float trimStep) {
-		_trimSteering = Math.min(1.0f, _trimSteering + trimStep);
-		setTrimValue(_tsSteeringValueTextView, _trimSteering);
-	}
-	
-	public void trimSteeringDown(float trimStep) {
-		_trimSteering = Math.max(-1.0f, _trimSteering - trimStep);
-		setTrimValue(_tsSteeringValueTextView, _trimSteering);
-	}
-	
-	private void setTrim() {
-		_trimSpeed = 0.0f;
-		_trimSteering = 0.0f;
-		setTrimValue(_tsSpeedValueTextView, _trimSpeed);
-		setTrimValue(_tsSteeringValueTextView, _trimSteering);
-		sendTrim();
+	public void setTrimSpeedValue(float value) {
+		setTrimValue(_tsSpeedValueTextView, value);
 	}
 	
 	/**
@@ -363,10 +332,6 @@ public class PlayGameActivity extends Activity implements IControlMode {
 	
 	private void ready(ControlMode mode) {
 		new PlayerReadyAsyncTask(this, mode).execute(new NetworkParams());
-	}
-	
-	private void sendTrim() {
-		new TrimSettingsAsyncTask().execute(new NetworkParams());
 	}
 	
 	@Override
