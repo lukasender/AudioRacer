@@ -94,12 +94,38 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 				
 				int[] values = _cameraMapComponent.getHueValues(x, y);
 				
-				_colorLowerSlider.setValue(values[0] - HUE_VALUE_RANGE);
-				_colorUpperSlider.setValue(values[0] + HUE_VALUE_RANGE);
-				_saturationLowerSlider.setValue(values[1] - (2 * HUE_VALUE_RANGE));
-				_saturationUpperSlider.setValue(values[1] + (2 * HUE_VALUE_RANGE));
-				_valueLowerSlider.setValue(values[2] - (2 * HUE_VALUE_RANGE));
-				_valueUpperSlider.setValue(values[2] + (2 * HUE_VALUE_RANGE));
+				int lowerHue = values[0] - HUE_VALUE_RANGE;
+				int upperHue = values[0] + HUE_VALUE_RANGE;
+				int lowerSaturation = values[1] - (2 * HUE_VALUE_RANGE);
+				int upperSaturation = values[1] + (2 * HUE_VALUE_RANGE);
+				int lowerValue = values[2] - (2 * HUE_VALUE_RANGE);
+				int upperValue = values[2] + (2 * HUE_VALUE_RANGE);
+				
+				if (lowerHue < _colorLowerSlider.getStart()) {
+					lowerHue = _colorLowerSlider.getStart();
+				}
+				if (upperHue > _colorUpperSlider.getEnd()) {
+					upperHue = _colorUpperSlider.getEnd();
+				}
+				if (lowerSaturation < _saturationLowerSlider.getStart()) {
+					lowerSaturation = _saturationLowerSlider.getStart();
+				}
+				if (upperSaturation > _saturationUpperSlider.getEnd()) {
+					upperSaturation = _saturationUpperSlider.getEnd();
+				}
+				if (lowerValue < _valueLowerSlider.getStart()) {
+					lowerValue = _valueLowerSlider.getStart();
+				}
+				if (upperValue > _valueUpperSlider.getEnd()) {
+					upperValue = _valueUpperSlider.getEnd();
+				}
+				
+				_colorLowerSlider.setValue(lowerHue);
+				_colorUpperSlider.setValue(upperHue);
+				_saturationLowerSlider.setValue(lowerSaturation);
+				_saturationUpperSlider.setValue(upperSaturation);
+				_valueLowerSlider.setValue(lowerValue);
+				_valueUpperSlider.setValue(upperValue);
 				
 				return true;
 			}
