@@ -1,6 +1,8 @@
 package at.fhv.audioracer.server;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -48,6 +50,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 	private int _mapY = 0;
 	private float _distanceToDrive = 0.f;
 	private CheckpointUtil _rangeUtil = new CheckpointUtil();
+	private Set<Byte> _allreadyConnected = new HashSet<>();
 	
 	@Override
 	public void run() {
@@ -58,12 +61,19 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 				if (_assignNextCarClient) {
 					_assignNextCarClient = false;
 					_currentCarClientToConnect = _awaitingConnectionQueue.take();
+					_logger.info("Start pairing CarClientId {} with a car",
+							_currentCarClientToConnect.getCarClientId());
 				} else {
 					Thread.sleep(10);
 					// _logger.debug("try to assign CarClient ... send update velocity.");
-					_currentCarClientToConnect.updateVelocity(_configurationSpeed,
-							_configurationDirection);
-					
+					if (_allreadyConnected.contains(_currentCarClientToConnect.getCarClientId())) {
+						_assignNextCarClient = true;
+						_logger.debug("CarClientId {} allready paired with a car",
+								_currentCarClientToConnect.getCarClientId());
+					} else {
+						_currentCarClientToConnect.updateVelocity(_configurationSpeed,
+								_configurationDirection);
+					}
 				}
 			}
 		} catch (InterruptedException e) {
@@ -99,7 +109,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 				(Position) carPosMap[1]);
 		if (distToInitialPosition > _distanceToDrive) {
 			if (_currentCarClientToConnect == null) {
-				_logger.debug("Camera car with id {} is still waiting for zigbee connections.");
+				_logger.warn("Camera car with id {} is still waiting for zigbee connections.");
 				return;
 			}
 			
@@ -107,6 +117,7 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 					car.getCarId(), distToInitialPosition,
 					_currentCarClientToConnect.getCarClientId());
 			car.setCarClientId(_currentCarClientToConnect.getCarClientId());
+			_allreadyConnected.add(_currentCarClientToConnect.getCarClientId());
 			int oldConnectionCount = _connectionCount;
 			_connectionCount++;
 			_listenerList.onWorldZigbeeConnectionCountChanged(oldConnectionCount, _connectionCount);
@@ -119,9 +130,6 @@ public class WorldZigbeeMediator implements Runnable, ICarListener, ICarManagerL
 	public void onCarClientConnect(ICarClient carClient) {
 		try {
 			_awaitingConnectionQueue.put(carClient);
-			_logger.debug(
-					"Currently {} zigbee connections are awaiting a connection to be established.",
-					_awaitingConnectionQueue.size());
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new RuntimeException("Unexpected Interruption!");

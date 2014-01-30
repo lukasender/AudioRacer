@@ -25,11 +25,13 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 		CarClient car;
 	}
 	
-	private static final byte CAR_CONNECTED = 0x1;
-	private static final byte CAR_DISCONNECTED = 0x2;
+	private static final byte CAR_CONNECTED = (byte) 0xFC;
+	private static final byte CAR_DISCONNECTED = (byte) 0xFB;
 	private static final byte CAR_UPDATE_VELOCITY = (byte) 0xFF;
 	private static final byte CAR_TRIM = (byte) 0xFE;
 	private static final byte START = (byte) 0xFD;
+	
+	private static final int MAX_CARS = 8;
 	
 	private static Logger _logger = LoggerFactory.getLogger(SerialInterface.class);
 	
@@ -107,6 +109,7 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 							break;
 						case CAR_DISCONNECTED:
 							carDisconnected();
+							break;
 						case START:
 							interfaceStarted();
 							break;
@@ -123,6 +126,10 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	
 	private void carConnected() throws SerialPortException {
 		byte id = _serialPort.readBytes(1)[0];
+		int signedId = id & 0xFF;
+		if (signedId >= MAX_CARS) {
+			_logger.debug("Received invalid car id {}", signedId);
+		}
 		carConnected(id);
 	}
 	
@@ -139,6 +146,11 @@ public class SerialInterface implements SerialPortEventListener, ICarClientListe
 	
 	private void carDisconnected() throws SerialPortException {
 		byte id = _serialPort.readBytes(1)[0];
+		
+		int signedId = id & 0xFF;
+		if (signedId >= MAX_CARS) {
+			_logger.debug("Received invalid car id {}", signedId);
+		}
 		carDisconnected(id);
 	}
 	

@@ -71,7 +71,8 @@ public class CameraMapComponent extends MapComponent implements OpenCVCameraList
 		} else {
 			if (_drawCheesboard) {
 				MatOfPoint2f corners = new MatOfPoint2f();
-				if (Calib3d.findChessboardCorners(frame, _camera.getPatternSize(), corners)) {
+				if (Calib3d.findChessboardCorners(frame, _camera.getPatternSize(), corners,
+						Calib3d.CALIB_CB_FAST_CHECK)) {
 					Calib3d.drawChessboardCorners(frame, _camera.getPatternSize(), corners, true);
 				}
 			}
