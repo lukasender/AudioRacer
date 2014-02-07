@@ -118,9 +118,11 @@ public class SoundPlayer2D {
 					// cos -1 --> 90° right
 					float directionVolumeFactor = cos / 2;
 					float distanceVolumeFactor = Math.max(0f, _position.getLength() / (float) _maxDistance);
+					distanceVolumeFactor = 1 - distanceVolumeFactor;
+					distanceVolumeFactor = (float) Math.pow(distanceVolumeFactor, 2);
 					
-					float leftVolume = (0.5f + directionVolumeFactor) * (1 - distanceVolumeFactor);
-					float rightVolume = (0.5f - directionVolumeFactor) * (1 - distanceVolumeFactor);
+					float leftVolume = (0.5f + directionVolumeFactor) * distanceVolumeFactor;
+					float rightVolume = (0.5f - directionVolumeFactor) * distanceVolumeFactor;
 					_audioTrack.setStereoVolume(leftVolume, rightVolume);
 					
 					int samplesToWrite = (int) (sampleRate * duration) + 1;
@@ -228,6 +230,9 @@ public class SoundPlayer2D {
 			if (currentValue >= 0 && samples[i - 1] < 0) {
 				periodFinished = true;
 			} else {
+				if (i >= samples.length) {
+					break;
+				}
 				samples[i] = currentValue;
 				i++;
 			}

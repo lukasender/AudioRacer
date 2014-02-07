@@ -30,7 +30,7 @@ public class CarClient implements ICarClient {
 		byte direction;
 		
 		public Velocity(float speed, float direction) {
-			int realSpeed = (int) (((speed * -1) * (MAX_CONTROL_VALUE / 2.0)) + (MAX_CONTROL_VALUE / 2.0));
+			int realSpeed = (int) (((speed * -1) * (MAX_CONTROL_VALUE / 6.0)) + (MAX_CONTROL_VALUE / 2.0));
 			int realDirection = (int) (((direction * -1) * (MAX_CONTROL_VALUE / 2.0)) + (MAX_CONTROL_VALUE / 2.0));
 			
 			this.speed = (byte) realSpeed;
