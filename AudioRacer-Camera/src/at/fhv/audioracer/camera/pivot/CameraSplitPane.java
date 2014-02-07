@@ -431,6 +431,7 @@ public class CameraSplitPane extends SplitPane implements Bindable {
 		_calibrationStepButton.setEnabled(false);
 		_calibrationFinishedButton.setEnabled(false);
 		_loadCalibrationButton.setEnabled(false);
+		_storeCalibrationButton.setEnabled(true);
 		_startPositioningButton.setEnabled(true);
 		_loadGameAreaButton.setEnabled(true);
 	}
